@@ -9,6 +9,10 @@ This file tracks reference materials consulted during the development of fixie.
 - [CrossOrderCancelRequest (u)](https://www.onixs.biz/fix-dictionary/5.0.sp2/msgType_u_117.html) - Cross order cancellation message
 - [NewOrderCross (s)](https://www.onixs.biz/fix-dictionary/5.0.sp2/msgType_s_115.html) - Cross order submission message
 
+### Cross Order Field Specifications (OnixS)
+- [CrossType (549)](https://www.onixs.biz/fix-dictionary/5.0.sp2/tagnum_549.html) - Type of cross order (AON, IOC, OneSide, SamePrice)
+- [CrossPrioritization (550)](https://www.onixs.biz/fix-dictionary/5.0.sp2/tagnum_550.html) - Cross order prioritization (None, BuySide, SellSide)
+
 ### Repeating Groups
 - [Repeating groups in FIX Protocol - JavaRevisited](https://javarevisited.blogspot.com/2011/02/repeating-groups-in-fix-protcol.html) - Overview and examples of repeating group format
 - [FIX Repeating Group - OnixS](https://ref.onixs.biz/fix-repeating-group.html) - Technical specification

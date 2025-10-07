@@ -1,4 +1,4 @@
-# fixie
+# Fixie
 
 ![Red fixie bicycle](img/fixie_bicycle.png "Fixie Bicycle")
 
@@ -13,6 +13,7 @@ FIX ([Financial Information eXchange](https://www.fixtrading.org/online-specific
 ```bash
 cargo build --release -p fixie
 ```
+This will put the fixie binary in _./target/release_.
 
 #### Usage
 ```bash
@@ -31,35 +32,78 @@ interpreting the pipes (|).
 
 ```
 ╔════════════════════════════════════════════════════════╗
-║  FIX Message: NewOrderSingle
+║  FIX Message: NewOrderSingle  
 ╚════════════════════════════════════════════════════════╝
 
 Standard Header:
 ────────────────
      8 (BeginString         ): FIXT.1.1
-     9 (BodyLength          ): 100
+     9 (BodyLength          ): 178
+    34 (MsgSeqNum           ): 1
     35 (MsgType             ): D (NewOrderSingle)
-  1128 (ApplVerID           ): 9 (FIX.5.0SP2)
+    49 (SenderCompID        ): TRADER1
+    52 (SendingTime         ): 20251006-15:00:00.000
+    56 (TargetCompID        ): MARKET1
 
 Message Body:
 ─────────────
-    11 (ClOrdID             ): ORDER123
-    38 (OrderQty            ): 100
+    11 (ClOrdID             ): ORD00123
+    21 (Unknown             ): 1
+    38 (OrderQty            ): 500
     40 (OrdType             ): 2 (Limit)
-    44 (Price               ): 1.25
+    44 (Price               ): 310.75
     54 (Side                ): 1 (Buy)
-    55 (Symbol              ): EURUSD
-    60 (TransactTime        ): 20250107-12:30:00.000
+    55 (Symbol              ): MSFT
+    59 (Unknown             ): 0
+    60 (TransactTime        ): 20251006-15:00:00.000
+   447 (Unknown             ): D
+   448 (Unknown             ): DESK22
+   452 (Unknown             ): 24
+   453 (Unknown             ): 2
+  9001 (Unknown             ): TRUE
+  9435 (Unknown             ): ALGOTYPE1
+  9436 (Unknown             ): VWAP
 
 Trailer:
 ────────
-    10 (CheckSum            ): 123
+    10 (CheckSum            ): 156
 ```
 
-Display raw tag-value pairs:
+#### --raw Flag Usage
+Use the `--raw` flag to display raw tag-value pairs, one per line:
 
 ```bash
-fixie --raw < message.fix
+fixie --raw '8=FIXT.1.1|9=178|35=D|49=TRADER1|56=MARKET1|34=1|52=20251006-15:00:00.000|11=ORD00123|21=1|55=MSFT|54=1|38=500|40=2|44=310.75|59=0|60=20251006-15:00:00.000|453=2|448=TRADER1|447=D|452=1|448=DESK22|447=D|452=24|9001=TRUE|9435=ALGOTYPE1|9436=VWAP|10=156|'
+```
+
+#### --raw Flag Output
+
+```bash
+Raw FIX Message:
+8=FIXT.1.1
+9=178
+10=156
+11=ORD00123
+21=1
+34=1
+35=D
+38=500
+40=2
+44=310.75
+49=TRADER1
+52=20251006-15:00:00.000
+54=1
+55=MSFT
+56=MARKET1
+59=0
+60=20251006-15:00:00.000
+447=D
+448=DESK22
+452=24
+453=2
+9001=TRUE
+9435=ALGOTYPE1
+9436=VWAP
 ```
 
 ### Rust Library
@@ -138,4 +182,4 @@ let wire_format = raw.encode();
 
 ## Bugs
 
-Bug? Submit an issue.
+Bug? [Submit an issue](https://github.com/KatrinaE/fixie/issues).

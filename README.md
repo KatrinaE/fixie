@@ -1,5 +1,7 @@
 # fixie
 
+![Red fixie bicycle](img/fixie_bicycle.png "Fixie Bicycle")
+
 A CLI tool and Rust library for parsing and working with
 FIX ([Financial Information eXchange](https://www.fixtrading.org/online-specification/) protocol messages.
 

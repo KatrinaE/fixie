@@ -1150,6 +1150,8 @@ pub enum FixMessage {
     ExecutionReport(ExecutionReport),
     ExecutionAcknowledgement(ExecutionAcknowledgement),
     OrderCancelReject(OrderCancelReject),
+    OrderMassCancelRequest(OrderMassCancelRequest),
+    OrderMassCancelReport(OrderMassCancelReport),
     MarketDataRequest(MarketDataRequest),
     MarketDataSnapshot(MarketDataSnapshot),
 }
@@ -1168,6 +1170,8 @@ impl FixMessage {
             FixMessage::ExecutionReport(_) => MsgType::ExecutionReport,
             FixMessage::ExecutionAcknowledgement(_) => MsgType::ExecutionAcknowledgement,
             FixMessage::OrderCancelReject(_) => MsgType::OrderCancelReject,
+            FixMessage::OrderMassCancelRequest(_) => MsgType::OrderMassCancelRequest,
+            FixMessage::OrderMassCancelReport(_) => MsgType::OrderMassCancelReport,
             FixMessage::MarketDataRequest(_) => MsgType::MarketDataRequest,
             FixMessage::MarketDataSnapshot(_) => MsgType::MarketDataSnapshotFullRefresh,
         }

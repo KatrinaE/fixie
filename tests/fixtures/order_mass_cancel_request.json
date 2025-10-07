@@ -1,0 +1,6 @@
+{
+  "cl_ord_id": "MASSCANCEL001",
+  "mass_cancel_request_type": "CancelAllOrders",
+  "transact_time": "2025-01-07T14:00:00.123Z",
+  "text": "Cancel all open orders"
+}

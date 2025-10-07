@@ -76,6 +76,8 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::OrderCancelReject => "OrderCancelReject",
             MsgType::ExecutionReport => "ExecutionReport",
             MsgType::ExecutionAcknowledgement => "ExecutionAcknowledgement",
+            MsgType::OrderMassCancelRequest => "OrderMassCancelRequest",
+            MsgType::OrderMassCancelReport => "OrderMassCancelReport",
             MsgType::MarketDataRequest => "MarketDataRequest",
             MsgType::MarketDataSnapshotFullRefresh => "MarketDataSnapshotFullRefresh",
         })

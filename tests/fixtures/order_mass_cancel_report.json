@@ -1,0 +1,9 @@
+{
+  "order_id": "MASS123",
+  "cl_ord_id": "MASSCANCEL001",
+  "mass_cancel_request_type": "CancelAllOrders",
+  "mass_cancel_response": "CancelAllOrders",
+  "total_affected_orders": 15,
+  "transact_time": "2025-01-07T14:00:01.456Z",
+  "text": "Cancelled 15 orders"
+}

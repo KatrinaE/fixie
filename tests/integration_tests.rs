@@ -1,4 +1,4 @@
-use fixie::{RawFixMessage, NewOrderSingle, OrderCancelRequest, OrderCancelReplaceRequest, OrderCancelReject, OrderStatusRequest, DontKnowTrade, ExecutionAcknowledgement, Side, OrdType, OrdStatus, DKReason, ExecAckStatus};
+use fixie::{RawFixMessage, NewOrderSingle, OrderCancelRequest, OrderCancelReplaceRequest, OrderCancelReject, OrderStatusRequest, DontKnowTrade, ExecutionAcknowledgement, OrderMassCancelRequest, OrderMassCancelReport, Side, OrdType, OrdStatus, DKReason, ExecAckStatus, MassCancelRequestType, MassCancelResponse};
 use std::fs;
 use std::path::PathBuf;
 use serde_json::Value;
@@ -502,4 +502,111 @@ fn test_order_cancel_reject_round_trip() {
     assert_eq!(raw.get_field(41), Some("ORD0001"));
     assert_eq!(raw.get_field(39), Some("2"));
     assert_eq!(raw.get_field(102), Some("1"));
+}
+
+#[test]
+fn test_parse_order_mass_cancel_request() {
+    let fix_msg = load_fixture("order_mass_cancel_request", "fix");
+    let expected_json: Value = serde_json::from_str(&load_fixture("order_mass_cancel_request", "json"))
+        .expect("Failed to parse expected JSON");
+
+    // Parse the message
+    let parsed = RawFixMessage::parse(&fix_msg).expect("Failed to parse FIX message");
+
+    // Verify message type
+    assert_eq!(parsed.get_field(35), Some("q")); // OrderMassCancelRequest
+
+    // Verify body fields match expected JSON
+    assert_eq!(parsed.get_field(11).unwrap(), expected_json["cl_ord_id"].as_str().unwrap());
+    assert_eq!(parsed.get_field(530).unwrap(), "7"); // MassCancelRequestType::CancelAllOrders
+}
+
+#[test]
+fn test_order_mass_cancel_request_typed_conversion() {
+    let fix_msg = load_fixture("order_mass_cancel_request", "fix");
+    let parsed = RawFixMessage::parse(&fix_msg).expect("Failed to parse FIX message");
+
+    // Convert to typed message
+    let req = OrderMassCancelRequest::from_raw(&parsed)
+        .expect("Failed to convert to OrderMassCancelRequest");
+
+    // Verify typed fields
+    assert_eq!(req.cl_ord_id, "MASSCANCEL001");
+    assert_eq!(req.mass_cancel_request_type, MassCancelRequestType::CancelAllOrders);
+    assert_eq!(req.text, Some("Cancel all open orders".to_string()));
+}
+
+#[test]
+fn test_order_mass_cancel_request_round_trip() {
+    let fix_msg = load_fixture("order_mass_cancel_request", "fix");
+
+    // Parse to typed message
+    let parsed1 = RawFixMessage::parse(&fix_msg).expect("Failed to parse FIX message");
+    let req = OrderMassCancelRequest::from_raw(&parsed1)
+        .expect("Failed to convert to OrderMassCancelRequest");
+
+    // Convert back to raw
+    let raw = req.to_raw();
+
+    // Verify critical fields are preserved
+    assert_eq!(raw.get_field(11), Some("MASSCANCEL001"));
+    assert_eq!(raw.get_field(530), Some("7"));
+}
+
+#[test]
+fn test_parse_order_mass_cancel_report() {
+    let fix_msg = load_fixture("order_mass_cancel_report", "fix");
+    let expected_json: Value = serde_json::from_str(&load_fixture("order_mass_cancel_report", "json"))
+        .expect("Failed to parse expected JSON");
+
+    // Parse the message
+    let parsed = RawFixMessage::parse(&fix_msg).expect("Failed to parse FIX message");
+
+    // Verify message type
+    assert_eq!(parsed.get_field(35), Some("r")); // OrderMassCancelReport
+
+    // Verify body fields match expected JSON
+    assert_eq!(parsed.get_field(37).unwrap(), expected_json["order_id"].as_str().unwrap());
+    assert_eq!(parsed.get_field(11).unwrap(), expected_json["cl_ord_id"].as_str().unwrap());
+    assert_eq!(parsed.get_field(530).unwrap(), "7"); // MassCancelRequestType::CancelAllOrders
+    assert_eq!(parsed.get_field(531).unwrap(), "7"); // MassCancelResponse::CancelAllOrders
+    assert_eq!(parsed.get_field(533).unwrap(), "15"); // total_affected_orders
+}
+
+#[test]
+fn test_order_mass_cancel_report_typed_conversion() {
+    let fix_msg = load_fixture("order_mass_cancel_report", "fix");
+    let parsed = RawFixMessage::parse(&fix_msg).expect("Failed to parse FIX message");
+
+    // Convert to typed message
+    let report = OrderMassCancelReport::from_raw(&parsed)
+        .expect("Failed to convert to OrderMassCancelReport");
+
+    // Verify typed fields
+    assert_eq!(report.order_id, "MASS123");
+    assert_eq!(report.cl_ord_id, Some("MASSCANCEL001".to_string()));
+    assert_eq!(report.mass_cancel_request_type, MassCancelRequestType::CancelAllOrders);
+    assert_eq!(report.mass_cancel_response, MassCancelResponse::CancelAllOrders);
+    assert_eq!(report.total_affected_orders, Some(15));
+    assert_eq!(report.text, Some("Cancelled 15 orders".to_string()));
+}
+
+#[test]
+fn test_order_mass_cancel_report_round_trip() {
+    let fix_msg = load_fixture("order_mass_cancel_report", "fix");
+
+    // Parse to typed message
+    let parsed1 = RawFixMessage::parse(&fix_msg).expect("Failed to parse FIX message");
+    let report = OrderMassCancelReport::from_raw(&parsed1)
+        .expect("Failed to convert to OrderMassCancelReport");
+
+    // Convert back to raw
+    let raw = report.to_raw();
+
+    // Verify critical fields are preserved
+    assert_eq!(raw.get_field(37), Some("MASS123"));
+    assert_eq!(raw.get_field(11), Some("MASSCANCEL001"));
+    assert_eq!(raw.get_field(530), Some("7"));
+    assert_eq!(raw.get_field(531), Some("7"));
+    assert_eq!(raw.get_field(533), Some("15"));
 }

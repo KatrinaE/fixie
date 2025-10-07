@@ -122,3 +122,7 @@ let wire_format = raw.encode();
 - OrderCancelReject (9)
 - MarketDataRequest (V)
 - MarketDataSnapshotFullRefresh (W)
+
+## Bugs
+
+Bug? Submit an issue.

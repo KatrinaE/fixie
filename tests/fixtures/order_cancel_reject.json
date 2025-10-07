@@ -1,0 +1,8 @@
+{
+  "order_id": "EX12345",
+  "cl_ord_id": "CANCEL001",
+  "orig_cl_ord_id": "ORD0001",
+  "ord_status": "Filled",
+  "cxl_rej_reason": 1,
+  "text": "Order already filled"
+}

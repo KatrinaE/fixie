@@ -1,0 +1,11 @@
+{
+  "order_id": "ORD123",
+  "exec_id": "EXEC456",
+  "dk_reason": "NoMatchingOrder",
+  "symbol": "MSFT",
+  "side": "Sell",
+  "order_qty": 100.0,
+  "last_qty": 100.0,
+  "last_px": 250.50,
+  "text": "No matching order found"
+}

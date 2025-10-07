@@ -1,0 +1,24 @@
+{
+  "header": {
+    "begin_string": "FIXT.1.1",
+    "body_length": "150",
+    "msg_type": "D",
+    "sender_comp_id": "BUYER",
+    "target_comp_id": "SELLER",
+    "msg_seq_num": "1",
+    "sending_time": "20251006-15:30:00.000",
+    "appl_ver_id": "9"
+  },
+  "body": {
+    "cl_ord_id": "ORD0001",
+    "symbol": "AAPL",
+    "side": "1",
+    "order_qty": "100",
+    "ord_type": "2",
+    "price": "150.25",
+    "transact_time": "20251006-15:30:00.000"
+  },
+  "trailer": {
+    "check_sum": "123"
+  }
+}

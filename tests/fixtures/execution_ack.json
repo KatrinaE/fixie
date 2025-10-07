@@ -1,0 +1,13 @@
+{
+  "order_id": "ORD789",
+  "exec_id": "EXEC101",
+  "exec_ack_status": "Accepted",
+  "symbol": "GOOGL",
+  "side": "Buy",
+  "order_qty": 50.0,
+  "cl_ord_id": "CLORD456",
+  "last_qty": 50.0,
+  "last_px": 2800.00,
+  "cum_qty": 50.0,
+  "avg_px": 2800.00
+}

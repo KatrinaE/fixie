@@ -1,0 +1,29 @@
+[package]
+name = "fixie"
+version = "0.1.0"
+edition = "2021"
+authors = ["Katrina"]
+description = "FIX protocol parser and message types for FIXT 1.1 + FIX 5.0 SP2"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/katrinaowner/fixie"
+keywords = ["fix", "protocol", "trading", "finance"]
+categories = ["parsing", "finance"]
+
+[[bin]]
+name = "fixie"
+path = "src/bin/fixie.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+ahash = "0.8"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "fix_benchmarks"
+harness = false

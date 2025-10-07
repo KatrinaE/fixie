@@ -113,13 +113,26 @@ let wire_format = raw.encode();
 
 ## Supported Message Types
 
+### Session Layer
 - Logon (A)
 - Logout (5)
 - Heartbeat (0)
+
+### Single General Order Handling
 - NewOrderSingle (D)
-- OrderCancelRequest (F)
 - ExecutionReport (8)
+- DontKnowTrade (Q)
+- OrderCancelRequest (F)
 - OrderCancelReject (9)
+- OrderCancelReplaceRequest (G)
+- OrderStatusRequest (H)
+- ExecutionAcknowledgement (BN)
+
+### Order Mass Handling
+- OrderMassCancelRequest (q)
+- OrderMassCancelReport (r)
+
+### Market Data
 - MarketDataRequest (V)
 - MarketDataSnapshotFullRefresh (W)
 

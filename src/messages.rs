@@ -27,6 +27,15 @@ pub enum MsgType {
     CrossOrderCancelReplaceRequest, // t (lowercase)
     MarketDataRequest,        // V
     MarketDataSnapshotFullRefresh, // W
+    // Program Trading / List Trading
+    NewOrderList,             // E
+    ListStatus,               // N
+    ListExecute,              // L
+    ListCancelRequest,        // K
+    ListStatusRequest,        // M
+    BidRequest,               // k (lowercase)
+    BidResponse,              // l (lowercase)
+    ListStrikePrice,          // m (lowercase)
 }
 
 impl MsgType {
@@ -53,6 +62,14 @@ impl MsgType {
             MsgType::CrossOrderCancelReplaceRequest => "t",
             MsgType::MarketDataRequest => "V",
             MsgType::MarketDataSnapshotFullRefresh => "W",
+            MsgType::NewOrderList => "E",
+            MsgType::ListStatus => "N",
+            MsgType::ListExecute => "L",
+            MsgType::ListCancelRequest => "K",
+            MsgType::ListStatusRequest => "M",
+            MsgType::BidRequest => "k",
+            MsgType::BidResponse => "l",
+            MsgType::ListStrikePrice => "m",
         }
     }
 
@@ -79,6 +96,14 @@ impl MsgType {
             "t" => Some(MsgType::CrossOrderCancelReplaceRequest),
             "V" => Some(MsgType::MarketDataRequest),
             "W" => Some(MsgType::MarketDataSnapshotFullRefresh),
+            "E" => Some(MsgType::NewOrderList),
+            "N" => Some(MsgType::ListStatus),
+            "L" => Some(MsgType::ListExecute),
+            "K" => Some(MsgType::ListCancelRequest),
+            "M" => Some(MsgType::ListStatusRequest),
+            "k" => Some(MsgType::BidRequest),
+            "l" => Some(MsgType::BidResponse),
+            "m" => Some(MsgType::ListStrikePrice),
             _ => None,
         }
     }
@@ -1531,6 +1556,9 @@ pub enum FixMessage {
     CrossOrderCancelReplaceRequest(CrossOrderCancelReplaceRequest),
     MarketDataRequest(MarketDataRequest),
     MarketDataSnapshot(MarketDataSnapshot),
+    // Program Trading
+    NewOrderList(crate::program_trading::NewOrderList),
+    ListStatus(crate::program_trading::ListStatus),
 }
 
 impl FixMessage {
@@ -1554,6 +1582,8 @@ impl FixMessage {
             FixMessage::CrossOrderCancelReplaceRequest(_) => MsgType::CrossOrderCancelReplaceRequest,
             FixMessage::MarketDataRequest(_) => MsgType::MarketDataRequest,
             FixMessage::MarketDataSnapshot(_) => MsgType::MarketDataSnapshotFullRefresh,
+            FixMessage::NewOrderList(_) => MsgType::NewOrderList,
+            FixMessage::ListStatus(_) => MsgType::ListStatus,
         }
     }
 }

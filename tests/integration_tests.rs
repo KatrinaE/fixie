@@ -610,3 +610,267 @@ fn test_order_mass_cancel_report_round_trip() {
     assert_eq!(raw.get_field(531), Some("7"));
     assert_eq!(raw.get_field(533), Some("15"));
 }
+// ============================================================================
+// Program Trading / List Trading Tests
+// ============================================================================
+
+#[test]
+fn test_parse_new_order_list() {
+    // NewOrderList with basic fields
+    let msg = "8=FIXT.1.1|9=100|35=E|66=LIST123|394=2|68=3|415=30|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse NewOrderList");
+
+    assert_eq!(parsed.get_field(35), Some("E")); // MsgType
+    assert_eq!(parsed.get_field(66), Some("LIST123")); // ListID
+    assert_eq!(parsed.get_field(394), Some("2")); // BidType = Disclosed
+    assert_eq!(parsed.get_field(68), Some("3")); // TotNoOrders
+    assert_eq!(parsed.get_field(415), Some("30")); // ProgPeriodInterval
+}
+
+#[test]
+fn test_new_order_list_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=E|66=LIST456|390=BID789|394=1|414=1|68=5|893=Y|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = fixie::NewOrderList::from_raw(&parsed).expect("Failed to convert to NewOrderList");
+
+    assert_eq!(typed.list_id, "LIST456");
+    assert_eq!(typed.bid_id, Some("BID789".to_string()));
+    assert_eq!(typed.bid_type, fixie::BidType::NonDisclosed);
+    assert_eq!(typed.prog_rpt_reqs, Some(fixie::ProgRptReqs::BuySideRequests));
+    assert_eq!(typed.tot_no_orders, 5);
+    assert_eq!(typed.last_fragment, Some(true));
+}
+
+#[test]
+fn test_new_order_list_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=E|66=LISTRT|394=3|68=10|433=1|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = fixie::NewOrderList::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+
+    // Verify round-trip preserves key fields
+    assert_eq!(raw.get_field(66), Some("LISTRT"));
+    assert_eq!(raw.get_field(394), Some("3")); // BidType::NoBiddingProcess
+    assert_eq!(raw.get_field(68), Some("10"));
+    assert_eq!(raw.get_field(433), Some("1")); // ListExecInstType::Immediate
+}
+
+#[test]
+fn test_parse_list_status() {
+    let msg = "8=FIXT.1.1|9=100|35=N|66=LIST123|429=1|82=3|431=2|83=1|68=5|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse ListStatus");
+
+    assert_eq!(parsed.get_field(35), Some("N")); // MsgType
+    assert_eq!(parsed.get_field(66), Some("LIST123")); // ListID
+    assert_eq!(parsed.get_field(429), Some("1")); // ListStatusType = Ack
+    assert_eq!(parsed.get_field(82), Some("3")); // NoRpts
+    assert_eq!(parsed.get_field(431), Some("2")); // ListOrderStatus
+    assert_eq!(parsed.get_field(83), Some("1")); // RptSeq
+    assert_eq!(parsed.get_field(68), Some("5")); // TotNoOrders
+}
+
+#[test]
+fn test_list_status_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=N|66=STAT999|429=4|82=1|431=3|83=2|68=10|444=Processing|60=20250108-12:00:00|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = fixie::ListStatus::from_raw(&parsed).expect("Failed to convert to ListStatus");
+
+    assert_eq!(typed.list_id, "STAT999");
+    assert_eq!(typed.list_status_type, fixie::ListStatusType::ExecStarted);
+    assert_eq!(typed.no_rpts, 1);
+    assert_eq!(typed.list_order_status, fixie::ListOrderStatus::Executing);
+    assert_eq!(typed.rpt_seq, 2);
+    assert_eq!(typed.tot_no_orders, 10);
+    assert_eq!(typed.list_status_text, Some("Processing".to_string()));
+    assert_eq!(typed.transact_time, Some("20250108-12:00:00".to_string()));
+}
+
+#[test]
+fn test_list_status_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=N|66=RTLIST|429=5|82=2|431=6|83=3|68=20|893=N|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = fixie::ListStatus::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+
+    // Verify round-trip preserves key fields
+    assert_eq!(raw.get_field(66), Some("RTLIST"));
+    assert_eq!(raw.get_field(429), Some("5")); // ListStatusType::AllDone
+    assert_eq!(raw.get_field(82), Some("2"));
+    assert_eq!(raw.get_field(431), Some("6")); // ListOrderStatus::AllDone
+    assert_eq!(raw.get_field(83), Some("3"));
+    assert_eq!(raw.get_field(68), Some("20"));
+    assert_eq!(raw.get_field(893), Some("N")); // LastFragment = false
+}
+
+#[test]
+fn test_new_order_list_with_nested_parties() {
+    // NewOrderList with ListOrdGrp containing nested Parties group
+    let msg = "8=FIXT.1.1|9=200|35=E|66=LIST001|394=2|68=1|\
+73=1|11=ORDER1|67=1|55=AAPL|54=1|38=100|\
+453=1|448=BROKER1|447=D|452=1|10=000|";
+
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    // Verify list-level fields
+    assert_eq!(parsed.get_field(35), Some("E"));
+    assert_eq!(parsed.get_field(66), Some("LIST001"));
+    assert_eq!(parsed.get_field(68), Some("1")); // TotNoOrders
+
+    // Verify ListOrdGrp exists
+    let list_ord_grp = parsed.groups.get(&73).expect("Should have ListOrdGrp");
+    assert_eq!(list_ord_grp.len(), 1);
+
+    let order = &parsed.group_arena[list_ord_grp[0]];
+    assert_eq!(order.fields.get(&11), Some(&"ORDER1".to_string())); // ClOrdID
+    assert_eq!(order.fields.get(&55), Some(&"AAPL".to_string())); // Symbol
+    assert_eq!(order.fields.get(&38), Some(&"100".to_string())); // OrderQty
+
+    // Verify nested Parties group within the order
+    let parties = order.nested_groups.get(&453).expect("Should have Parties");
+    assert_eq!(parties.len(), 1);
+
+    let party = &parsed.group_arena[parties[0]];
+    assert_eq!(party.fields.get(&448), Some(&"BROKER1".to_string())); // PartyID
+    assert_eq!(party.fields.get(&447), Some(&"D".to_string())); // PartyIDSource
+    assert_eq!(party.fields.get(&452), Some(&"1".to_string())); // PartyRole
+}
+
+#[test]
+fn test_new_order_list_with_doubly_nested_parties() {
+    // NewOrderList → ListOrdGrp → Parties → PartySubIDsGrp (2 levels of nesting)
+    let msg = "8=FIXT.1.1|9=250|35=E|66=LIST002|394=2|68=1|\
+73=1|11=ORDER2|67=1|55=MSFT|54=2|38=200|\
+453=1|448=TRADER1|447=D|452=1|802=2|523=SUB1|803=1|523=SUB2|803=2|10=000|";
+
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let list_ord_grp = parsed.groups.get(&73).expect("Should have ListOrdGrp");
+    let order = &parsed.group_arena[list_ord_grp[0]];
+
+    // Get Parties group
+    let parties = order.nested_groups.get(&453).expect("Should have Parties");
+    let party = &parsed.group_arena[parties[0]];
+    assert_eq!(party.fields.get(&448), Some(&"TRADER1".to_string()));
+
+    // Verify PartySubIDsGrp (nested within Parties)
+    let party_sub_ids = party.nested_groups.get(&802).expect("Should have PartySubIDsGrp");
+    assert_eq!(party_sub_ids.len(), 2);
+
+    let sub1 = &parsed.group_arena[party_sub_ids[0]];
+    assert_eq!(sub1.fields.get(&523), Some(&"SUB1".to_string())); // PartySubID
+    assert_eq!(sub1.fields.get(&803), Some(&"1".to_string())); // PartySubIDType
+
+    let sub2 = &parsed.group_arena[party_sub_ids[1]];
+    assert_eq!(sub2.fields.get(&523), Some(&"SUB2".to_string()));
+    assert_eq!(sub2.fields.get(&803), Some(&"2".to_string()));
+}
+
+#[test]
+fn test_new_order_list_with_triple_nesting() {
+    // NewOrderList → ListOrdGrp → PreAllocGrp → NestedParties2 (3 levels!)
+    let msg = "8=FIXT.1.1|9=300|35=E|66=LIST003|394=2|68=1|\
+73=1|11=ORDER3|67=1|55=GOOGL|54=1|38=50|\
+78=1|79=ACCOUNT1|80=50|\
+756=1|757=PARTY1|758=D|759=1|10=000|";
+
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let list_ord_grp = parsed.groups.get(&73).expect("Should have ListOrdGrp");
+    let order = &parsed.group_arena[list_ord_grp[0]];
+
+    // Level 1: PreAllocGrp within order
+    let pre_alloc = order.nested_groups.get(&78).expect("Should have PreAllocGrp");
+    assert_eq!(pre_alloc.len(), 1);
+
+    let alloc = &parsed.group_arena[pre_alloc[0]];
+    assert_eq!(alloc.fields.get(&79), Some(&"ACCOUNT1".to_string())); // AllocAccount
+    assert_eq!(alloc.fields.get(&80), Some(&"50".to_string())); // AllocQty
+
+    // Level 2: NestedParties2 within PreAllocGrp
+    let nested_parties = alloc.nested_groups.get(&756).expect("Should have NestedParties2");
+    assert_eq!(nested_parties.len(), 1);
+
+    let party = &parsed.group_arena[nested_parties[0]];
+    assert_eq!(party.fields.get(&757), Some(&"PARTY1".to_string())); // Nested2PartyID
+    assert_eq!(party.fields.get(&758), Some(&"D".to_string())); // Nested2PartyIDSource
+    assert_eq!(party.fields.get(&759), Some(&"1".to_string())); // Nested2PartyRole
+}
+
+#[test]
+fn test_new_order_list_round_trip_with_groups() {
+    // Full round-trip with nested groups
+    let msg = "8=FIXT.1.1|9=200|35=E|66=RTLIST|394=2|68=2|\
+73=2|11=ORD1|67=1|55=AAPL|38=100|11=ORD2|67=2|55=MSFT|38=200|10=000|";
+
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let encoded = parsed.encode();
+    let reparsed = RawFixMessage::parse(&encoded).expect("Failed to reparse");
+
+    // Verify top-level fields preserved
+    assert_eq!(reparsed.get_field(66), Some("RTLIST"));
+    assert_eq!(reparsed.get_field(68), Some("2"));
+
+    // Verify group structure preserved
+    let groups = reparsed.groups.get(&73).expect("Should have ListOrdGrp");
+    assert_eq!(groups.len(), 2);
+
+    let order1 = &reparsed.group_arena[groups[0]];
+    assert_eq!(order1.fields.get(&11), Some(&"ORD1".to_string()));
+    assert_eq!(order1.fields.get(&55), Some(&"AAPL".to_string()));
+
+    let order2 = &reparsed.group_arena[groups[1]];
+    assert_eq!(order2.fields.get(&11), Some(&"ORD2".to_string()));
+    assert_eq!(order2.fields.get(&55), Some(&"MSFT".to_string()));
+}
+
+#[test]
+fn test_program_trading_enum_values() {
+    // Verify all Program Trading enums work correctly
+    use fixie::*;
+
+    // BidType
+    assert_eq!(BidType::NonDisclosed.to_fix(), '1');
+    assert_eq!(BidType::from_fix('2'), Some(BidType::Disclosed));
+
+    // ProgRptReqs
+    assert_eq!(ProgRptReqs::RealTimeExecutions.to_fix(), '3');
+    assert_eq!(ProgRptReqs::from_fix('1'), Some(ProgRptReqs::BuySideRequests));
+
+    // ListExecInstType
+    assert_eq!(ListExecInstType::Immediate.to_fix(), '1');
+    assert_eq!(ListExecInstType::from_fix('5'), Some(ListExecInstType::BuyDrivenCash));
+
+    // ListStatusType
+    assert_eq!(ListStatusType::Ack.to_fix(), '1');
+    assert_eq!(ListStatusType::from_fix('6'), Some(ListStatusType::Alert));
+
+    // ListOrderStatus
+    assert_eq!(ListOrderStatus::InBiddingProcess.to_fix(), '1');
+    assert_eq!(ListOrderStatus::from_fix('6'), Some(ListOrderStatus::AllDone));
+
+    // PriceType (uses &str for multi-digit values)
+    assert_eq!(PriceType::FixedCabinetPrice.to_fix(), "10");
+    assert_eq!(PriceType::from_fix("11"), Some(PriceType::VariableCabinetPrice));
+}
+
+#[test]
+fn test_msg_type_program_trading() {
+    use fixie::MsgType;
+
+    // Verify all Program Trading message types
+    assert_eq!(MsgType::from_fix("E"), Some(MsgType::NewOrderList));
+    assert_eq!(MsgType::from_fix("N"), Some(MsgType::ListStatus));
+    assert_eq!(MsgType::from_fix("L"), Some(MsgType::ListExecute));
+    assert_eq!(MsgType::from_fix("K"), Some(MsgType::ListCancelRequest));
+    assert_eq!(MsgType::from_fix("M"), Some(MsgType::ListStatusRequest));
+    assert_eq!(MsgType::from_fix("k"), Some(MsgType::BidRequest));
+    assert_eq!(MsgType::from_fix("l"), Some(MsgType::BidResponse));
+    assert_eq!(MsgType::from_fix("m"), Some(MsgType::ListStrikePrice));
+
+    // Verify to_fix() round-trip
+    assert_eq!(MsgType::NewOrderList.to_fix(), "E");
+    assert_eq!(MsgType::ListStatus.to_fix(), "N");
+    assert_eq!(MsgType::BidRequest.to_fix(), "k");
+}

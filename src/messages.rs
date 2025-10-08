@@ -25,6 +25,14 @@ pub enum MsgType {
     NewOrderCross,            // s (lowercase)
     CrossOrderCancelRequest,  // u (lowercase)
     CrossOrderCancelReplaceRequest, // t (lowercase)
+    NewOrderList,             // E
+    ListCancelRequest,        // K
+    ListExecute,              // L
+    ListStatusRequest,        // M
+    ListStatus,               // N
+    BidRequest,               // k (lowercase)
+    BidResponse,              // l (lowercase)
+    ListStrikePrice,          // m (lowercase)
     MarketDataRequest,        // V
     MarketDataSnapshotFullRefresh, // W
 }

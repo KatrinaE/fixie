@@ -185,6 +185,26 @@ let wire_format = raw.encode();
 - MarketDataRequest (V)
 - MarketDataSnapshotFullRefresh (W)
 
+### Program Trading / List Trading
+- NewOrderList (E)
+- ListStatus (N)
+- ListExecute (L)
+- ListCancelRequest (K)
+- ListStatusRequest (M)
+- BidRequest (k)
+- BidResponse (l)
+- ListStrikePrice (m)
+
+## Features
+
+### Nested Repeating Groups
+Fixie supports multi-level nested repeating groups with up to 4 levels of nesting:
+- **2-level**: NewOrderList → ListOrdGrp → Parties
+- **3-level**: ListOrdGrp → Parties → PartySubIDsGrp
+- **4-level**: ListOrdGrp → PreAllocGrp → NestedParties2 → NstdPtys2SubGrp
+
+Nested groups use an index-based arena structure for efficient memory layout and cache performance.
+
 ## Bugs
 
 Bug? [Submit an issue](https://github.com/KatrinaE/fixie/issues).

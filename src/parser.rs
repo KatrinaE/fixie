@@ -7,13 +7,35 @@ pub const SOH: char = '\x01'; // Start of header delimiter
 pub const FIXT_1_1: &str = "FIXT.1.1";
 pub const FIX_5_0_SP2: &str = "FIX.5.0SP2";
 
+/// ID type for referencing group entries in the arena
+pub type GroupEntryId = usize;
+
+/// A single entry in a repeating group, which can contain nested groups
+#[derive(Debug, Clone)]
+pub struct GroupEntry {
+    /// Fields belonging to this group entry
+    pub fields: HashMap<u32, String>,
+    /// Nested repeating groups: NoXXX tag -> Vec of child entry IDs
+    pub nested_groups: HashMap<u32, Vec<GroupEntryId>>,
+}
+
+impl GroupEntry {
+    pub fn new() -> Self {
+        Self {
+            fields: HashMap::new(),
+            nested_groups: HashMap::new(),
+        }
+    }
+}
+
 /// Represents a parsed FIX message as a collection of tag-value pairs
 #[derive(Debug, Clone)]
 pub struct RawFixMessage {
     pub fields: HashMap<u32, String>,
-    /// Repeating groups: NoXXX tag -> Vec of group entries
-    /// Each entry is a HashMap of tag -> value for that group instance
-    pub groups: HashMap<u32, Vec<HashMap<u32, String>>>,
+    /// Top-level repeating groups: NoXXX tag -> Vec of entry IDs
+    pub groups: HashMap<u32, Vec<GroupEntryId>>,
+    /// Arena storing all group entries (flat storage for cache efficiency)
+    pub group_arena: Vec<GroupEntry>,
 }
 
 impl RawFixMessage {
@@ -21,6 +43,7 @@ impl RawFixMessage {
         Self {
             fields: HashMap::new(),
             groups: HashMap::new(),
+            group_arena: Vec::new(),
         }
     }
 
@@ -39,12 +62,24 @@ impl RawFixMessage {
         self.get_field(tag)?.parse().ok()
     }
 
-    pub fn get_group(&self, num_in_group_tag: u32) -> Option<&Vec<HashMap<u32, String>>> {
+    /// Get the entry IDs for a top-level repeating group
+    pub fn get_group(&self, num_in_group_tag: u32) -> Option<&Vec<GroupEntryId>> {
         self.groups.get(&num_in_group_tag)
     }
 
-    pub fn set_group(&mut self, num_in_group_tag: u32, entries: Vec<HashMap<u32, String>>) {
-        self.groups.insert(num_in_group_tag, entries);
+    /// Get a group entry from the arena by ID
+    pub fn get_group_entry(&self, entry_id: GroupEntryId) -> Option<&GroupEntry> {
+        self.group_arena.get(entry_id)
+    }
+
+    /// Get a mutable group entry from the arena by ID
+    pub fn get_group_entry_mut(&mut self, entry_id: GroupEntryId) -> Option<&mut GroupEntry> {
+        self.group_arena.get_mut(entry_id)
+    }
+
+    /// Set a top-level repeating group
+    pub fn set_group(&mut self, num_in_group_tag: u32, entry_ids: Vec<GroupEntryId>) {
+        self.groups.insert(num_in_group_tag, entry_ids);
     }
 
     /// Parse a FIX message from wire format
@@ -59,6 +94,7 @@ impl RawFixMessage {
 
         let mut fields = HashMap::new();
         let mut groups = HashMap::new();
+        let mut group_arena = Vec::new();
 
         // Auto-detect delimiter: SOH (\x01) or pipe (|)
         let delimiter = if input.contains(SOH) {
@@ -120,12 +156,12 @@ impl RawFixMessage {
 
                 if let Some(delimiter_tag) = get_delimiter_tag(num_in_group_tag, msg_type_str) {
                     if let Some(member_tags) = get_member_tags(num_in_group_tag, msg_type_str) {
-                        // Parse the repeating group entries
-                        let mut group_entries = Vec::new();
+                        // Parse the repeating group entries (flat, no nesting yet)
+                        let mut group_entry_ids = Vec::new();
                         i += 1; // Move past the NoXXX tag
 
                         for _ in 0..count {
-                            let mut entry = HashMap::new();
+                            let mut entry_fields = HashMap::new();
 
                             // Collect tags for this group entry until we hit the delimiter again or run out
                             while i < tag_value_pairs.len() {
@@ -133,11 +169,11 @@ impl RawFixMessage {
 
                                 // Check if this tag belongs to the group
                                 if member_tags.contains(entry_tag) {
-                                    entry.insert(*entry_tag, entry_value.clone());
+                                    entry_fields.insert(*entry_tag, entry_value.clone());
                                     i += 1;
 
                                     // If we've collected all tags for this entry or hit the delimiter for next entry
-                                    if i < tag_value_pairs.len() && tag_value_pairs[i].0 == delimiter_tag && !entry.is_empty() {
+                                    if i < tag_value_pairs.len() && tag_value_pairs[i].0 == delimiter_tag && !entry_fields.is_empty() {
                                         break;
                                     }
                                 } else {
@@ -146,12 +182,18 @@ impl RawFixMessage {
                                 }
                             }
 
-                            if !entry.is_empty() {
-                                group_entries.push(entry);
+                            if !entry_fields.is_empty() {
+                                // Create GroupEntry and add to arena
+                                let entry_id = group_arena.len();
+                                group_arena.push(GroupEntry {
+                                    fields: entry_fields,
+                                    nested_groups: HashMap::new(), // No nesting in Goal 2
+                                });
+                                group_entry_ids.push(entry_id);
                             }
                         }
 
-                        groups.insert(num_in_group_tag, group_entries);
+                        groups.insert(num_in_group_tag, group_entry_ids);
                         continue; // Don't increment i, we already moved it
                     }
                 }
@@ -171,7 +213,11 @@ impl RawFixMessage {
             return Err(FixParseError::MissingRequiredField(35)); // MsgType
         }
 
-        Ok(Self { fields, groups })
+        Ok(Self {
+            fields,
+            groups,
+            group_arena,
+        })
     }
 
     /// Encode to FIX wire format (FIXT 1.1)
@@ -220,13 +266,15 @@ impl RawFixMessage {
                 }
 
                 // Then output the group entries
-                if let Some(group_entries) = self.groups.get(tag) {
+                if let Some(group_entry_ids) = self.groups.get(tag) {
                     if let Some(member_tags) = get_member_tags(*tag, msg_type_str) {
-                        for entry in group_entries {
-                            // Output tags in the order defined in member_tags
-                            for member_tag in member_tags {
-                                if let Some(value) = entry.get(member_tag) {
-                                    body.push_str(&format!("{}={}{}", member_tag, value, SOH));
+                        for &entry_id in group_entry_ids {
+                            if let Some(entry) = self.group_arena.get(entry_id) {
+                                // Output tags in the order defined in member_tags
+                                for member_tag in member_tags {
+                                    if let Some(value) = entry.fields.get(member_tag) {
+                                        body.push_str(&format!("{}={}{}", member_tag, value, SOH));
+                                    }
                                 }
                             }
                         }
@@ -361,14 +409,16 @@ mod tests {
         assert_eq!(parties.len(), 2);
 
         // First party
-        assert_eq!(parties[0].get(&448), Some(&"TRADER1".to_string()));
-        assert_eq!(parties[0].get(&447), Some(&"D".to_string()));
-        assert_eq!(parties[0].get(&452), Some(&"1".to_string()));
+        let party1 = msg.get_group_entry(parties[0]).unwrap();
+        assert_eq!(party1.fields.get(&448), Some(&"TRADER1".to_string()));
+        assert_eq!(party1.fields.get(&447), Some(&"D".to_string()));
+        assert_eq!(party1.fields.get(&452), Some(&"1".to_string()));
 
         // Second party
-        assert_eq!(parties[1].get(&448), Some(&"DESK22".to_string()));
-        assert_eq!(parties[1].get(&447), Some(&"D".to_string()));
-        assert_eq!(parties[1].get(&452), Some(&"24".to_string()));
+        let party2 = msg.get_group_entry(parties[1]).unwrap();
+        assert_eq!(party2.fields.get(&448), Some(&"DESK22".to_string()));
+        assert_eq!(party2.fields.get(&447), Some(&"D".to_string()));
+        assert_eq!(party2.fields.get(&452), Some(&"24".to_string()));
     }
 
     #[test]
@@ -380,17 +430,30 @@ mod tests {
         msg.set_field(453, "2".to_string()); // NoPartyIDs
 
         // Create party group entries
-        let mut party1 = HashMap::new();
-        party1.insert(448, "TRADER1".to_string());
-        party1.insert(447, "D".to_string());
-        party1.insert(452, "1".to_string());
+        let mut party1_fields = HashMap::new();
+        party1_fields.insert(448, "TRADER1".to_string());
+        party1_fields.insert(447, "D".to_string());
+        party1_fields.insert(452, "1".to_string());
 
-        let mut party2 = HashMap::new();
-        party2.insert(448, "DESK22".to_string());
-        party2.insert(447, "D".to_string());
-        party2.insert(452, "24".to_string());
+        let mut party2_fields = HashMap::new();
+        party2_fields.insert(448, "DESK22".to_string());
+        party2_fields.insert(447, "D".to_string());
+        party2_fields.insert(452, "24".to_string());
 
-        msg.set_group(453, vec![party1, party2]);
+        // Add to arena
+        let party1_id = msg.group_arena.len();
+        msg.group_arena.push(GroupEntry {
+            fields: party1_fields,
+            nested_groups: HashMap::new(),
+        });
+
+        let party2_id = msg.group_arena.len();
+        msg.group_arena.push(GroupEntry {
+            fields: party2_fields,
+            nested_groups: HashMap::new(),
+        });
+
+        msg.set_group(453, vec![party1_id, party2_id]);
 
         let encoded = msg.encode();
 
@@ -411,17 +474,30 @@ mod tests {
         original.set_field(55, "MSFT".to_string());
         original.set_field(453, "2".to_string());
 
-        let mut party1 = HashMap::new();
-        party1.insert(448, "TRADER1".to_string());
-        party1.insert(447, "D".to_string());
-        party1.insert(452, "1".to_string());
+        let mut party1_fields = HashMap::new();
+        party1_fields.insert(448, "TRADER1".to_string());
+        party1_fields.insert(447, "D".to_string());
+        party1_fields.insert(452, "1".to_string());
 
-        let mut party2 = HashMap::new();
-        party2.insert(448, "DESK22".to_string());
-        party2.insert(447, "D".to_string());
-        party2.insert(452, "24".to_string());
+        let mut party2_fields = HashMap::new();
+        party2_fields.insert(448, "DESK22".to_string());
+        party2_fields.insert(447, "D".to_string());
+        party2_fields.insert(452, "24".to_string());
 
-        original.set_group(453, vec![party1, party2]);
+        // Add to arena
+        let party1_id = original.group_arena.len();
+        original.group_arena.push(GroupEntry {
+            fields: party1_fields,
+            nested_groups: HashMap::new(),
+        });
+
+        let party2_id = original.group_arena.len();
+        original.group_arena.push(GroupEntry {
+            fields: party2_fields,
+            nested_groups: HashMap::new(),
+        });
+
+        original.set_group(453, vec![party1_id, party2_id]);
 
         let encoded = original.encode();
         let parsed = RawFixMessage::parse(&encoded).unwrap();
@@ -434,7 +510,11 @@ mod tests {
         // Check groups
         let parties = parsed.get_group(453).unwrap();
         assert_eq!(parties.len(), 2);
-        assert_eq!(parties[0].get(&448), Some(&"TRADER1".to_string()));
-        assert_eq!(parties[1].get(&448), Some(&"DESK22".to_string()));
+
+        let party1 = parsed.get_group_entry(parties[0]).unwrap();
+        assert_eq!(party1.fields.get(&448), Some(&"TRADER1".to_string()));
+
+        let party2 = parsed.get_group_entry(parties[1]).unwrap();
+        assert_eq!(party2.fields.get(&448), Some(&"DESK22".to_string()));
     }
 }

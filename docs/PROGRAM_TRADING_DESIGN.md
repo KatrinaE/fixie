@@ -328,6 +328,16 @@ This demonstrates the need for multi-level nesting support.
 
 ## Implementation Plan
 
+### Summary
+
+- Phase 1: Build ability to represent, encode, and decode nested repeating groups.
+- Phase 2: Add field names (enums) used in program trading types. Example: BidType. See the names in the FIX [Trade Appendix](https://www.fixtrading.org/online-specification/trade-appendix/).
+- Phase 3: Add reusable components used in program trading types. Example: OrderQtyData. See the items listed in the FIX [Global Components](https://www.fixtrading.org/online-specification/global-components/) list.
+- Phase 4: Add repeating group definitions. Example: ListOrdGrp. See the components listed in the "Appendix - ProgramTrading Category" section of the FIX [Trade Appendix](https://www.fixtrading.org/online-specification/trade-appendix/).
+- Phase 5: Add message definitions. Example: NewOrderList. See the messages listed in the "Appendix - ProgramTrading Category" section of the FIX [Trade Appendix](https://www.fixtrading.org/online-specification/trade-appendix/).
+- Phase 6: Integrate everything by adding the new messages to MsgTypeand FixMessage.
+- Phase 7: Testing
+
 ### Phase 1: Infrastructure (Week 1-2)
 
 **Goal:** Support nested repeating groups

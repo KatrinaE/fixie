@@ -156,41 +156,27 @@ impl RawFixMessage {
 
                 if let Some(delimiter_tag) = get_delimiter_tag(num_in_group_tag, msg_type_str) {
                     if let Some(member_tags) = get_member_tags(num_in_group_tag, msg_type_str) {
-                        // Parse the repeating group entries (flat, no nesting yet)
+                        // Parse the repeating group entries (with recursive nesting support)
                         let mut group_entry_ids = Vec::new();
                         i += 1; // Move past the NoXXX tag
 
                         for _ in 0..count {
-                            let mut entry_fields = HashMap::new();
-
-                            // Collect tags for this group entry until we hit the delimiter again or run out
-                            while i < tag_value_pairs.len() {
-                                let (entry_tag, entry_value) = &tag_value_pairs[i];
-
-                                // Check if this tag belongs to the group
-                                if member_tags.contains(entry_tag) {
-                                    entry_fields.insert(*entry_tag, entry_value.clone());
-                                    i += 1;
-
-                                    // If we've collected all tags for this entry or hit the delimiter for next entry
-                                    if i < tag_value_pairs.len() && tag_value_pairs[i].0 == delimiter_tag && !entry_fields.is_empty() {
-                                        break;
-                                    }
-                                } else {
-                                    // Tag doesn't belong to this group, we're done with this entry
-                                    break;
-                                }
+                            if i >= tag_value_pairs.len() {
+                                break;
                             }
 
-                            if !entry_fields.is_empty() {
-                                // Create GroupEntry and add to arena
-                                let entry_id = group_arena.len();
-                                group_arena.push(GroupEntry {
-                                    fields: entry_fields,
-                                    nested_groups: HashMap::new(), // No nesting in Goal 2
-                                });
-                                group_entry_ids.push(entry_id);
-                            }
+                            let (entry_id, consumed) = Self::parse_group_entry(
+                                &tag_value_pairs,
+                                i,
+                                num_in_group_tag,
+                                member_tags,
+                                delimiter_tag,
+                                msg_type_str,
+                                &mut group_arena,
+                            )?;
+
+                            group_entry_ids.push(entry_id);
+                            i += consumed;
                         }
 
                         groups.insert(num_in_group_tag, group_entry_ids);
@@ -218,6 +204,98 @@ impl RawFixMessage {
             groups,
             group_arena,
         })
+    }
+
+    /// Recursively parse a single group entry and its nested groups
+    /// Returns (entry_id, num_consumed_pairs)
+    fn parse_group_entry(
+        tag_value_pairs: &[(u32, String)],
+        start_idx: usize,
+        parent_num_in_group_tag: u32,
+        member_tags: &[u32],
+        delimiter_tag: u32,
+        msg_type: Option<&str>,
+        arena: &mut Vec<GroupEntry>,
+    ) -> Result<(GroupEntryId, usize), FixParseError> {
+        use crate::groups::{is_num_in_group_tag, get_delimiter_tag, get_member_tags, is_nested_group};
+
+        let mut entry_fields = HashMap::new();
+        let mut nested_groups_map: HashMap<u32, Vec<GroupEntryId>> = HashMap::new();
+        let mut i = start_idx;
+
+        // Collect tags for this group entry
+        while i < tag_value_pairs.len() {
+            let (entry_tag, entry_value) = &tag_value_pairs[i];
+
+            // Check if this is a nested NoXXX tag within this group
+            if is_num_in_group_tag(*entry_tag, msg_type)
+                && is_nested_group(parent_num_in_group_tag, *entry_tag, msg_type) {
+
+                let nested_num_in_group_tag = *entry_tag;
+                let nested_count: usize = entry_value.parse()
+                    .map_err(|_| FixParseError::InvalidValue {
+                        tag: *entry_tag,
+                        value: entry_value.clone(),
+                        error: "Invalid nested group count".to_string(),
+                    })?;
+
+                // Store the NoXXX field in the entry
+                entry_fields.insert(*entry_tag, entry_value.clone());
+                i += 1;
+
+                // Recursively parse nested group entries
+                if let Some(nested_delimiter_tag) = get_delimiter_tag(nested_num_in_group_tag, msg_type) {
+                    if let Some(nested_member_tags) = get_member_tags(nested_num_in_group_tag, msg_type) {
+                        let mut nested_entry_ids = Vec::new();
+
+                        for _ in 0..nested_count {
+                            if i >= tag_value_pairs.len() {
+                                break;
+                            }
+
+                            let (nested_entry_id, consumed) = Self::parse_group_entry(
+                                tag_value_pairs,
+                                i,
+                                nested_num_in_group_tag,
+                                nested_member_tags,
+                                nested_delimiter_tag,
+                                msg_type,
+                                arena,
+                            )?;
+
+                            nested_entry_ids.push(nested_entry_id);
+                            i += consumed;
+                        }
+
+                        nested_groups_map.insert(nested_num_in_group_tag, nested_entry_ids);
+                        continue;
+                    }
+                }
+            }
+
+            // Check if this tag belongs to the current group
+            if member_tags.contains(entry_tag) {
+                entry_fields.insert(*entry_tag, entry_value.clone());
+                i += 1;
+
+                // If we hit the delimiter for the next entry, stop
+                if i < tag_value_pairs.len() && tag_value_pairs[i].0 == delimiter_tag && !entry_fields.is_empty() {
+                    break;
+                }
+            } else {
+                // Tag doesn't belong to this group, we're done
+                break;
+            }
+        }
+
+        // Create GroupEntry and add to arena
+        let entry_id = arena.len();
+        arena.push(GroupEntry {
+            fields: entry_fields,
+            nested_groups: nested_groups_map,
+        });
+
+        Ok((entry_id, i - start_idx))
     }
 
     /// Encode to FIX wire format (FIXT 1.1)
@@ -276,6 +354,9 @@ impl RawFixMessage {
                                         body.push_str(&format!("{}={}{}", member_tag, value, SOH));
                                     }
                                 }
+
+                                // Recursively output nested groups
+                                self.encode_nested_groups(&mut body, entry_id, msg_type_str);
                             }
                         }
                     }
@@ -303,6 +384,40 @@ impl RawFixMessage {
         message.push_str(&format!("10={:03}{}", checksum, SOH));
 
         message
+    }
+
+    /// Recursively encode nested groups within a group entry
+    fn encode_nested_groups(&self, body: &mut String, parent_entry_id: GroupEntryId, msg_type: Option<&str>) {
+        use crate::groups::get_member_tags;
+
+        if let Some(parent_entry) = self.group_arena.get(parent_entry_id) {
+            // Sort nested group tags for consistent output
+            let mut nested_tags: Vec<&u32> = parent_entry.nested_groups.keys().collect();
+            nested_tags.sort();
+
+            for &nested_num_in_group_tag in nested_tags {
+                if let Some(nested_entry_ids) = parent_entry.nested_groups.get(&nested_num_in_group_tag) {
+                    // Output the NoXXX tag first (count)
+                    body.push_str(&format!("{}={}{}", nested_num_in_group_tag, nested_entry_ids.len(), SOH));
+
+                    if let Some(nested_member_tags) = get_member_tags(nested_num_in_group_tag, msg_type) {
+                        for &nested_entry_id in nested_entry_ids {
+                            if let Some(nested_entry) = self.group_arena.get(nested_entry_id) {
+                                // Output tags in the order defined in member_tags
+                                for member_tag in nested_member_tags {
+                                    if let Some(value) = nested_entry.fields.get(member_tag) {
+                                        body.push_str(&format!("{}={}{}", member_tag, value, SOH));
+                                    }
+                                }
+
+                                // Recursively encode further nested groups
+                                self.encode_nested_groups(body, nested_entry_id, msg_type);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -516,5 +631,107 @@ mod tests {
 
         let party2 = parsed.get_group_entry(parties[1]).unwrap();
         assert_eq!(party2.fields.get(&448), Some(&"DESK22".to_string()));
+    }
+
+    #[test]
+    fn test_nested_groups_parties_with_sub_ids() {
+        // Test Parties (453) with nested PartySubIDsGrp (802)
+        // Message: 453=1|448=TRADER1|447=D|452=1|802=2|523=SUB1|803=1|523=SUB2|803=2
+        let msg = "8=FIXT.1.1|9=100|35=D|55=MSFT|453=1|448=TRADER1|447=D|452=1|802=2|523=SUB1|803=1|523=SUB2|803=2|10=000|";
+
+        let parsed = RawFixMessage::parse(msg).unwrap();
+
+        // Check top-level Parties group
+        let parties = parsed.get_group(453).expect("Should have parties group");
+        assert_eq!(parties.len(), 1);
+
+        let party = parsed.get_group_entry(parties[0]).unwrap();
+        assert_eq!(party.fields.get(&448), Some(&"TRADER1".to_string()));
+        assert_eq!(party.fields.get(&447), Some(&"D".to_string()));
+        assert_eq!(party.fields.get(&452), Some(&"1".to_string()));
+        assert_eq!(party.fields.get(&802), Some(&"2".to_string())); // NoPartySubIDs
+
+        // Check nested PartySubIDsGrp
+        let party_sub_ids = party.nested_groups.get(&802).expect("Should have nested PartySubIDs");
+        assert_eq!(party_sub_ids.len(), 2);
+
+        // First PartySubID
+        let sub_id1 = parsed.get_group_entry(party_sub_ids[0]).unwrap();
+        assert_eq!(sub_id1.fields.get(&523), Some(&"SUB1".to_string()));
+        assert_eq!(sub_id1.fields.get(&803), Some(&"1".to_string()));
+
+        // Second PartySubID
+        let sub_id2 = parsed.get_group_entry(party_sub_ids[1]).unwrap();
+        assert_eq!(sub_id2.fields.get(&523), Some(&"SUB2".to_string()));
+        assert_eq!(sub_id2.fields.get(&803), Some(&"2".to_string()));
+    }
+
+    #[test]
+    fn test_nested_groups_roundtrip() {
+        // Create a message with Parties and nested PartySubIDs
+        let mut msg = RawFixMessage::new();
+        msg.set_field(8, "FIXT.1.1".to_string());
+        msg.set_field(35, "D".to_string());
+        msg.set_field(55, "MSFT".to_string());
+        msg.set_field(453, "1".to_string()); // NoPartyIDs
+
+        // Create PartySubID entries
+        let mut sub_id1_fields = HashMap::new();
+        sub_id1_fields.insert(523, "SUB1".to_string());
+        sub_id1_fields.insert(803, "1".to_string());
+
+        let mut sub_id2_fields = HashMap::new();
+        sub_id2_fields.insert(523, "SUB2".to_string());
+        sub_id2_fields.insert(803, "2".to_string());
+
+        let sub_id1_entry_id = msg.group_arena.len();
+        msg.group_arena.push(GroupEntry {
+            fields: sub_id1_fields,
+            nested_groups: HashMap::new(),
+        });
+
+        let sub_id2_entry_id = msg.group_arena.len();
+        msg.group_arena.push(GroupEntry {
+            fields: sub_id2_fields,
+            nested_groups: HashMap::new(),
+        });
+
+        // Create Party entry with nested PartySubIDs
+        let mut party_fields = HashMap::new();
+        party_fields.insert(448, "TRADER1".to_string());
+        party_fields.insert(447, "D".to_string());
+        party_fields.insert(452, "1".to_string());
+        party_fields.insert(802, "2".to_string()); // NoPartySubIDs
+
+        let mut party_nested_groups = HashMap::new();
+        party_nested_groups.insert(802, vec![sub_id1_entry_id, sub_id2_entry_id]);
+
+        let party_entry_id = msg.group_arena.len();
+        msg.group_arena.push(GroupEntry {
+            fields: party_fields,
+            nested_groups: party_nested_groups,
+        });
+
+        msg.set_group(453, vec![party_entry_id]);
+
+        // Encode and parse
+        let encoded = msg.encode();
+        let parsed = RawFixMessage::parse(&encoded).unwrap();
+
+        // Verify nested structure
+        let parties = parsed.get_group(453).unwrap();
+        assert_eq!(parties.len(), 1);
+
+        let party = parsed.get_group_entry(parties[0]).unwrap();
+        assert_eq!(party.fields.get(&448), Some(&"TRADER1".to_string()));
+
+        let party_sub_ids = party.nested_groups.get(&802).expect("Should have nested PartySubIDs group");
+        assert_eq!(party_sub_ids.len(), 2);
+
+        let sub_id1 = parsed.get_group_entry(party_sub_ids[0]).unwrap();
+        assert_eq!(sub_id1.fields.get(&523), Some(&"SUB1".to_string()));
+
+        let sub_id2 = parsed.get_group_entry(party_sub_ids[1]).unwrap();
+        assert_eq!(sub_id2.fields.get(&523), Some(&"SUB2".to_string()));
     }
 }

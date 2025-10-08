@@ -321,3 +321,402 @@ impl CrossPrioritization {
         }
     }
 }
+
+// ============================================================================
+// Program Trading / List Trading Enums
+// ============================================================================
+
+/// BidType (Tag 394) - Type of bid request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BidType {
+    NonDisclosed,      // 1 - No bid details provided upfront
+    Disclosed,         // 2 - Specific orders disclosed
+    NoBiddingProcess,  // 3 - No competitive bidding
+}
+
+impl BidType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            BidType::NonDisclosed => '1',
+            BidType::Disclosed => '2',
+            BidType::NoBiddingProcess => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(BidType::NonDisclosed),
+            '2' => Some(BidType::Disclosed),
+            '3' => Some(BidType::NoBiddingProcess),
+            _ => None,
+        }
+    }
+}
+
+/// ProgRptReqs (Tag 414) - Program reporting requirements
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ProgRptReqs {
+    BuySideRequests,     // 1
+    SellSideRequests,    // 2
+    RealTimeExecutions,  // 3
+}
+
+impl ProgRptReqs {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ProgRptReqs::BuySideRequests => '1',
+            ProgRptReqs::SellSideRequests => '2',
+            ProgRptReqs::RealTimeExecutions => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(ProgRptReqs::BuySideRequests),
+            '2' => Some(ProgRptReqs::SellSideRequests),
+            '3' => Some(ProgRptReqs::RealTimeExecutions),
+            _ => None,
+        }
+    }
+}
+
+/// ListExecInstType (Tag 433) - List execution instruction type
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ListExecInstType {
+    Immediate,              // 1
+    WaitForInstruction,     // 2
+    ExchangeSwitchCIVOrder, // 3
+    SellDriven,             // 4
+    BuyDrivenCash,          // 5
+}
+
+impl ListExecInstType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ListExecInstType::Immediate => '1',
+            ListExecInstType::WaitForInstruction => '2',
+            ListExecInstType::ExchangeSwitchCIVOrder => '3',
+            ListExecInstType::SellDriven => '4',
+            ListExecInstType::BuyDrivenCash => '5',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(ListExecInstType::Immediate),
+            '2' => Some(ListExecInstType::WaitForInstruction),
+            '3' => Some(ListExecInstType::ExchangeSwitchCIVOrder),
+            '4' => Some(ListExecInstType::SellDriven),
+            '5' => Some(ListExecInstType::BuyDrivenCash),
+            _ => None,
+        }
+    }
+}
+
+/// ListStatusType (Tag 429) - Type of list status message
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ListStatusType {
+    Ack,         // 1
+    Response,    // 2
+    Timed,       // 3
+    ExecStarted, // 4
+    AllDone,     // 5
+    Alert,       // 6
+}
+
+impl ListStatusType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ListStatusType::Ack => '1',
+            ListStatusType::Response => '2',
+            ListStatusType::Timed => '3',
+            ListStatusType::ExecStarted => '4',
+            ListStatusType::AllDone => '5',
+            ListStatusType::Alert => '6',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(ListStatusType::Ack),
+            '2' => Some(ListStatusType::Response),
+            '3' => Some(ListStatusType::Timed),
+            '4' => Some(ListStatusType::ExecStarted),
+            '5' => Some(ListStatusType::AllDone),
+            '6' => Some(ListStatusType::Alert),
+            _ => None,
+        }
+    }
+}
+
+/// ListOrderStatus (Tag 431) - Status of list order
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ListOrderStatus {
+    InBiddingProcess,   // 1
+    ReceivedForExecution, // 2
+    Executing,          // 3
+    Cancelling,         // 4
+    Alert,              // 5
+    AllDone,            // 6
+    Reject,             // 7
+}
+
+impl ListOrderStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ListOrderStatus::InBiddingProcess => '1',
+            ListOrderStatus::ReceivedForExecution => '2',
+            ListOrderStatus::Executing => '3',
+            ListOrderStatus::Cancelling => '4',
+            ListOrderStatus::Alert => '5',
+            ListOrderStatus::AllDone => '6',
+            ListOrderStatus::Reject => '7',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(ListOrderStatus::InBiddingProcess),
+            '2' => Some(ListOrderStatus::ReceivedForExecution),
+            '3' => Some(ListOrderStatus::Executing),
+            '4' => Some(ListOrderStatus::Cancelling),
+            '5' => Some(ListOrderStatus::Alert),
+            '6' => Some(ListOrderStatus::AllDone),
+            '7' => Some(ListOrderStatus::Reject),
+            _ => None,
+        }
+    }
+}
+
+/// BidDescriptorType (Tag 399) - Type of bid descriptor
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BidDescriptorType {
+    Sector,   // 1
+    Country,  // 2
+    Index,    // 3
+}
+
+impl BidDescriptorType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            BidDescriptorType::Sector => '1',
+            BidDescriptorType::Country => '2',
+            BidDescriptorType::Index => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(BidDescriptorType::Sector),
+            '2' => Some(BidDescriptorType::Country),
+            '3' => Some(BidDescriptorType::Index),
+            _ => None,
+        }
+    }
+}
+
+/// SideValueInd (Tag 401) - Side value indicator
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SideValueInd {
+    SideValue1,  // 1
+    SideValue2,  // 2
+}
+
+impl SideValueInd {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SideValueInd::SideValue1 => '1',
+            SideValueInd::SideValue2 => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(SideValueInd::SideValue1),
+            '2' => Some(SideValueInd::SideValue2),
+            _ => None,
+        }
+    }
+}
+
+/// NetGrossInd (Tag 430) - Net or gross indicator
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum NetGrossInd {
+    Net,   // 1
+    Gross, // 2
+}
+
+impl NetGrossInd {
+    pub fn to_fix(&self) -> char {
+        match self {
+            NetGrossInd::Net => '1',
+            NetGrossInd::Gross => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(NetGrossInd::Net),
+            '2' => Some(NetGrossInd::Gross),
+            _ => None,
+        }
+    }
+}
+
+/// PriceType (Tag 423) - Type of price
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PriceType {
+    Percentage,           // 1
+    PerUnit,              // 2
+    FixedAmount,          // 3
+    Discount,             // 4
+    Premium,              // 5
+    Spread,               // 6
+    TEDPrice,             // 7
+    TEDYield,             // 8
+    Yield,                // 9
+    FixedCabinetPrice,    // 10
+    VariableCabinetPrice, // 11
+}
+
+impl PriceType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            PriceType::Percentage => "1",
+            PriceType::PerUnit => "2",
+            PriceType::FixedAmount => "3",
+            PriceType::Discount => "4",
+            PriceType::Premium => "5",
+            PriceType::Spread => "6",
+            PriceType::TEDPrice => "7",
+            PriceType::TEDYield => "8",
+            PriceType::Yield => "9",
+            PriceType::FixedCabinetPrice => "10",
+            PriceType::VariableCabinetPrice => "11",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "1" => Some(PriceType::Percentage),
+            "2" => Some(PriceType::PerUnit),
+            "3" => Some(PriceType::FixedAmount),
+            "4" => Some(PriceType::Discount),
+            "5" => Some(PriceType::Premium),
+            "6" => Some(PriceType::Spread),
+            "7" => Some(PriceType::TEDPrice),
+            "8" => Some(PriceType::TEDYield),
+            "9" => Some(PriceType::Yield),
+            "10" => Some(PriceType::FixedCabinetPrice),
+            "11" => Some(PriceType::VariableCabinetPrice),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bid_type_conversions() {
+        assert_eq!(BidType::NonDisclosed.to_fix(), '1');
+        assert_eq!(BidType::Disclosed.to_fix(), '2');
+        assert_eq!(BidType::NoBiddingProcess.to_fix(), '3');
+
+        assert_eq!(BidType::from_fix('1'), Some(BidType::NonDisclosed));
+        assert_eq!(BidType::from_fix('2'), Some(BidType::Disclosed));
+        assert_eq!(BidType::from_fix('3'), Some(BidType::NoBiddingProcess));
+        assert_eq!(BidType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_prog_rpt_reqs_conversions() {
+        assert_eq!(ProgRptReqs::BuySideRequests.to_fix(), '1');
+        assert_eq!(ProgRptReqs::SellSideRequests.to_fix(), '2');
+        assert_eq!(ProgRptReqs::RealTimeExecutions.to_fix(), '3');
+
+        assert_eq!(ProgRptReqs::from_fix('1'), Some(ProgRptReqs::BuySideRequests));
+        assert_eq!(ProgRptReqs::from_fix('2'), Some(ProgRptReqs::SellSideRequests));
+        assert_eq!(ProgRptReqs::from_fix('3'), Some(ProgRptReqs::RealTimeExecutions));
+        assert_eq!(ProgRptReqs::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_list_exec_inst_type_conversions() {
+        assert_eq!(ListExecInstType::Immediate.to_fix(), '1');
+        assert_eq!(ListExecInstType::WaitForInstruction.to_fix(), '2');
+        assert_eq!(ListExecInstType::ExchangeSwitchCIVOrder.to_fix(), '3');
+        assert_eq!(ListExecInstType::SellDriven.to_fix(), '4');
+        assert_eq!(ListExecInstType::BuyDrivenCash.to_fix(), '5');
+
+        assert_eq!(ListExecInstType::from_fix('1'), Some(ListExecInstType::Immediate));
+        assert_eq!(ListExecInstType::from_fix('5'), Some(ListExecInstType::BuyDrivenCash));
+        assert_eq!(ListExecInstType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_list_status_type_conversions() {
+        assert_eq!(ListStatusType::Ack.to_fix(), '1');
+        assert_eq!(ListStatusType::Alert.to_fix(), '6');
+
+        assert_eq!(ListStatusType::from_fix('1'), Some(ListStatusType::Ack));
+        assert_eq!(ListStatusType::from_fix('4'), Some(ListStatusType::ExecStarted));
+        assert_eq!(ListStatusType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_list_order_status_conversions() {
+        assert_eq!(ListOrderStatus::InBiddingProcess.to_fix(), '1');
+        assert_eq!(ListOrderStatus::Reject.to_fix(), '7');
+
+        assert_eq!(ListOrderStatus::from_fix('1'), Some(ListOrderStatus::InBiddingProcess));
+        assert_eq!(ListOrderStatus::from_fix('7'), Some(ListOrderStatus::Reject));
+        assert_eq!(ListOrderStatus::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_bid_descriptor_type_conversions() {
+        assert_eq!(BidDescriptorType::Sector.to_fix(), '1');
+        assert_eq!(BidDescriptorType::Country.to_fix(), '2');
+        assert_eq!(BidDescriptorType::Index.to_fix(), '3');
+
+        assert_eq!(BidDescriptorType::from_fix('1'), Some(BidDescriptorType::Sector));
+        assert_eq!(BidDescriptorType::from_fix('3'), Some(BidDescriptorType::Index));
+        assert_eq!(BidDescriptorType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_side_value_ind_conversions() {
+        assert_eq!(SideValueInd::SideValue1.to_fix(), '1');
+        assert_eq!(SideValueInd::SideValue2.to_fix(), '2');
+
+        assert_eq!(SideValueInd::from_fix('1'), Some(SideValueInd::SideValue1));
+        assert_eq!(SideValueInd::from_fix('2'), Some(SideValueInd::SideValue2));
+        assert_eq!(SideValueInd::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_net_gross_ind_conversions() {
+        assert_eq!(NetGrossInd::Net.to_fix(), '1');
+        assert_eq!(NetGrossInd::Gross.to_fix(), '2');
+
+        assert_eq!(NetGrossInd::from_fix('1'), Some(NetGrossInd::Net));
+        assert_eq!(NetGrossInd::from_fix('2'), Some(NetGrossInd::Gross));
+        assert_eq!(NetGrossInd::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_price_type_conversions() {
+        assert_eq!(PriceType::Percentage.to_fix(), "1");
+        assert_eq!(PriceType::PerUnit.to_fix(), "2");
+        assert_eq!(PriceType::FixedCabinetPrice.to_fix(), "10");
+        assert_eq!(PriceType::VariableCabinetPrice.to_fix(), "11");
+
+        assert_eq!(PriceType::from_fix("1"), Some(PriceType::Percentage));
+        assert_eq!(PriceType::from_fix("9"), Some(PriceType::Yield));
+        assert_eq!(PriceType::from_fix("10"), Some(PriceType::FixedCabinetPrice));
+        assert_eq!(PriceType::from_fix("11"), Some(PriceType::VariableCabinetPrice));
+        assert_eq!(PriceType::from_fix("99"), None);
+    }
+}

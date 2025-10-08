@@ -180,6 +180,297 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Program Trading / List Trading Repeating Groups
+    // ========================================================================
+
+    // ListOrdGrp (Tag 73 = NoOrders)
+    // Used in: NewOrderList (E), ListStatus (N)
+    registry.insert(
+        GroupKey { num_in_group_tag: 73, msg_type: Some("E".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 73, // NoOrders
+            delimiter_tag: 11,    // ClOrdID
+            member_tags: vec![
+                11,   // ClOrdID - Required
+                67,   // ListSeqNo - Required
+                160,  // SettlInstMode
+                // Instrument component
+                55,   // Symbol
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                224,  // CouponPaymentDate
+                225,  // IssueDate
+                239,  // RepoCollateralSecurityType
+                226,  // RepurchaseTerm
+                227,  // RepurchaseRate
+                228,  // Factor
+                255,  // CreditRating
+                543,  // InstrRegistry
+                470,  // CountryOfIssue
+                471,  // StateOrProvinceOfIssue
+                472,  // LocaleOfIssue
+                240,  // RedemptionDate
+                202,  // StrikePrice
+                947,  // StrikeCurrency
+                206,  // OptAttribute
+                231,  // ContractMultiplier
+                223,  // CouponRate
+                207,  // SecurityExchange
+                106,  // Issuer
+                107,  // SecurityDesc
+                691,  // Pool
+                // OrderQtyData component
+                38,   // OrderQty
+                152,  // CashOrderQty
+                516,  // OrderPercent
+                468,  // RoundingDirection
+                469,  // RoundingModulus
+                54,   // Side
+                40,   // OrdType
+                44,   // Price
+                99,   // StopPx
+                15,   // Currency
+                376,  // ComplianceID
+                377,  // SolicitedFlag
+                23,   // IOIid
+                117,  // QuoteID
+                59,   // TimeInForce
+                168,  // EffectiveTime
+                432,  // ExpireDate
+                126,  // ExpireTime
+                427,  // GTBookingInst
+                12,   // Commission
+                13,   // CommType
+                479,  // CommCurrency
+                497,  // FundRenewWaiv
+                528,  // OrderCapacity
+                529,  // OrderRestrictions
+                582,  // CustOrderCapacity
+                121,  // ForexReq
+                120,  // SettlCurrency
+                775,  // BookingType
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+                193,  // SettlDate2
+                192,  // OrderQty2
+                640,  // Price2
+                77,   // PositionEffect
+                203,  // CoveredOrUncovered
+                210,  // MaxShow
+                // Parties nested group (453)
+                // PreAllocGrp nested group (78)
+                114,  // LocateReqd
+                60,   // TransactTime
+                1,    // Account
+                660,  // AcctIDSource
+                581,  // AccountType
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 453, // Parties (NoPartyIDs)
+                    parent_tag: None,
+                },
+                NestedGroupInfo {
+                    num_in_group_tag: 78, // PreAllocGrp (NoAllocs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same ListOrdGrp for ListStatus (N)
+    registry.insert(
+        GroupKey { num_in_group_tag: 73, msg_type: Some("N".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 73,
+            delimiter_tag: 11,
+            member_tags: vec![
+                11, 67, 160, 55, 65, 48, 22, 167, 200, 541, 224, 225, 239, 226, 227,
+                228, 255, 543, 470, 471, 472, 240, 202, 947, 206, 231, 223, 207, 106,
+                107, 691, 38, 152, 516, 468, 469, 54, 40, 44, 99, 15, 376, 377, 23,
+                117, 59, 168, 432, 126, 427, 12, 13, 479, 497, 528, 529, 582, 121,
+                120, 775, 58, 354, 355, 193, 192, 640, 77, 203, 210, 114, 60, 1, 660,
+                581,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 453,
+                    parent_tag: None,
+                },
+                NestedGroupInfo {
+                    num_in_group_tag: 78,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // PreAllocGrp (Tag 78 = NoAllocs)
+    // Nested within ListOrdGrp
+    registry.insert(
+        GroupKey { num_in_group_tag: 78, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 78, // NoAllocs
+            delimiter_tag: 79,    // AllocAccount
+            member_tags: vec![
+                79,   // AllocAccount - Required
+                661,  // AllocAcctIDSource
+                736,  // AllocSettlCurrency
+                467,  // IndividualAllocID
+                80,   // AllocQty
+                // NestedParties2 (756) can be nested here
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 756, // NestedParties2 (NoNested2PartyIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // NestedParties2 (Tag 756 = NoNested2PartyIDs)
+    // Doubly-nested within PreAllocGrp
+    registry.insert(
+        GroupKey { num_in_group_tag: 756, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 756, // NoNested2PartyIDs
+            delimiter_tag: 757,    // Nested2PartyID
+            member_tags: vec![
+                757,  // Nested2PartyID
+                758,  // Nested2PartyIDSource
+                759,  // Nested2PartyRole
+                // NestedPartySubIDsGrp can be nested here (806)
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 806, // NoNested2PartySubIDs
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // NstdPtys2SubGrp (Tag 806 = NoNested2PartySubIDs)
+    // Triply-nested within NestedParties2
+    registry.insert(
+        GroupKey { num_in_group_tag: 806, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 806, // NoNested2PartySubIDs
+            delimiter_tag: 760,    // Nested2PartySubID
+            member_tags: vec![
+                760,  // Nested2PartySubID
+                807,  // Nested2PartySubIDType
+            ],
+            nested_groups: vec![], // No further nesting
+        },
+    );
+
+    // BidDescrReqGrp (Tag 398 = NoBidDescriptors)
+    // Used in: BidRequest (k) - Non-Disclosed convention
+    registry.insert(
+        GroupKey { num_in_group_tag: 398, msg_type: Some("k".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 398, // NoBidDescriptors
+            delimiter_tag: 399,    // BidDescriptorType
+            member_tags: vec![
+                399,  // BidDescriptorType - Required
+                400,  // BidDescriptor
+                401,  // SideValueInd
+                404,  // LiquidityValue
+                441,  // LiquidityNumSecurities
+                402,  // LiquidityPctLow
+                403,  // LiquidityPctHigh
+                405,  // EFPTrackingError
+                406,  // FairValue
+                407,  // OutsideIndexPct
+                408,  // ValueOfFutures
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // BidCompReqGrp (Tag 420 = NoBidComponents)
+    // Used in: BidRequest (k) - Disclosed convention
+    registry.insert(
+        GroupKey { num_in_group_tag: 420, msg_type: Some("k".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 420, // NoBidComponents
+            delimiter_tag: 66,     // ListID
+            member_tags: vec![
+                66,   // ListID - Required
+                54,   // Side
+                336,  // TradingSessionID
+                625,  // TradingSessionSubID
+                430,  // NetGrossInd
+                63,   // SettlType
+                64,   // SettlDate
+                1,    // Account
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // BidCompRspGrp (Tag 420 = NoBidComponents)
+    // Used in: BidResponse (l)
+    registry.insert(
+        GroupKey { num_in_group_tag: 420, msg_type: Some("l".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 420, // NoBidComponents
+            delimiter_tag: 66,     // ListID
+            member_tags: vec![
+                12,   // Commission
+                13,   // CommType
+                479,  // CommCurrency
+                497,  // FundRenewWaiv
+                66,   // ListID - Required
+                421,  // Country
+                54,   // Side
+                44,   // Price
+                423,  // PriceType
+                406,  // FairValue
+                430,  // NetGrossInd
+                63,   // SettlType
+                64,   // SettlDate
+                336,  // TradingSessionID
+                625,  // TradingSessionSubID
+                58,   // Text
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // OrdListStatGrp (Tag 73 = NoOrders)
+    // Used in: ListStatus (N) - for order status reporting
+    // Note: This overlaps with ListOrdGrp but has different fields for status reporting
+    // We use the same configuration as ListOrdGrp for ListStatus above
+
+    // StrikeRules (Tag 1201 = NoStrikeRules)
+    // Used in: ListStrikePrice (m)
+    registry.insert(
+        GroupKey { num_in_group_tag: 1201, msg_type: Some("m".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 1201, // NoStrikeRules
+            delimiter_tag: 1223,    // StrikeRuleID
+            member_tags: vec![
+                1223, // StrikeRuleID - Required
+                1202, // StartStrikePxRange
+                1203, // EndStrikePxRange
+                1204, // StrikeIncrement
+                1304, // StrikeExerciseStyle
+                1302, // MaturityMonthYearIncrementUnits
+                1303, // MaturityMonthYearIncrement
+            ],
+            nested_groups: vec![],
+        },
+    );
+
     registry
 });
 
@@ -273,6 +564,28 @@ pub fn is_nested_group(parent_num_in_group_tag: u32, child_num_in_group_tag: u32
     }
 }
 
+/// Get the full GroupConfig for a given repeating group (for testing purposes)
+#[cfg(test)]
+pub fn get_group_config(num_in_group_tag: u32, msg_type: Option<&str>) -> Option<&'static GroupConfig> {
+    // Try message-specific first
+    if let Some(mt) = msg_type {
+        let key = GroupKey {
+            num_in_group_tag,
+            msg_type: Some(mt.to_string()),
+        };
+        if let Some(config) = GROUP_REGISTRY.get(&key) {
+            return Some(config);
+        }
+    }
+
+    // Fall back to generic
+    let generic_key = GroupKey {
+        num_in_group_tag,
+        msg_type: None,
+    };
+    GROUP_REGISTRY.get(&generic_key)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -338,5 +651,143 @@ mod tests {
     fn test_is_nested_group_nonexistent_parent() {
         // Non-existent parent should return false
         assert!(!is_nested_group(9999, 802, None));
+    }
+
+    // ========================================================================
+    // Program Trading Group Tests
+    // ========================================================================
+
+    #[test]
+    fn test_list_ord_grp_new_order_list() {
+        // ListOrdGrp (73) for NewOrderList (E)
+        let config = get_group_config(73, Some("E")).expect("ListOrdGrp should exist for NewOrderList");
+        assert_eq!(config.num_in_group_tag, 73);
+        assert_eq!(config.delimiter_tag, 11); // ClOrdID
+        assert!(config.member_tags.contains(&55)); // Symbol
+        assert!(config.member_tags.contains(&38)); // OrderQty
+        assert_eq!(config.nested_groups.len(), 2); // Parties + PreAllocGrp
+    }
+
+    #[test]
+    fn test_list_ord_grp_list_status() {
+        // ListOrdGrp (73) for ListStatus (N)
+        let config = get_group_config(73, Some("N")).expect("ListOrdGrp should exist for ListStatus");
+        assert_eq!(config.num_in_group_tag, 73);
+        assert_eq!(config.delimiter_tag, 11); // ClOrdID
+    }
+
+    #[test]
+    fn test_pre_alloc_grp() {
+        // PreAllocGrp (78) - generic, not message-specific
+        let config = get_group_config(78, None).expect("PreAllocGrp should exist");
+        assert_eq!(config.num_in_group_tag, 78);
+        assert_eq!(config.delimiter_tag, 79); // AllocAccount
+        assert!(config.member_tags.contains(&80)); // AllocQty
+        assert_eq!(config.nested_groups.len(), 1); // NestedParties2
+        assert_eq!(config.nested_groups[0].num_in_group_tag, 756);
+    }
+
+    #[test]
+    fn test_nested_parties2() {
+        // NestedParties2 (756)
+        let config = get_group_config(756, None).expect("NestedParties2 should exist");
+        assert_eq!(config.num_in_group_tag, 756);
+        assert_eq!(config.delimiter_tag, 757); // Nested2PartyID
+        assert_eq!(config.nested_groups.len(), 1); // NstdPtys2SubGrp
+        assert_eq!(config.nested_groups[0].num_in_group_tag, 806);
+    }
+
+    #[test]
+    fn test_nstd_ptys2_sub_grp() {
+        // NstdPtys2SubGrp (806)
+        let config = get_group_config(806, None).expect("NstdPtys2SubGrp should exist");
+        assert_eq!(config.num_in_group_tag, 806);
+        assert_eq!(config.delimiter_tag, 760); // Nested2PartySubID
+        assert_eq!(config.nested_groups.len(), 0); // No further nesting
+    }
+
+    #[test]
+    fn test_triple_nesting_pre_alloc() {
+        // Verify 3-level nesting: ListOrdGrp -> PreAllocGrp -> NestedParties2 -> NstdPtys2SubGrp
+        // Level 1: ListOrdGrp contains PreAllocGrp
+        assert!(is_nested_group(73, 78, Some("E")));
+        // Level 2: PreAllocGrp contains NestedParties2
+        assert!(is_nested_group(78, 756, None));
+        // Level 3: NestedParties2 contains NstdPtys2SubGrp
+        assert!(is_nested_group(756, 806, None));
+    }
+
+    #[test]
+    fn test_bid_descr_req_grp() {
+        // BidDescrReqGrp (398) for BidRequest (k)
+        let config = get_group_config(398, Some("k")).expect("BidDescrReqGrp should exist");
+        assert_eq!(config.num_in_group_tag, 398);
+        assert_eq!(config.delimiter_tag, 399); // BidDescriptorType
+        assert!(config.member_tags.contains(&400)); // BidDescriptor
+        assert!(config.member_tags.contains(&406)); // FairValue
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_bid_comp_req_grp() {
+        // BidCompReqGrp (420) for BidRequest (k)
+        let config = get_group_config(420, Some("k")).expect("BidCompReqGrp should exist");
+        assert_eq!(config.num_in_group_tag, 420);
+        assert_eq!(config.delimiter_tag, 66); // ListID
+        assert!(config.member_tags.contains(&54)); // Side
+        assert!(config.member_tags.contains(&430)); // NetGrossInd
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_bid_comp_rsp_grp() {
+        // BidCompRspGrp (420) for BidResponse (l)
+        let config = get_group_config(420, Some("l")).expect("BidCompRspGrp should exist");
+        assert_eq!(config.num_in_group_tag, 420);
+        assert_eq!(config.delimiter_tag, 66); // ListID
+        assert!(config.member_tags.contains(&12)); // Commission
+        assert!(config.member_tags.contains(&44)); // Price
+        assert!(config.member_tags.contains(&423)); // PriceType
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_bid_comp_message_specific() {
+        // Tag 420 has different meanings for BidRequest (k) vs BidResponse (l)
+        let req_config = get_group_config(420, Some("k")).expect("BidCompReqGrp should exist");
+        let rsp_config = get_group_config(420, Some("l")).expect("BidCompRspGrp should exist");
+
+        // Both have same tag and delimiter
+        assert_eq!(req_config.num_in_group_tag, rsp_config.num_in_group_tag);
+        assert_eq!(req_config.delimiter_tag, rsp_config.delimiter_tag);
+
+        // But different member tags (request doesn't have commission, response does)
+        assert!(!req_config.member_tags.contains(&12)); // Commission
+        assert!(rsp_config.member_tags.contains(&12)); // Commission
+    }
+
+    #[test]
+    fn test_strike_rules() {
+        // StrikeRules (1201) for ListStrikePrice (m)
+        let config = get_group_config(1201, Some("m")).expect("StrikeRules should exist");
+        assert_eq!(config.num_in_group_tag, 1201);
+        assert_eq!(config.delimiter_tag, 1223); // StrikeRuleID
+        assert!(config.member_tags.contains(&1202)); // StartStrikePxRange
+        assert!(config.member_tags.contains(&1204)); // StrikeIncrement
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_list_ord_grp_has_parties_nested() {
+        // ListOrdGrp should have Parties (453) as nested group
+        let nested = get_nested_groups(73, Some("E")).expect("ListOrdGrp should have nested groups");
+        assert!(nested.iter().any(|n| n.num_in_group_tag == 453));
+    }
+
+    #[test]
+    fn test_list_ord_grp_has_pre_alloc_nested() {
+        // ListOrdGrp should have PreAllocGrp (78) as nested group
+        let nested = get_nested_groups(73, Some("E")).expect("ListOrdGrp should have nested groups");
+        assert!(nested.iter().any(|n| n.num_in_group_tag == 78));
     }
 }

@@ -18,3 +18,4 @@ This file tracks reference materials consulted during the development of fixie.
 - [FIX Repeating Group - OnixS](https://ref.onixs.biz/fix-repeating-group.html) - Technical specification
 - [OnixS C++ FIX Engine: FIX Repeating Groups](https://ref.onixs.biz/cpp-fix-engine-guide/group__fix-protocol-repeating-group.html) - Implementation guide
 - [Where to get information to correctly parse repeating groups in FIX? - Stack Overflow](https://stackoverflow.com/questions/30449300/where-to-get-information-to-correctly-parse-repeating-groups-in-fix) - Community discussion
+- [Trade Appendix - FIX Trading Community](https://www.fixtrading.org/online-specification/trade-appendix/) - Official SideCrossOrdModGrp specification

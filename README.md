@@ -176,6 +176,11 @@ let wire_format = raw.encode();
 - OrderMassCancelRequest (q)
 - OrderMassCancelReport (r)
 
+### Cross Order Handling
+- NewOrderCross (s)
+- CrossOrderCancelRequest (u)
+- CrossOrderCancelReplaceRequest (t)
+
 ### Market Data
 - MarketDataRequest (V)
 - MarketDataSnapshotFullRefresh (W)

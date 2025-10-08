@@ -71,6 +71,8 @@ impl RawFixMessage {
 
         // Parse all tag=value pairs into a vector first
         let mut tag_value_pairs: Vec<(u32, String)> = Vec::new();
+        let mut msg_type: Option<String> = None;
+
         for field in input.split(delimiter) {
             if field.is_empty() {
                 continue;
@@ -87,8 +89,16 @@ impl RawFixMessage {
                 .map_err(|_| FixParseError::InvalidTag(parts[0].to_string()))?;
             let value = parts[1].to_string();
 
+            // Capture message type (tag 35) for context-specific group parsing
+            if tag == 35 {
+                msg_type = Some(value.clone());
+            }
+
             tag_value_pairs.push((tag, value));
         }
+
+        // Get message type as &str for group lookups
+        let msg_type_str = msg_type.as_deref();
 
         // Process pairs, detecting and handling repeating groups
         let mut i = 0;
@@ -96,7 +106,7 @@ impl RawFixMessage {
             let (tag, value) = &tag_value_pairs[i];
 
             // Check if this is a NoXXX (num-in-group) tag
-            if is_num_in_group_tag(*tag) {
+            if is_num_in_group_tag(*tag, msg_type_str) {
                 let num_in_group_tag = *tag;
                 let count: usize = value.parse()
                     .map_err(|_| FixParseError::InvalidValue {
@@ -108,8 +118,8 @@ impl RawFixMessage {
                 // Store the NoXXX field itself
                 fields.insert(*tag, value.clone());
 
-                if let Some(delimiter_tag) = get_delimiter_tag(num_in_group_tag) {
-                    if let Some(member_tags) = get_member_tags(num_in_group_tag) {
+                if let Some(delimiter_tag) = get_delimiter_tag(num_in_group_tag, msg_type_str) {
+                    if let Some(member_tags) = get_member_tags(num_in_group_tag, msg_type_str) {
                         // Parse the repeating group entries
                         let mut group_entries = Vec::new();
                         i += 1; // Move past the NoXXX tag
@@ -190,6 +200,9 @@ impl RawFixMessage {
         // Also handle repeating groups
         use crate::groups::{is_num_in_group_tag, get_member_tags};
 
+        // Get message type for context-specific group encoding
+        let msg_type_str = self.fields.get(&35).map(|s| s.as_str());
+
         let mut sorted_tags: Vec<&u32> = self.fields.keys().collect();
         sorted_tags.sort();
 
@@ -200,7 +213,7 @@ impl RawFixMessage {
             }
 
             // Check if this is a NoXXX tag with repeating group data
-            if is_num_in_group_tag(*tag) {
+            if is_num_in_group_tag(*tag, msg_type_str) {
                 // Output the NoXXX tag first
                 if let Some(value) = self.fields.get(tag) {
                     body.push_str(&format!("{}={}{}", tag, value, SOH));
@@ -208,7 +221,7 @@ impl RawFixMessage {
 
                 // Then output the group entries
                 if let Some(group_entries) = self.groups.get(tag) {
-                    if let Some(member_tags) = get_member_tags(*tag) {
+                    if let Some(member_tags) = get_member_tags(*tag, msg_type_str) {
                         for entry in group_entries {
                             // Output tags in the order defined in member_tags
                             for member_tag in member_tags {

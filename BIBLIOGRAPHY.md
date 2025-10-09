@@ -19,3 +19,6 @@ This file tracks reference materials consulted during the development of fixie.
 - [OnixS C++ FIX Engine: FIX Repeating Groups](https://ref.onixs.biz/cpp-fix-engine-guide/group__fix-protocol-repeating-group.html) - Implementation guide
 - [Where to get information to correctly parse repeating groups in FIX? - Stack Overflow](https://stackoverflow.com/questions/30449300/where-to-get-information-to-correctly-parse-repeating-groups-in-fix) - Community discussion
 - [Trade Appendix - FIX Trading Community](https://www.fixtrading.org/online-specification/trade-appendix/) - Official SideCrossOrdModGrp specification
+
+### Infrastructure Messages
+- [Business Area: Infrastructure - FIX Trading Community](https://www.fixtrading.org/online-specification/business-area-infrastructure/) - Official specification for Application Sequencing, Business Message Rejects, Network Status Communication, and User Management messages

@@ -42,6 +42,9 @@ pub enum MsgType {
     OrderMassActionRequest,   // CA
     OrderMassActionReport,    // BZ
     OrderMassStatusRequest,   // AF
+    // Multileg Order Messages
+    NewOrderMultileg,         // AB
+    MultilegOrderCancelReplace, // AC
 }
 
 impl MsgType {
@@ -81,6 +84,8 @@ impl MsgType {
             MsgType::OrderMassActionRequest => "CA",
             MsgType::OrderMassActionReport => "BZ",
             MsgType::OrderMassStatusRequest => "AF",
+            MsgType::NewOrderMultileg => "AB",
+            MsgType::MultilegOrderCancelReplace => "AC",
         }
     }
 
@@ -120,6 +125,8 @@ impl MsgType {
             "CA" => Some(MsgType::OrderMassActionRequest),
             "BZ" => Some(MsgType::OrderMassActionReport),
             "AF" => Some(MsgType::OrderMassStatusRequest),
+            "AB" => Some(MsgType::NewOrderMultileg),
+            "AC" => Some(MsgType::MultilegOrderCancelReplace),
             _ => None,
         }
     }
@@ -1581,6 +1588,9 @@ pub enum FixMessage {
     OrderMassActionRequest(crate::mass_orders::OrderMassActionRequest),
     OrderMassActionReport(crate::mass_orders::OrderMassActionReport),
     OrderMassStatusRequest(crate::mass_orders::OrderMassStatusRequest),
+    // Multileg Order Messages
+    NewOrderMultileg(crate::multileg_orders::NewOrderMultileg),
+    MultilegOrderCancelReplace(crate::multileg_orders::MultilegOrderCancelReplace),
 }
 
 impl FixMessage {
@@ -1611,6 +1621,8 @@ impl FixMessage {
             FixMessage::OrderMassActionRequest(_) => MsgType::OrderMassActionRequest,
             FixMessage::OrderMassActionReport(_) => MsgType::OrderMassActionReport,
             FixMessage::OrderMassStatusRequest(_) => MsgType::OrderMassStatusRequest,
+            FixMessage::NewOrderMultileg(_) => MsgType::NewOrderMultileg,
+            FixMessage::MultilegOrderCancelReplace(_) => MsgType::MultilegOrderCancelReplace,
         }
     }
 }

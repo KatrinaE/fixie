@@ -6,6 +6,7 @@ pub mod components;
 pub mod program_trading;
 pub mod mass_orders;
 pub mod multileg_orders;
+pub mod network_status;
 
 pub use types::*;
 pub use parser::*;
@@ -15,3 +16,4 @@ pub use components::*;
 pub use program_trading::*;
 pub use mass_orders::*;
 pub use multileg_orders::*;
+pub use network_status::*;

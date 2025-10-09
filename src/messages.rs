@@ -36,6 +36,12 @@ pub enum MsgType {
     BidRequest,               // k (lowercase)
     BidResponse,              // l (lowercase)
     ListStrikePrice,          // m (lowercase)
+    // Mass Order Messages
+    MassOrder,                // DJ
+    MassOrderAck,             // DK
+    OrderMassActionRequest,   // CA
+    OrderMassActionReport,    // BZ
+    OrderMassStatusRequest,   // AF
 }
 
 impl MsgType {
@@ -70,6 +76,11 @@ impl MsgType {
             MsgType::BidRequest => "k",
             MsgType::BidResponse => "l",
             MsgType::ListStrikePrice => "m",
+            MsgType::MassOrder => "DJ",
+            MsgType::MassOrderAck => "DK",
+            MsgType::OrderMassActionRequest => "CA",
+            MsgType::OrderMassActionReport => "BZ",
+            MsgType::OrderMassStatusRequest => "AF",
         }
     }
 
@@ -104,6 +115,11 @@ impl MsgType {
             "k" => Some(MsgType::BidRequest),
             "l" => Some(MsgType::BidResponse),
             "m" => Some(MsgType::ListStrikePrice),
+            "DJ" => Some(MsgType::MassOrder),
+            "DK" => Some(MsgType::MassOrderAck),
+            "CA" => Some(MsgType::OrderMassActionRequest),
+            "BZ" => Some(MsgType::OrderMassActionReport),
+            "AF" => Some(MsgType::OrderMassStatusRequest),
             _ => None,
         }
     }
@@ -1559,6 +1575,12 @@ pub enum FixMessage {
     // Program Trading
     NewOrderList(crate::program_trading::NewOrderList),
     ListStatus(crate::program_trading::ListStatus),
+    // Mass Order Messages
+    MassOrder(crate::mass_orders::MassOrder),
+    MassOrderAck(crate::mass_orders::MassOrderAck),
+    OrderMassActionRequest(crate::mass_orders::OrderMassActionRequest),
+    OrderMassActionReport(crate::mass_orders::OrderMassActionReport),
+    OrderMassStatusRequest(crate::mass_orders::OrderMassStatusRequest),
 }
 
 impl FixMessage {
@@ -1584,6 +1606,11 @@ impl FixMessage {
             FixMessage::MarketDataSnapshot(_) => MsgType::MarketDataSnapshotFullRefresh,
             FixMessage::NewOrderList(_) => MsgType::NewOrderList,
             FixMessage::ListStatus(_) => MsgType::ListStatus,
+            FixMessage::MassOrder(_) => MsgType::MassOrder,
+            FixMessage::MassOrderAck(_) => MsgType::MassOrderAck,
+            FixMessage::OrderMassActionRequest(_) => MsgType::OrderMassActionRequest,
+            FixMessage::OrderMassActionReport(_) => MsgType::OrderMassActionReport,
+            FixMessage::OrderMassStatusRequest(_) => MsgType::OrderMassStatusRequest,
         }
     }
 }

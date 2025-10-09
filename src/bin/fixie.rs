@@ -96,6 +96,23 @@ fn tag_name(tag: u32) -> &'static str {
         893 => "LastFragment",
         1201 => "NoStrikeRules",
         1223 => "StrikeRuleID",
+        // Mass Order tags
+        533 => "TotalAffectedOrders",
+        584 => "MassStatusReqID",
+        585 => "MassStatusReqType",
+        1300 => "MarketSegmentID",
+        1301 => "MarketID",
+        1369 => "MassActionReportID",
+        1373 => "MassActionType",
+        1374 => "MassActionScope",
+        1375 => "MassActionResponse",
+        1376 => "MassActionRejectReason",
+        1793 => "NoTargetMarketSegments",
+        1794 => "NoNotAffMarketSegments",
+        2427 => "OrderResponseLevel",
+        2429 => "OrderEntryAction",
+        2430 => "NoOrderEntries",
+        2436 => "MassOrderID",
         _ => "Unknown",
     }
 }
@@ -132,6 +149,11 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::BidRequest => "BidRequest",
             MsgType::BidResponse => "BidResponse",
             MsgType::ListStrikePrice => "ListStrikePrice",
+            MsgType::MassOrder => "MassOrder",
+            MsgType::MassOrderAck => "MassOrderAck",
+            MsgType::OrderMassActionRequest => "OrderMassActionRequest",
+            MsgType::OrderMassActionReport => "OrderMassActionReport",
+            MsgType::OrderMassStatusRequest => "OrderMassStatusRequest",
         })
         .unwrap_or("Unknown")
 }

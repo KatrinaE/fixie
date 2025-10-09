@@ -505,6 +505,44 @@ fn test_order_cancel_reject_round_trip() {
 }
 
 #[test]
+fn test_business_message_reject_round_trip() {
+    use fixie::{BusinessMessageReject, BusinessRejectReason};
+
+    // Create a BusinessMessageReject
+    let reject = BusinessMessageReject {
+        ref_seq_num: Some(123),
+        ref_msg_type: "D".to_string(), // NewOrderSingle
+        business_reject_ref_id: Some("ORDER123".to_string()),
+        business_reject_reason: BusinessRejectReason::UnsupportedMessageType,
+        text: Some("Message type not supported".to_string()),
+        encoded_text_len: None,
+        encoded_text: None,
+    };
+
+    // Convert to raw
+    let raw = reject.to_raw();
+
+    // Verify fields
+    assert_eq!(raw.get_field(35), Some("j"));
+    assert_eq!(raw.get_field(45), Some("123"));
+    assert_eq!(raw.get_field(372), Some("D"));
+    assert_eq!(raw.get_field(379), Some("ORDER123"));
+    assert_eq!(raw.get_field(380), Some("3"));
+    assert_eq!(raw.get_field(58), Some("Message type not supported"));
+
+    // Parse back
+    let parsed = BusinessMessageReject::from_raw(&raw)
+        .expect("Failed to parse BusinessMessageReject");
+
+    // Verify round-trip
+    assert_eq!(parsed.ref_seq_num, Some(123));
+    assert_eq!(parsed.ref_msg_type, "D");
+    assert_eq!(parsed.business_reject_ref_id, Some("ORDER123".to_string()));
+    assert_eq!(parsed.business_reject_reason, BusinessRejectReason::UnsupportedMessageType);
+    assert_eq!(parsed.text, Some("Message type not supported".to_string()));
+}
+
+#[test]
 fn test_parse_order_mass_cancel_request() {
     let fix_msg = load_fixture("order_mass_cancel_request", "fix");
     let expected_json: Value = serde_json::from_str(&load_fixture("order_mass_cancel_request", "json"))

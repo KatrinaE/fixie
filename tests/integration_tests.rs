@@ -1,4 +1,4 @@
-use fixie::{RawFixMessage, NewOrderSingle, OrderCancelRequest, OrderCancelReplaceRequest, OrderCancelReject, OrderStatusRequest, DontKnowTrade, ExecutionAcknowledgement, OrderMassCancelRequest, OrderMassCancelReport, Side, OrdType, OrdStatus, DKReason, ExecAckStatus, MassCancelRequestType, MassCancelResponse};
+use fixie::{RawFixMessage, NewOrderSingle, OrderCancelRequest, OrderCancelReplaceRequest, OrderCancelReject, OrderStatusRequest, DontKnowTrade, ExecutionAcknowledgement, OrderMassCancelRequest, OrderMassCancelReport, Side, OrdType, OrdStatus, DKReason, ExecAckStatus, MassCancelRequestType, MassCancelResponse, OrderMassStatusRequest, OrderMassActionRequest, OrderMassActionReport, MassOrder, MassOrderAck, MassStatusReqType, MassActionType, MassActionResponse, OrderEntryAction, OrderResponseLevel};
 use std::fs;
 use std::path::PathBuf;
 use serde_json::Value;
@@ -873,4 +873,240 @@ fn test_msg_type_program_trading() {
     assert_eq!(MsgType::NewOrderList.to_fix(), "E");
     assert_eq!(MsgType::ListStatus.to_fix(), "N");
     assert_eq!(MsgType::BidRequest.to_fix(), "k");
+}
+
+// ============================================================================
+// Mass Order Message Tests
+// ============================================================================
+
+#[test]
+fn test_parse_order_mass_status_request() {
+    // OrderMassStatusRequest with basic fields
+    let msg = "8=FIXT.1.1|9=100|35=AF|584=STATUS001|585=2|11=ORD123|1=ACCT001|55=AAPL|54=1|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse OrderMassStatusRequest");
+
+    assert_eq!(parsed.get_field(35), Some("AF")); // MsgType
+    assert_eq!(parsed.get_field(584), Some("STATUS001")); // MassStatusReqID
+    assert_eq!(parsed.get_field(585), Some("2")); // MassStatusReqType = StatusForOrdersForSecurity
+    assert_eq!(parsed.get_field(11), Some("ORD123")); // ClOrdID
+    assert_eq!(parsed.get_field(1), Some("ACCT001")); // Account
+    assert_eq!(parsed.get_field(55), Some("AAPL")); // Symbol
+    assert_eq!(parsed.get_field(54), Some("1")); // Side = Buy
+}
+
+#[test]
+fn test_order_mass_status_request_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=AF|584=REQ001|585=8|55=MSFT|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = OrderMassStatusRequest::from_raw(&parsed).expect("Failed to convert");
+
+    assert_eq!(typed.mass_status_req_id, "REQ001");
+    assert_eq!(typed.mass_status_req_type, MassStatusReqType::StatusForAllOrders);
+    assert_eq!(typed.symbol, Some("MSFT".to_string()));
+    assert_eq!(typed.cl_ord_id, None);
+}
+
+#[test]
+fn test_order_mass_status_request_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=AF|584=REQ002|585=1|1=ACCT123|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = OrderMassStatusRequest::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+    let reparsed = OrderMassStatusRequest::from_raw(&raw).expect("Failed to reconvert");
+
+    assert_eq!(typed, reparsed);
+}
+
+#[test]
+fn test_parse_order_mass_action_request() {
+    // OrderMassActionRequest with target market segment
+    let msg = "8=FIXT.1.1|9=100|35=CA|11=ACTION001|1373=1|1300=SEG01|55=MSFT|54=2|60=20251008-12:00:00.000|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse OrderMassActionRequest");
+
+    assert_eq!(parsed.get_field(35), Some("CA")); // MsgType
+    assert_eq!(parsed.get_field(11), Some("ACTION001")); // ClOrdID
+    assert_eq!(parsed.get_field(1373), Some("1")); // MassActionType = SuspendOrders
+    assert_eq!(parsed.get_field(1300), Some("SEG01")); // MarketSegmentID
+    assert_eq!(parsed.get_field(55), Some("MSFT")); // Symbol
+    assert_eq!(parsed.get_field(54), Some("2")); // Side = Sell
+}
+
+#[test]
+fn test_order_mass_action_request_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=CA|11=ACT001|1373=3|55=GOOGL|60=20251008-13:00:00.000|58=Cancel all GOOGL orders|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = OrderMassActionRequest::from_raw(&parsed).expect("Failed to convert");
+
+    assert_eq!(typed.cl_ord_id, "ACT001");
+    assert_eq!(typed.mass_action_type, MassActionType::CancelOrders);
+    assert_eq!(typed.symbol, Some("GOOGL".to_string()));
+    assert_eq!(typed.transact_time, "20251008-13:00:00.000");
+    assert_eq!(typed.text, Some("Cancel all GOOGL orders".to_string()));
+}
+
+#[test]
+fn test_order_mass_action_request_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=CA|11=ACT002|1373=2|1301=XNAS|60=20251008-14:00:00.000|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = OrderMassActionRequest::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+    let reparsed = OrderMassActionRequest::from_raw(&raw).expect("Failed to reconvert");
+
+    assert_eq!(typed, reparsed);
+}
+
+#[test]
+fn test_parse_order_mass_action_report() {
+    // OrderMassActionReport with affected orders
+    let msg = "8=FIXT.1.1|9=100|35=BZ|11=ACTION001|1369=REPORT001|1373=1|1375=1|533=25|60=20251008-12:00:01.000|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse OrderMassActionReport");
+
+    assert_eq!(parsed.get_field(35), Some("BZ")); // MsgType
+    assert_eq!(parsed.get_field(11), Some("ACTION001")); // ClOrdID
+    assert_eq!(parsed.get_field(1369), Some("REPORT001")); // MassActionReportID
+    assert_eq!(parsed.get_field(1373), Some("1")); // MassActionType = SuspendOrders
+    assert_eq!(parsed.get_field(1375), Some("1")); // MassActionResponse = Accepted
+    assert_eq!(parsed.get_field(533), Some("25")); // TotalAffectedOrders
+}
+
+#[test]
+fn test_order_mass_action_report_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=BZ|1369=RPT001|1375=0|1376=99|60=20251008-15:00:00.000|58=Rejected: invalid criteria|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = OrderMassActionReport::from_raw(&parsed).expect("Failed to convert");
+
+    assert_eq!(typed.mass_action_report_id, "RPT001");
+    assert_eq!(typed.mass_action_response, MassActionResponse::Rejected);
+    assert_eq!(typed.mass_action_reject_reason, Some(99));
+    assert_eq!(typed.text, Some("Rejected: invalid criteria".to_string()));
+}
+
+#[test]
+fn test_order_mass_action_report_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=BZ|1369=RPT002|1375=1|533=10|1301=XNYS|60=20251008-16:00:00.000|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = OrderMassActionReport::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+    let reparsed = OrderMassActionReport::from_raw(&raw).expect("Failed to reconvert");
+
+    assert_eq!(typed, reparsed);
+}
+
+#[test]
+fn test_parse_mass_order() {
+    // MassOrder with basic fields
+    let msg = "8=FIXT.1.1|9=100|35=DJ|2436=MASS001|2429=1|49=TRADER1|56=MARKET1|2427=2|60=20251008-12:00:00.000|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse MassOrder");
+
+    assert_eq!(parsed.get_field(35), Some("DJ")); // MsgType
+    assert_eq!(parsed.get_field(2436), Some("MASS001")); // MassOrderID
+    assert_eq!(parsed.get_field(2429), Some("1")); // OrderEntryAction = Add
+    assert_eq!(parsed.get_field(49), Some("TRADER1")); // SenderCompID
+    assert_eq!(parsed.get_field(56), Some("MARKET1")); // TargetCompID
+    assert_eq!(parsed.get_field(2427), Some("2")); // OrderResponseLevel = AckEachOrder
+}
+
+#[test]
+fn test_mass_order_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=DJ|2436=MASS123|2429=2|2427=1|58=Bulk modify|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = MassOrder::from_raw(&parsed).expect("Failed to convert");
+
+    assert_eq!(typed.mass_order_id, "MASS123");
+    assert_eq!(typed.order_entry_action, OrderEntryAction::Modify);
+    assert_eq!(typed.order_response_level, Some(OrderResponseLevel::OnlyAckErrors));
+    assert_eq!(typed.text, Some("Bulk modify".to_string()));
+}
+
+#[test]
+fn test_mass_order_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=DJ|2436=MASS456|2429=3|49=CLIENT1|56=BROKER1|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = MassOrder::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+    let reparsed = MassOrder::from_raw(&raw).expect("Failed to reconvert");
+
+    assert_eq!(typed, reparsed);
+}
+
+#[test]
+fn test_parse_mass_order_ack() {
+    // MassOrderAck with basic fields
+    let msg = "8=FIXT.1.1|9=100|35=DK|2436=MASS001|2429=1|2427=2|49=MARKET1|56=TRADER1|60=20251008-12:00:01.000|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse MassOrderAck");
+
+    assert_eq!(parsed.get_field(35), Some("DK")); // MsgType
+    assert_eq!(parsed.get_field(2436), Some("MASS001")); // MassOrderID
+    assert_eq!(parsed.get_field(2429), Some("1")); // OrderEntryAction = Add
+    assert_eq!(parsed.get_field(2427), Some("2")); // OrderResponseLevel = AckEachOrder
+}
+
+#[test]
+fn test_mass_order_ack_typed_conversion() {
+    let msg = "8=FIXT.1.1|9=100|35=DK|2436=MASS789|2427=0|58=All orders accepted|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+
+    let typed = MassOrderAck::from_raw(&parsed).expect("Failed to convert");
+
+    assert_eq!(typed.mass_order_id, "MASS789");
+    assert_eq!(typed.order_response_level, Some(OrderResponseLevel::NoAck));
+    assert_eq!(typed.text, Some("All orders accepted".to_string()));
+}
+
+#[test]
+fn test_mass_order_ack_round_trip() {
+    let msg = "8=FIXT.1.1|9=100|35=DK|2436=MASS999|2429=4|49=BROKER2|56=CLIENT2|10=000|";
+    let parsed = RawFixMessage::parse(msg).expect("Failed to parse");
+    let typed = MassOrderAck::from_raw(&parsed).expect("Failed to convert");
+    let raw = typed.to_raw();
+    let reparsed = MassOrderAck::from_raw(&raw).expect("Failed to reconvert");
+
+    assert_eq!(typed, reparsed);
+}
+
+#[test]
+fn test_mass_order_enum_conversions() {
+    // OrderEntryAction
+    assert_eq!(OrderEntryAction::Add.to_fix(), '1');
+    assert_eq!(OrderEntryAction::Modify.to_fix(), '2');
+    assert_eq!(OrderEntryAction::from_fix('5'), Some(OrderEntryAction::Release));
+
+    // MassActionType
+    assert_eq!(MassActionType::SuspendOrders.to_fix(), '1');
+    assert_eq!(MassActionType::from_fix('3'), Some(MassActionType::CancelOrders));
+
+    // MassActionResponse
+    assert_eq!(MassActionResponse::Rejected.to_fix(), '0');
+    assert_eq!(MassActionResponse::Accepted.to_fix(), '1');
+
+    // MassStatusReqType
+    assert_eq!(MassStatusReqType::StatusForAllOrders.to_fix(), '8');
+    assert_eq!(MassStatusReqType::from_fix('2'), Some(MassStatusReqType::StatusForOrdersForSecurity));
+
+    // OrderResponseLevel
+    assert_eq!(OrderResponseLevel::NoAck.to_fix(), '0');
+    assert_eq!(OrderResponseLevel::from_fix('2'), Some(OrderResponseLevel::AckEachOrder));
+}
+
+#[test]
+fn test_msg_type_mass_order() {
+    use fixie::MsgType;
+
+    // Verify all Mass Order message types
+    assert_eq!(MsgType::from_fix("DJ"), Some(MsgType::MassOrder));
+    assert_eq!(MsgType::from_fix("DK"), Some(MsgType::MassOrderAck));
+    assert_eq!(MsgType::from_fix("CA"), Some(MsgType::OrderMassActionRequest));
+    assert_eq!(MsgType::from_fix("BZ"), Some(MsgType::OrderMassActionReport));
+    assert_eq!(MsgType::from_fix("AF"), Some(MsgType::OrderMassStatusRequest));
+
+    // Verify to_fix() round-trip
+    assert_eq!(MsgType::MassOrder.to_fix(), "DJ");
+    assert_eq!(MsgType::MassOrderAck.to_fix(), "DK");
+    assert_eq!(MsgType::OrderMassActionRequest.to_fix(), "CA");
+    assert_eq!(MsgType::OrderMassActionReport.to_fix(), "BZ");
+    assert_eq!(MsgType::OrderMassStatusRequest.to_fix(), "AF");
 }

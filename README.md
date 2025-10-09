@@ -195,6 +195,13 @@ let wire_format = raw.encode();
 - BidResponse (l)
 - ListStrikePrice (m)
 
+### Mass Order Messages
+- OrderMassStatusRequest (AF)
+- OrderMassActionRequest (CA)
+- OrderMassActionReport (BZ)
+- MassOrder (DJ)
+- MassOrderAck (DK)
+
 ## Features
 
 ### Nested Repeating Groups

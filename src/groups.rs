@@ -471,6 +471,136 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Mass Order Repeating Groups
+    // ========================================================================
+
+    // OrderEntryGrp (Tag 2430 = NoOrderEntries)
+    // Used in: MassOrder (DJ)
+    // Each entry is a full order specification (similar to NewOrderSingle)
+    registry.insert(
+        GroupKey { num_in_group_tag: 2430, msg_type: Some("DJ".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 2430, // NoOrderEntries
+            delimiter_tag: 11,      // ClOrdID
+            member_tags: vec![
+                11,   // ClOrdID - Required
+                526,  // SecondaryClOrdID
+                583,  // ClOrdLinkID
+                // Instrument component
+                55,   // Symbol
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                // OrderQtyData component
+                38,   // OrderQty
+                152,  // CashOrderQty
+                516,  // OrderPercent
+                54,   // Side - Required
+                40,   // OrdType - Required
+                44,   // Price
+                99,   // StopPx
+                15,   // Currency
+                59,   // TimeInForce
+                168,  // EffectiveTime
+                432,  // ExpireDate
+                126,  // ExpireTime
+                60,   // TransactTime - Required
+                1,    // Account
+                660,  // AcctIDSource
+                581,  // AccountType
+                528,  // OrderCapacity
+                529,  // OrderRestrictions
+                582,  // CustOrderCapacity
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 453, // Parties (NoPartyIDs)
+                    parent_tag: None,
+                },
+                NestedGroupInfo {
+                    num_in_group_tag: 78, // PreAllocGrp (NoAllocs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // OrderEntryAckGrp (Tag 2430 = NoOrderEntries)
+    // Used in: MassOrderAck (DK)
+    // Contains acknowledgement status for each order entry
+    registry.insert(
+        GroupKey { num_in_group_tag: 2430, msg_type: Some("DK".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 2430, // NoOrderEntries
+            delimiter_tag: 11,      // ClOrdID
+            member_tags: vec![
+                11,   // ClOrdID - Required
+                37,   // OrderID
+                39,   // OrdStatus
+                103,  // OrdRejReason
+                636,  // WorkingIndicator
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // TargetMarketSegmentGrp (Tag 1793 = NoTargetMarketSegments)
+    // Used in: OrderMassActionRequest (CA)
+    // Specifies market segments to target for mass action
+    registry.insert(
+        GroupKey { num_in_group_tag: 1793, msg_type: Some("CA".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 1793, // NoTargetMarketSegments
+            delimiter_tag: 1300,    // MarketSegmentID
+            member_tags: vec![
+                1300, // MarketSegmentID - Required
+                1301, // MarketID
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // AffectedMarketSegmentGrp (Tag 1793 = NoAffectedMarketSegments)
+    // Used in: OrderMassActionReport (BZ)
+    // Reports market segments affected by the mass action
+    registry.insert(
+        GroupKey { num_in_group_tag: 1793, msg_type: Some("BZ".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 1793, // NoAffectedMarketSegments
+            delimiter_tag: 1300,    // MarketSegmentID
+            member_tags: vec![
+                1300, // MarketSegmentID - Required
+                1301, // MarketID
+                533,  // TotalAffectedOrders
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // NotAffectedMarketSegmentGrp (Tag 1794 = NoNotAffMarketSegments)
+    // Used in: OrderMassActionReport (BZ)
+    // Reports market segments NOT affected by the mass action
+    registry.insert(
+        GroupKey { num_in_group_tag: 1794, msg_type: Some("BZ".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 1794, // NoNotAffMarketSegments
+            delimiter_tag: 1300,    // MarketSegmentID
+            member_tags: vec![
+                1300, // MarketSegmentID - Required
+                1301, // MarketID
+            ],
+            nested_groups: vec![],
+        },
+    );
+
     registry
 });
 
@@ -789,5 +919,103 @@ mod tests {
         // ListOrdGrp should have PreAllocGrp (78) as nested group
         let nested = get_nested_groups(73, Some("E")).expect("ListOrdGrp should have nested groups");
         assert!(nested.iter().any(|n| n.num_in_group_tag == 78));
+    }
+
+    // ========================================================================
+    // Mass Order Group Tests
+    // ========================================================================
+
+    #[test]
+    fn test_order_entry_grp_mass_order() {
+        // OrderEntryGrp (2430) for MassOrder (DJ)
+        let config = get_group_config(2430, Some("DJ")).expect("OrderEntryGrp should exist for MassOrder");
+        assert_eq!(config.num_in_group_tag, 2430);
+        assert_eq!(config.delimiter_tag, 11); // ClOrdID
+        assert!(config.member_tags.contains(&55)); // Symbol
+        assert!(config.member_tags.contains(&38)); // OrderQty
+        assert!(config.member_tags.contains(&54)); // Side
+        assert!(config.member_tags.contains(&40)); // OrdType
+        assert_eq!(config.nested_groups.len(), 2); // Parties + PreAllocGrp
+    }
+
+    #[test]
+    fn test_order_entry_ack_grp_mass_order_ack() {
+        // OrderEntryAckGrp (2430) for MassOrderAck (DK)
+        let config = get_group_config(2430, Some("DK")).expect("OrderEntryAckGrp should exist for MassOrderAck");
+        assert_eq!(config.num_in_group_tag, 2430);
+        assert_eq!(config.delimiter_tag, 11); // ClOrdID
+        assert!(config.member_tags.contains(&37)); // OrderID
+        assert!(config.member_tags.contains(&39)); // OrdStatus
+        assert!(config.member_tags.contains(&103)); // OrdRejReason
+        assert_eq!(config.nested_groups.len(), 0); // No nested groups
+    }
+
+    #[test]
+    fn test_target_market_segment_grp() {
+        // TargetMarketSegmentGrp (1793) for OrderMassActionRequest (CA)
+        let config = get_group_config(1793, Some("CA")).expect("TargetMarketSegmentGrp should exist");
+        assert_eq!(config.num_in_group_tag, 1793);
+        assert_eq!(config.delimiter_tag, 1300); // MarketSegmentID
+        assert!(config.member_tags.contains(&1300)); // MarketSegmentID
+        assert!(config.member_tags.contains(&1301)); // MarketID
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_affected_market_segment_grp() {
+        // AffectedMarketSegmentGrp (1793) for OrderMassActionReport (BZ)
+        let config = get_group_config(1793, Some("BZ")).expect("AffectedMarketSegmentGrp should exist");
+        assert_eq!(config.num_in_group_tag, 1793);
+        assert_eq!(config.delimiter_tag, 1300); // MarketSegmentID
+        assert!(config.member_tags.contains(&1300)); // MarketSegmentID
+        assert!(config.member_tags.contains(&1301)); // MarketID
+        assert!(config.member_tags.contains(&533)); // TotalAffectedOrders
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_not_affected_market_segment_grp() {
+        // NotAffectedMarketSegmentGrp (1794) for OrderMassActionReport (BZ)
+        let config = get_group_config(1794, Some("BZ")).expect("NotAffectedMarketSegmentGrp should exist");
+        assert_eq!(config.num_in_group_tag, 1794);
+        assert_eq!(config.delimiter_tag, 1300); // MarketSegmentID
+        assert!(config.member_tags.contains(&1300)); // MarketSegmentID
+        assert!(config.member_tags.contains(&1301)); // MarketID
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_order_entry_grp_has_parties_nested() {
+        // OrderEntryGrp should have Parties (453) as nested group
+        let nested = get_nested_groups(2430, Some("DJ")).expect("OrderEntryGrp should have nested groups");
+        assert!(nested.iter().any(|n| n.num_in_group_tag == 453));
+    }
+
+    #[test]
+    fn test_order_entry_grp_has_pre_alloc_nested() {
+        // OrderEntryGrp should have PreAllocGrp (78) as nested group
+        let nested = get_nested_groups(2430, Some("DJ")).expect("OrderEntryGrp should have nested groups");
+        assert!(nested.iter().any(|n| n.num_in_group_tag == 78));
+    }
+
+    #[test]
+    fn test_message_specific_tag_2430() {
+        // Tag 2430 has different meanings for MassOrder (DJ) vs MassOrderAck (DK)
+        let order_config = get_group_config(2430, Some("DJ")).expect("OrderEntryGrp should exist");
+        let ack_config = get_group_config(2430, Some("DK")).expect("OrderEntryAckGrp should exist");
+
+        // Both have same tag and delimiter
+        assert_eq!(order_config.num_in_group_tag, ack_config.num_in_group_tag);
+        assert_eq!(order_config.delimiter_tag, ack_config.delimiter_tag);
+
+        // But different member tags (order has Symbol, ack has OrdStatus)
+        assert!(order_config.member_tags.contains(&55)); // Symbol
+        assert!(!ack_config.member_tags.contains(&55)); // Symbol
+        assert!(!order_config.member_tags.contains(&39)); // OrdStatus
+        assert!(ack_config.member_tags.contains(&39)); // OrdStatus
+
+        // Different nested groups
+        assert_eq!(order_config.nested_groups.len(), 2); // Parties + PreAllocGrp
+        assert_eq!(ack_config.nested_groups.len(), 0); // No nested groups
     }
 }

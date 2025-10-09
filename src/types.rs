@@ -985,6 +985,30 @@ pub enum BusinessRejectReason {
     DeliverToFirmNotAvailableAtThisTime,   // 7 - DeliverToFirm not available at this time
 }
 
+/// NetworkRequestType (Tag 935) - Type of network request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum NetworkRequestType {
+    Snapshot,                    // 1 - Snapshot of current status
+    Subscribe,                   // 2 - Subscribe to updates
+    StopSubscribing,             // 4 - Stop subscribing
+    LevelOfDetail,               // 8 - Level of detail
+}
+
+/// NetworkStatusResponseType (Tag 937) - Type of network response
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum NetworkStatusResponseType {
+    Full,                        // 1 - Full refresh
+    IncrementalUpdate,           // 2 - Incremental update
+}
+
+/// NetworkSystemStatus (Tag 928) - Status of a counterparty system
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum NetworkSystemStatus {
+    Online,                      // 0 - System is online
+    TemporarilyUnavailable,      // 1 - Temporarily unavailable
+    Offline,                     // 2 - System is offline
+}
+
 impl BusinessRejectReason {
     pub fn to_fix(&self) -> char {
         match self {
@@ -1009,6 +1033,63 @@ impl BusinessRejectReason {
             '5' => Some(BusinessRejectReason::ConditionallyRequiredFieldMissing),
             '6' => Some(BusinessRejectReason::NotAuthorized),
             '7' => Some(BusinessRejectReason::DeliverToFirmNotAvailableAtThisTime),
+            _ => None,
+        }
+    }
+}
+
+impl NetworkRequestType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            NetworkRequestType::Snapshot => '1',
+            NetworkRequestType::Subscribe => '2',
+            NetworkRequestType::StopSubscribing => '4',
+            NetworkRequestType::LevelOfDetail => '8',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(NetworkRequestType::Snapshot),
+            '2' => Some(NetworkRequestType::Subscribe),
+            '4' => Some(NetworkRequestType::StopSubscribing),
+            '8' => Some(NetworkRequestType::LevelOfDetail),
+            _ => None,
+        }
+    }
+}
+
+impl NetworkStatusResponseType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            NetworkStatusResponseType::Full => '1',
+            NetworkStatusResponseType::IncrementalUpdate => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(NetworkStatusResponseType::Full),
+            '2' => Some(NetworkStatusResponseType::IncrementalUpdate),
+            _ => None,
+        }
+    }
+}
+
+impl NetworkSystemStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            NetworkSystemStatus::Online => '0',
+            NetworkSystemStatus::TemporarilyUnavailable => '1',
+            NetworkSystemStatus::Offline => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(NetworkSystemStatus::Online),
+            '1' => Some(NetworkSystemStatus::TemporarilyUnavailable),
+            '2' => Some(NetworkSystemStatus::Offline),
             _ => None,
         }
     }
@@ -1140,5 +1221,41 @@ mod mass_order_tests {
         assert_eq!(BusinessRejectReason::from_fix('3'), Some(BusinessRejectReason::UnsupportedMessageType));
         assert_eq!(BusinessRejectReason::from_fix('7'), Some(BusinessRejectReason::DeliverToFirmNotAvailableAtThisTime));
         assert_eq!(BusinessRejectReason::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_network_request_type_conversions() {
+        assert_eq!(NetworkRequestType::Snapshot.to_fix(), '1');
+        assert_eq!(NetworkRequestType::Subscribe.to_fix(), '2');
+        assert_eq!(NetworkRequestType::StopSubscribing.to_fix(), '4');
+        assert_eq!(NetworkRequestType::LevelOfDetail.to_fix(), '8');
+
+        assert_eq!(NetworkRequestType::from_fix('1'), Some(NetworkRequestType::Snapshot));
+        assert_eq!(NetworkRequestType::from_fix('2'), Some(NetworkRequestType::Subscribe));
+        assert_eq!(NetworkRequestType::from_fix('4'), Some(NetworkRequestType::StopSubscribing));
+        assert_eq!(NetworkRequestType::from_fix('8'), Some(NetworkRequestType::LevelOfDetail));
+        assert_eq!(NetworkRequestType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_network_status_response_type_conversions() {
+        assert_eq!(NetworkStatusResponseType::Full.to_fix(), '1');
+        assert_eq!(NetworkStatusResponseType::IncrementalUpdate.to_fix(), '2');
+
+        assert_eq!(NetworkStatusResponseType::from_fix('1'), Some(NetworkStatusResponseType::Full));
+        assert_eq!(NetworkStatusResponseType::from_fix('2'), Some(NetworkStatusResponseType::IncrementalUpdate));
+        assert_eq!(NetworkStatusResponseType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_network_system_status_conversions() {
+        assert_eq!(NetworkSystemStatus::Online.to_fix(), '0');
+        assert_eq!(NetworkSystemStatus::TemporarilyUnavailable.to_fix(), '1');
+        assert_eq!(NetworkSystemStatus::Offline.to_fix(), '2');
+
+        assert_eq!(NetworkSystemStatus::from_fix('0'), Some(NetworkSystemStatus::Online));
+        assert_eq!(NetworkSystemStatus::from_fix('1'), Some(NetworkSystemStatus::TemporarilyUnavailable));
+        assert_eq!(NetworkSystemStatus::from_fix('2'), Some(NetworkSystemStatus::Offline));
+        assert_eq!(NetworkSystemStatus::from_fix('9'), None);
     }
 }

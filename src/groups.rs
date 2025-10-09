@@ -601,6 +601,132 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Multileg Order Repeating Groups
+    // ========================================================================
+
+    // LegOrdGrp (Tag 555 = NoLegs)
+    // Used in: NewOrderMultileg (AB), MultilegOrderCancelReplace (AC)
+    // Each entry contains full leg specification with nested groups
+    registry.insert(
+        GroupKey { num_in_group_tag: 555, msg_type: Some("AB".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 555, // NoLegs
+            delimiter_tag: 600,    // LegSymbol
+            member_tags: vec![
+                600,  // LegSymbol
+                601,  // LegSymbolSfx
+                602,  // LegSecurityID
+                603,  // LegSecurityIDSource
+                604,  // LegProduct
+                605,  // LegCFICode
+                606,  // LegSecurityType
+                607,  // LegMaturityMonthYear
+                608,  // LegMaturityDate
+                609,  // LegStrikePrice
+                610,  // LegOptAttribute
+                611,  // LegContractMultiplier
+                612,  // LegCouponRate
+                613,  // LegSecurityExchange
+                614,  // LegIssuer
+                615,  // LegSecurityDesc
+                616,  // LegRatioQty
+                623,  // LegRatioQty (alternative)
+                624,  // LegSide
+                566,  // LegPrice
+                654,  // LegRefID
+                687,  // LegQty
+                690,  // LegSwapType
+                564,  // LegPositionEffect
+                565,  // LegCoveredOrUncovered
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 683, // LegStipulations (NoLegStipulations)
+                    parent_tag: None,
+                },
+                NestedGroupInfo {
+                    num_in_group_tag: 539, // NestedPartyIDs (NoNestedPartyIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same LegOrdGrp for MultilegOrderCancelReplace (AC)
+    registry.insert(
+        GroupKey { num_in_group_tag: 555, msg_type: Some("AC".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 555,
+            delimiter_tag: 600,
+            member_tags: vec![
+                600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613,
+                614, 615, 616, 623, 624, 566, 654, 687, 690, 564, 565,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 683,
+                    parent_tag: None,
+                },
+                NestedGroupInfo {
+                    num_in_group_tag: 539,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // LegStipulations (Tag 683 = NoLegStipulations)
+    // Nested within LegOrdGrp - leg-specific stipulations
+    registry.insert(
+        GroupKey { num_in_group_tag: 683, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 683, // NoLegStipulations
+            delimiter_tag: 688,    // LegStipulationType
+            member_tags: vec![
+                688,  // LegStipulationType
+                689,  // LegStipulationValue
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // NestedPartyIDs (Tag 539 = NoNestedPartyIDs)
+    // Nested within LegOrdGrp - leg-level party information
+    registry.insert(
+        GroupKey { num_in_group_tag: 539, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 539, // NoNestedPartyIDs
+            delimiter_tag: 524,    // NestedPartyID
+            member_tags: vec![
+                524,  // NestedPartyID
+                525,  // NestedPartyIDSource
+                538,  // NestedPartyRole
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 804, // NstdPtysSubGrp (NoNestedPartySubIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // NstdPtysSubGrp (Tag 804 = NoNestedPartySubIDs)
+    // Nested within NestedPartyIDs
+    registry.insert(
+        GroupKey { num_in_group_tag: 804, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 804, // NoNestedPartySubIDs
+            delimiter_tag: 545,    // NestedPartySubID
+            member_tags: vec![
+                545,  // NestedPartySubID
+                805,  // NestedPartySubIDType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
     registry
 });
 
@@ -1017,5 +1143,89 @@ mod tests {
         // Different nested groups
         assert_eq!(order_config.nested_groups.len(), 2); // Parties + PreAllocGrp
         assert_eq!(ack_config.nested_groups.len(), 0); // No nested groups
+    }
+
+    // ========================================================================
+    // Multileg Order Group Tests
+    // ========================================================================
+
+    #[test]
+    fn test_leg_ord_grp_new_order_multileg() {
+        // LegOrdGrp (555) for NewOrderMultileg (AB)
+        let config = get_group_config(555, Some("AB")).expect("LegOrdGrp should exist");
+        assert_eq!(config.num_in_group_tag, 555);
+        assert_eq!(config.delimiter_tag, 600); // LegSymbol
+        assert!(config.member_tags.contains(&600)); // LegSymbol
+        assert!(config.member_tags.contains(&606)); // LegSecurityType
+        assert!(config.member_tags.contains(&609)); // LegStrikePrice
+        assert!(config.member_tags.contains(&624)); // LegSide
+        assert!(config.member_tags.contains(&566)); // LegPrice
+        assert_eq!(config.nested_groups.len(), 2); // LegStipulations + NestedPartyIDs
+    }
+
+    #[test]
+    fn test_leg_ord_grp_multileg_cancel_replace() {
+        // LegOrdGrp (555) for MultilegOrderCancelReplace (AC)
+        let config = get_group_config(555, Some("AC")).expect("LegOrdGrp should exist");
+        assert_eq!(config.num_in_group_tag, 555);
+        assert_eq!(config.delimiter_tag, 600); // LegSymbol
+    }
+
+    #[test]
+    fn test_leg_stipulations() {
+        // LegStipulations (683) - generic, not message-specific
+        let config = get_group_config(683, None).expect("LegStipulations should exist");
+        assert_eq!(config.num_in_group_tag, 683);
+        assert_eq!(config.delimiter_tag, 688); // LegStipulationType
+        assert!(config.member_tags.contains(&688)); // LegStipulationType
+        assert!(config.member_tags.contains(&689)); // LegStipulationValue
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_nested_party_ids() {
+        // NestedPartyIDs (539)
+        let config = get_group_config(539, None).expect("NestedPartyIDs should exist");
+        assert_eq!(config.num_in_group_tag, 539);
+        assert_eq!(config.delimiter_tag, 524); // NestedPartyID
+        assert!(config.member_tags.contains(&524)); // NestedPartyID
+        assert!(config.member_tags.contains(&525)); // NestedPartyIDSource
+        assert!(config.member_tags.contains(&538)); // NestedPartyRole
+        assert_eq!(config.nested_groups.len(), 1); // NstdPtysSubGrp
+        assert_eq!(config.nested_groups[0].num_in_group_tag, 804);
+    }
+
+    #[test]
+    fn test_nstd_ptys_sub_grp() {
+        // NstdPtysSubGrp (804)
+        let config = get_group_config(804, None).expect("NstdPtysSubGrp should exist");
+        assert_eq!(config.num_in_group_tag, 804);
+        assert_eq!(config.delimiter_tag, 545); // NestedPartySubID
+        assert!(config.member_tags.contains(&545)); // NestedPartySubID
+        assert!(config.member_tags.contains(&805)); // NestedPartySubIDType
+        assert_eq!(config.nested_groups.len(), 0); // No further nesting
+    }
+
+    #[test]
+    fn test_leg_ord_grp_has_leg_stipulations_nested() {
+        // LegOrdGrp should have LegStipulations (683) as nested group
+        let nested = get_nested_groups(555, Some("AB")).expect("LegOrdGrp should have nested groups");
+        assert!(nested.iter().any(|n| n.num_in_group_tag == 683));
+    }
+
+    #[test]
+    fn test_leg_ord_grp_has_nested_party_ids_nested() {
+        // LegOrdGrp should have NestedPartyIDs (539) as nested group
+        let nested = get_nested_groups(555, Some("AB")).expect("LegOrdGrp should have nested groups");
+        assert!(nested.iter().any(|n| n.num_in_group_tag == 539));
+    }
+
+    #[test]
+    fn test_triple_nesting_multileg() {
+        // Verify 3-level nesting: LegOrdGrp -> NestedPartyIDs -> NstdPtysSubGrp
+        // Level 1: LegOrdGrp contains NestedPartyIDs
+        assert!(is_nested_group(555, 539, Some("AB")));
+        // Level 2: NestedPartyIDs contains NstdPtysSubGrp
+        assert!(is_nested_group(539, 804, None));
     }
 }

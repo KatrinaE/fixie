@@ -720,3 +720,234 @@ mod tests {
         assert_eq!(PriceType::from_fix("99"), None);
     }
 }
+
+// ============================================================================
+// Mass Order Message Enums
+// ============================================================================
+
+/// OrderEntryAction (Tag 2429) - Action for OrderEntryGrp
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum OrderEntryAction {
+    Add,      // 1 - Add new order
+    Modify,   // 2 - Modify existing order
+    Delete,   // 3 - Delete order
+    Suspend,  // 4 - Suspend order
+    Release,  // 5 - Release suspended order
+}
+
+impl OrderEntryAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            OrderEntryAction::Add => '1',
+            OrderEntryAction::Modify => '2',
+            OrderEntryAction::Delete => '3',
+            OrderEntryAction::Suspend => '4',
+            OrderEntryAction::Release => '5',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(OrderEntryAction::Add),
+            '2' => Some(OrderEntryAction::Modify),
+            '3' => Some(OrderEntryAction::Delete),
+            '4' => Some(OrderEntryAction::Suspend),
+            '5' => Some(OrderEntryAction::Release),
+            _ => None,
+        }
+    }
+}
+
+/// MassActionType (Tag 1373) - Type of mass action requested
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MassActionType {
+    SuspendOrders,                    // 1
+    ReleaseOrdersFromSuspension,      // 2
+    CancelOrders,                     // 3
+}
+
+impl MassActionType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            MassActionType::SuspendOrders => '1',
+            MassActionType::ReleaseOrdersFromSuspension => '2',
+            MassActionType::CancelOrders => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(MassActionType::SuspendOrders),
+            '2' => Some(MassActionType::ReleaseOrdersFromSuspension),
+            '3' => Some(MassActionType::CancelOrders),
+            _ => None,
+        }
+    }
+}
+
+/// MassActionResponse (Tag 1375) - Response to mass action request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MassActionResponse {
+    Rejected,  // 0
+    Accepted,  // 1
+}
+
+impl MassActionResponse {
+    pub fn to_fix(&self) -> char {
+        match self {
+            MassActionResponse::Rejected => '0',
+            MassActionResponse::Accepted => '1',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(MassActionResponse::Rejected),
+            '1' => Some(MassActionResponse::Accepted),
+            _ => None,
+        }
+    }
+}
+
+/// MassStatusReqType (Tag 585) - Type of mass status request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MassStatusReqType {
+    StatusForOrdersForParty,              // 1
+    StatusForOrdersForSecurity,           // 2
+    StatusForOrdersForUnderlyingSecurity, // 3
+    StatusForOrdersForProduct,            // 4
+    StatusForOrdersForCFICode,            // 5
+    StatusForOrdersForSecurityType,       // 6
+    StatusForOrdersForTradingSession,     // 7
+    StatusForAllOrders,                   // 8
+    StatusForOrdersForPartyGroup,         // 9
+}
+
+impl MassStatusReqType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            MassStatusReqType::StatusForOrdersForParty => '1',
+            MassStatusReqType::StatusForOrdersForSecurity => '2',
+            MassStatusReqType::StatusForOrdersForUnderlyingSecurity => '3',
+            MassStatusReqType::StatusForOrdersForProduct => '4',
+            MassStatusReqType::StatusForOrdersForCFICode => '5',
+            MassStatusReqType::StatusForOrdersForSecurityType => '6',
+            MassStatusReqType::StatusForOrdersForTradingSession => '7',
+            MassStatusReqType::StatusForAllOrders => '8',
+            MassStatusReqType::StatusForOrdersForPartyGroup => '9',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(MassStatusReqType::StatusForOrdersForParty),
+            '2' => Some(MassStatusReqType::StatusForOrdersForSecurity),
+            '3' => Some(MassStatusReqType::StatusForOrdersForUnderlyingSecurity),
+            '4' => Some(MassStatusReqType::StatusForOrdersForProduct),
+            '5' => Some(MassStatusReqType::StatusForOrdersForCFICode),
+            '6' => Some(MassStatusReqType::StatusForOrdersForSecurityType),
+            '7' => Some(MassStatusReqType::StatusForOrdersForTradingSession),
+            '8' => Some(MassStatusReqType::StatusForAllOrders),
+            '9' => Some(MassStatusReqType::StatusForOrdersForPartyGroup),
+            _ => None,
+        }
+    }
+}
+
+/// OrderResponseLevel (Tag 2427) - Level of detail in order acknowledgement
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum OrderResponseLevel {
+    NoAck,         // 0 - No acknowledgement
+    OnlyAckErrors, // 1 - Only acknowledge orders with errors
+    AckEachOrder,  // 2 - Acknowledge each order
+}
+
+impl OrderResponseLevel {
+    pub fn to_fix(&self) -> char {
+        match self {
+            OrderResponseLevel::NoAck => '0',
+            OrderResponseLevel::OnlyAckErrors => '1',
+            OrderResponseLevel::AckEachOrder => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(OrderResponseLevel::NoAck),
+            '1' => Some(OrderResponseLevel::OnlyAckErrors),
+            '2' => Some(OrderResponseLevel::AckEachOrder),
+            _ => None,
+        }
+    }
+}
+
+// ============================================================================
+// Mass Order Enum Tests
+// ============================================================================
+
+#[cfg(test)]
+mod mass_order_tests {
+    use super::*;
+
+    #[test]
+    fn test_order_entry_action_conversions() {
+        assert_eq!(OrderEntryAction::Add.to_fix(), '1');
+        assert_eq!(OrderEntryAction::Modify.to_fix(), '2');
+        assert_eq!(OrderEntryAction::Delete.to_fix(), '3');
+        assert_eq!(OrderEntryAction::Suspend.to_fix(), '4');
+        assert_eq!(OrderEntryAction::Release.to_fix(), '5');
+
+        assert_eq!(OrderEntryAction::from_fix('1'), Some(OrderEntryAction::Add));
+        assert_eq!(OrderEntryAction::from_fix('2'), Some(OrderEntryAction::Modify));
+        assert_eq!(OrderEntryAction::from_fix('3'), Some(OrderEntryAction::Delete));
+        assert_eq!(OrderEntryAction::from_fix('4'), Some(OrderEntryAction::Suspend));
+        assert_eq!(OrderEntryAction::from_fix('5'), Some(OrderEntryAction::Release));
+        assert_eq!(OrderEntryAction::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_mass_action_type_conversions() {
+        assert_eq!(MassActionType::SuspendOrders.to_fix(), '1');
+        assert_eq!(MassActionType::ReleaseOrdersFromSuspension.to_fix(), '2');
+        assert_eq!(MassActionType::CancelOrders.to_fix(), '3');
+
+        assert_eq!(MassActionType::from_fix('1'), Some(MassActionType::SuspendOrders));
+        assert_eq!(MassActionType::from_fix('2'), Some(MassActionType::ReleaseOrdersFromSuspension));
+        assert_eq!(MassActionType::from_fix('3'), Some(MassActionType::CancelOrders));
+        assert_eq!(MassActionType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_mass_action_response_conversions() {
+        assert_eq!(MassActionResponse::Rejected.to_fix(), '0');
+        assert_eq!(MassActionResponse::Accepted.to_fix(), '1');
+
+        assert_eq!(MassActionResponse::from_fix('0'), Some(MassActionResponse::Rejected));
+        assert_eq!(MassActionResponse::from_fix('1'), Some(MassActionResponse::Accepted));
+        assert_eq!(MassActionResponse::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_mass_status_req_type_conversions() {
+        assert_eq!(MassStatusReqType::StatusForOrdersForParty.to_fix(), '1');
+        assert_eq!(MassStatusReqType::StatusForOrdersForSecurity.to_fix(), '2');
+        assert_eq!(MassStatusReqType::StatusForAllOrders.to_fix(), '8');
+        assert_eq!(MassStatusReqType::StatusForOrdersForPartyGroup.to_fix(), '9');
+
+        assert_eq!(MassStatusReqType::from_fix('1'), Some(MassStatusReqType::StatusForOrdersForParty));
+        assert_eq!(MassStatusReqType::from_fix('8'), Some(MassStatusReqType::StatusForAllOrders));
+        assert_eq!(MassStatusReqType::from_fix('0'), None);
+    }
+
+    #[test]
+    fn test_order_response_level_conversions() {
+        assert_eq!(OrderResponseLevel::NoAck.to_fix(), '0');
+        assert_eq!(OrderResponseLevel::OnlyAckErrors.to_fix(), '1');
+        assert_eq!(OrderResponseLevel::AckEachOrder.to_fix(), '2');
+
+        assert_eq!(OrderResponseLevel::from_fix('0'), Some(OrderResponseLevel::NoAck));
+        assert_eq!(OrderResponseLevel::from_fix('1'), Some(OrderResponseLevel::OnlyAckErrors));
+        assert_eq!(OrderResponseLevel::from_fix('2'), Some(OrderResponseLevel::AckEachOrder));
+        assert_eq!(OrderResponseLevel::from_fix('9'), None);
+    }
+}

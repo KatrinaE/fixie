@@ -727,6 +727,44 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Network Status Communication Groups
+    // ========================================================================
+
+    // CompIDReqGrp (Tag 936 = NoCompIDs) - for NetworkCounterpartySystemStatusRequest (BC)
+    registry.insert(
+        GroupKey { num_in_group_tag: 936, msg_type: Some("BC".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 936, // NoCompIDs
+            delimiter_tag: 930,    // RefCompID
+            member_tags: vec![
+                930,  // RefCompID
+                931,  // RefSubID
+                283,  // LocationID
+                284,  // DeskID
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // CompIDStatGrp (Tag 936 = NoCompIDs) - for NetworkCounterpartySystemStatusResponse (BD)
+    registry.insert(
+        GroupKey { num_in_group_tag: 936, msg_type: Some("BD".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 936, // NoCompIDs
+            delimiter_tag: 930,    // RefCompID
+            member_tags: vec![
+                930,  // RefCompID
+                931,  // RefSubID
+                283,  // LocationID
+                284,  // DeskID
+                928,  // StatusValue (NetworkSystemStatus)
+                929,  // StatusText
+            ],
+            nested_groups: vec![],
+        },
+    );
+
     registry
 });
 
@@ -1227,5 +1265,33 @@ mod tests {
         assert!(is_nested_group(555, 539, Some("AB")));
         // Level 2: NestedPartyIDs contains NstdPtysSubGrp
         assert!(is_nested_group(539, 804, None));
+    }
+
+    #[test]
+    fn test_comp_id_req_grp_network_status_request() {
+        // CompIDReqGrp for NetworkCounterpartySystemStatusRequest (BC)
+        let config = get_group_config(936, Some("BC")).expect("CompIDReqGrp for BC should exist");
+        assert_eq!(config.delimiter_tag, 930); // RefCompID
+        assert_eq!(config.member_tags.len(), 4);
+        assert!(config.member_tags.contains(&930)); // RefCompID
+        assert!(config.member_tags.contains(&931)); // RefSubID
+        assert!(config.member_tags.contains(&283)); // LocationID
+        assert!(config.member_tags.contains(&284)); // DeskID
+        assert_eq!(config.nested_groups.len(), 0);
+    }
+
+    #[test]
+    fn test_comp_id_stat_grp_network_status_response() {
+        // CompIDStatGrp for NetworkCounterpartySystemStatusResponse (BD)
+        let config = get_group_config(936, Some("BD")).expect("CompIDStatGrp for BD should exist");
+        assert_eq!(config.delimiter_tag, 930); // RefCompID
+        assert_eq!(config.member_tags.len(), 6);
+        assert!(config.member_tags.contains(&930)); // RefCompID
+        assert!(config.member_tags.contains(&931)); // RefSubID
+        assert!(config.member_tags.contains(&283)); // LocationID
+        assert!(config.member_tags.contains(&284)); // DeskID
+        assert!(config.member_tags.contains(&928)); // StatusValue
+        assert!(config.member_tags.contains(&929)); // StatusText
+        assert_eq!(config.nested_groups.len(), 0);
     }
 }

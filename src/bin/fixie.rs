@@ -160,11 +160,23 @@ fn tag_name(tag: u32) -> &'static str {
         1378 => "MultilegPriceMethod",
         // Infrastructure Message tags
         45 => "RefSeqNum",
+        283 => "LocationID",
+        284 => "DeskID",
         354 => "EncodedTextLen",
         355 => "EncodedText",
         372 => "RefMsgType",
         379 => "BusinessRejectRefID",
         380 => "BusinessRejectReason",
+        928 => "StatusValue",
+        929 => "StatusText",
+        930 => "RefCompID",
+        931 => "RefSubID",
+        932 => "NetworkRespID",
+        933 => "NetworkReqID",
+        934 => "LastNetworkRespID",
+        935 => "NetworkRequestType",
+        936 => "NoCompIDs",
+        937 => "NetworkStatusResponseType",
         _ => "Unknown",
     }
 }
@@ -209,6 +221,8 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::NewOrderMultileg => "NewOrderMultileg",
             MsgType::MultilegOrderCancelReplace => "MultilegOrderCancelReplace",
             MsgType::BusinessMessageReject => "BusinessMessageReject",
+            MsgType::NetworkCounterpartySystemStatusRequest => "NetworkCounterpartySystemStatusRequest",
+            MsgType::NetworkCounterpartySystemStatusResponse => "NetworkCounterpartySystemStatusResponse",
         })
         .unwrap_or("Unknown")
 }

@@ -47,6 +47,8 @@ pub enum MsgType {
     MultilegOrderCancelReplace, // AC
     // Infrastructure Messages
     BusinessMessageReject,    // j
+    NetworkCounterpartySystemStatusRequest,  // BC
+    NetworkCounterpartySystemStatusResponse, // BD
 }
 
 impl MsgType {
@@ -89,6 +91,8 @@ impl MsgType {
             MsgType::NewOrderMultileg => "AB",
             MsgType::MultilegOrderCancelReplace => "AC",
             MsgType::BusinessMessageReject => "j",
+            MsgType::NetworkCounterpartySystemStatusRequest => "BC",
+            MsgType::NetworkCounterpartySystemStatusResponse => "BD",
         }
     }
 
@@ -131,6 +135,8 @@ impl MsgType {
             "AB" => Some(MsgType::NewOrderMultileg),
             "AC" => Some(MsgType::MultilegOrderCancelReplace),
             "j" => Some(MsgType::BusinessMessageReject),
+            "BC" => Some(MsgType::NetworkCounterpartySystemStatusRequest),
+            "BD" => Some(MsgType::NetworkCounterpartySystemStatusResponse),
             _ => None,
         }
     }
@@ -1675,6 +1681,8 @@ pub enum FixMessage {
     MultilegOrderCancelReplace(crate::multileg_orders::MultilegOrderCancelReplace),
     // Infrastructure Messages
     BusinessMessageReject(BusinessMessageReject),
+    NetworkCounterpartySystemStatusRequest(crate::network_status::NetworkCounterpartySystemStatusRequest),
+    NetworkCounterpartySystemStatusResponse(crate::network_status::NetworkCounterpartySystemStatusResponse),
 }
 
 impl FixMessage {
@@ -1708,6 +1716,8 @@ impl FixMessage {
             FixMessage::NewOrderMultileg(_) => MsgType::NewOrderMultileg,
             FixMessage::MultilegOrderCancelReplace(_) => MsgType::MultilegOrderCancelReplace,
             FixMessage::BusinessMessageReject(_) => MsgType::BusinessMessageReject,
+            FixMessage::NetworkCounterpartySystemStatusRequest(_) => MsgType::NetworkCounterpartySystemStatusRequest,
+            FixMessage::NetworkCounterpartySystemStatusResponse(_) => MsgType::NetworkCounterpartySystemStatusResponse,
         }
     }
 }

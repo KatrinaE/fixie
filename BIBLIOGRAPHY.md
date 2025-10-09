@@ -22,3 +22,18 @@ This file tracks reference materials consulted during the development of fixie.
 
 ### Infrastructure Messages
 - [Business Area: Infrastructure - FIX Trading Community](https://www.fixtrading.org/online-specification/business-area-infrastructure/) - Official specification for Application Sequencing, Business Message Rejects, Network Status Communication, and User Management messages
+
+### Pre-Trade Messages
+- [Business Area: Pre-Trade - FIX Trading Community](https://www.fixtrading.org/online-specification/business-area-pretrade/) - Official specification for Indication, Securities Reference Data, Event Communication, Market Data, and other pre-trade message categories
+
+#### Indication Category
+- [IOI (6) - FIX 5.0 SP2](https://www.onixs.biz/fix-dictionary/5.0.sp2/msgType_6_6.html) - Indication of Interest message specification
+- [IOI (6) - FIX 5.0](https://www.onixs.biz/fix-dictionary/5.0/msgtype_6_6.html) - Indication of Interest message specification
+- [IOI (6) - FIX 4.4](https://www.onixs.biz/fix-dictionary/4.4/msgtype_6_6.html) - Indication of Interest message specification (FIX 4.4)
+- [Advertisement (7) - FIX 5.0 SP2](https://www.onixs.biz/fix-dictionary/5.0.sp2/msgType_7_7.html) - Advertisement message specification
+- [Advertisement (7) - FIX 4.2](https://www.onixs.biz/fix-dictionary/4.2/msgtype_7_7.html) - Advertisement message specification
+- [CrossRequest (DS) - FIX 5.0 SP2 EP266](https://www.onixs.biz/fix-dictionary/5.0.sp2.ep266/msgType_DS_6883.html) - CrossRequest message specification
+- [CrossRequest (DS) - FIX Latest](https://fiximate.fixtrading.org/en/FIX.Latest/msg155.html) - CrossRequest message from FIXimate
+- [CrossRequest (DS) - FIX 5.0 SP2 EP Dictionary](https://btobits.com/fixopaedia/fixdic50-sp2-ep/message_CrossRequest_DS.html) - CrossRequest message specification
+- [CrossRequestAck (DT)](https://fiximate.fixtrading.org/en/FIX.Latest/msg156.html) - CrossRequestAck message from FIXimate
+- [FIX.5.0SP2 Message Summary sorted by Type](https://fiximate.fixtrading.org/legacy/en/FIX.5.0SP2/messages_sorted_by_type.html) - Complete message type listing

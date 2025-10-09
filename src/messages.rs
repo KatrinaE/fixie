@@ -49,6 +49,9 @@ pub enum MsgType {
     BusinessMessageReject,    // j
     NetworkCounterpartySystemStatusRequest,  // BC
     NetworkCounterpartySystemStatusResponse, // BD
+    ApplicationMessageRequest,    // BW
+    ApplicationMessageRequestAck, // BX
+    ApplicationMessageReport,     // BY
 }
 
 impl MsgType {
@@ -93,6 +96,9 @@ impl MsgType {
             MsgType::BusinessMessageReject => "j",
             MsgType::NetworkCounterpartySystemStatusRequest => "BC",
             MsgType::NetworkCounterpartySystemStatusResponse => "BD",
+            MsgType::ApplicationMessageRequest => "BW",
+            MsgType::ApplicationMessageRequestAck => "BX",
+            MsgType::ApplicationMessageReport => "BY",
         }
     }
 
@@ -137,6 +143,9 @@ impl MsgType {
             "j" => Some(MsgType::BusinessMessageReject),
             "BC" => Some(MsgType::NetworkCounterpartySystemStatusRequest),
             "BD" => Some(MsgType::NetworkCounterpartySystemStatusResponse),
+            "BW" => Some(MsgType::ApplicationMessageRequest),
+            "BX" => Some(MsgType::ApplicationMessageRequestAck),
+            "BY" => Some(MsgType::ApplicationMessageReport),
             _ => None,
         }
     }
@@ -1683,6 +1692,9 @@ pub enum FixMessage {
     BusinessMessageReject(BusinessMessageReject),
     NetworkCounterpartySystemStatusRequest(crate::network_status::NetworkCounterpartySystemStatusRequest),
     NetworkCounterpartySystemStatusResponse(crate::network_status::NetworkCounterpartySystemStatusResponse),
+    ApplicationMessageRequest(crate::application_sequencing::ApplicationMessageRequest),
+    ApplicationMessageRequestAck(crate::application_sequencing::ApplicationMessageRequestAck),
+    ApplicationMessageReport(crate::application_sequencing::ApplicationMessageReport),
 }
 
 impl FixMessage {
@@ -1718,6 +1730,9 @@ impl FixMessage {
             FixMessage::BusinessMessageReject(_) => MsgType::BusinessMessageReject,
             FixMessage::NetworkCounterpartySystemStatusRequest(_) => MsgType::NetworkCounterpartySystemStatusRequest,
             FixMessage::NetworkCounterpartySystemStatusResponse(_) => MsgType::NetworkCounterpartySystemStatusResponse,
+            FixMessage::ApplicationMessageRequest(_) => MsgType::ApplicationMessageRequest,
+            FixMessage::ApplicationMessageRequestAck(_) => MsgType::ApplicationMessageRequestAck,
+            FixMessage::ApplicationMessageReport(_) => MsgType::ApplicationMessageReport,
         }
     }
 }

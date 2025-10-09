@@ -177,6 +177,19 @@ fn tag_name(tag: u32) -> &'static str {
         935 => "NetworkRequestType",
         936 => "NoCompIDs",
         937 => "NetworkStatusResponseType",
+        1180 => "ApplID",
+        1182 => "ApplBegSeqNum",
+        1183 => "ApplEndSeqNum",
+        1346 => "ApplReqID",
+        1347 => "ApplReqType",
+        1348 => "ApplResponseType",
+        1353 => "ApplResponseID",
+        1354 => "ApplResponseError",
+        1355 => "RefApplID",
+        1356 => "ApplReportID",
+        1426 => "ApplReportType",
+        1430 => "RefApplReqID",
+        1351 => "NoApplIDs",
         _ => "Unknown",
     }
 }
@@ -223,6 +236,9 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::BusinessMessageReject => "BusinessMessageReject",
             MsgType::NetworkCounterpartySystemStatusRequest => "NetworkCounterpartySystemStatusRequest",
             MsgType::NetworkCounterpartySystemStatusResponse => "NetworkCounterpartySystemStatusResponse",
+            MsgType::ApplicationMessageRequest => "ApplicationMessageRequest",
+            MsgType::ApplicationMessageRequestAck => "ApplicationMessageRequestAck",
+            MsgType::ApplicationMessageReport => "ApplicationMessageReport",
         })
         .unwrap_or("Unknown")
 }

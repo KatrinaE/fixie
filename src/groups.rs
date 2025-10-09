@@ -765,6 +765,26 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Application Sequencing Groups
+    // ========================================================================
+
+    // ApplIDRequestGrp (Tag 1351 = NoApplIDs) - for ApplicationMessageRequest (BW)
+    registry.insert(
+        GroupKey { num_in_group_tag: 1351, msg_type: Some("BW".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 1351, // NoApplIDs
+            delimiter_tag: 1355,    // RefApplID
+            member_tags: vec![
+                1355,  // RefApplID
+                1430,  // RefApplReqID
+                1182,  // ApplBegSeqNum
+                1183,  // ApplEndSeqNum
+            ],
+            nested_groups: vec![],
+        },
+    );
+
     registry
 });
 

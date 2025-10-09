@@ -1009,6 +1009,35 @@ pub enum NetworkSystemStatus {
     Offline,                     // 2 - System is offline
 }
 
+/// ApplReqType (Tag 1347) - Type of application request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ApplReqType {
+    Retransmission,              // 0 - Retransmit messages
+    Subscription,                // 1 - Subscribe to messages
+    RequestLastSeqNum,           // 2 - Request last sequence number
+    RequestApplications,         // 3 - Request list of applications
+    Unsubscribe,                 // 4 - Unsubscribe
+    CancelRetransmission,        // 5 - Cancel retransmission request
+    CancelRetransmissionAndUnsubscribe, // 6 - Cancel and unsubscribe
+}
+
+/// ApplResponseType (Tag 1348) - Type of application response
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ApplResponseType {
+    RequestSuccessfullyProcessed, // 0 - Request processed successfully
+    ApplicationDoesNotExist,      // 1 - Application does not exist
+    MessagesNotAvailable,         // 2 - Messages not available
+}
+
+/// ApplReportType (Tag 1426) - Type of application report
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ApplReportType {
+    ApplSeqNumReset,             // 0 - Application sequence number reset
+    LastMessageSent,             // 1 - Last message sent
+    ApplicationAlive,            // 2 - Application alive message
+    ApplicationMessageRestart,   // 3 - Application message restart
+}
+
 impl BusinessRejectReason {
     pub fn to_fix(&self) -> char {
         match self {
@@ -1090,6 +1119,73 @@ impl NetworkSystemStatus {
             '0' => Some(NetworkSystemStatus::Online),
             '1' => Some(NetworkSystemStatus::TemporarilyUnavailable),
             '2' => Some(NetworkSystemStatus::Offline),
+            _ => None,
+        }
+    }
+}
+
+impl ApplReqType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ApplReqType::Retransmission => '0',
+            ApplReqType::Subscription => '1',
+            ApplReqType::RequestLastSeqNum => '2',
+            ApplReqType::RequestApplications => '3',
+            ApplReqType::Unsubscribe => '4',
+            ApplReqType::CancelRetransmission => '5',
+            ApplReqType::CancelRetransmissionAndUnsubscribe => '6',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(ApplReqType::Retransmission),
+            '1' => Some(ApplReqType::Subscription),
+            '2' => Some(ApplReqType::RequestLastSeqNum),
+            '3' => Some(ApplReqType::RequestApplications),
+            '4' => Some(ApplReqType::Unsubscribe),
+            '5' => Some(ApplReqType::CancelRetransmission),
+            '6' => Some(ApplReqType::CancelRetransmissionAndUnsubscribe),
+            _ => None,
+        }
+    }
+}
+
+impl ApplResponseType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ApplResponseType::RequestSuccessfullyProcessed => '0',
+            ApplResponseType::ApplicationDoesNotExist => '1',
+            ApplResponseType::MessagesNotAvailable => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(ApplResponseType::RequestSuccessfullyProcessed),
+            '1' => Some(ApplResponseType::ApplicationDoesNotExist),
+            '2' => Some(ApplResponseType::MessagesNotAvailable),
+            _ => None,
+        }
+    }
+}
+
+impl ApplReportType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            ApplReportType::ApplSeqNumReset => '0',
+            ApplReportType::LastMessageSent => '1',
+            ApplReportType::ApplicationAlive => '2',
+            ApplReportType::ApplicationMessageRestart => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(ApplReportType::ApplSeqNumReset),
+            '1' => Some(ApplReportType::LastMessageSent),
+            '2' => Some(ApplReportType::ApplicationAlive),
+            '3' => Some(ApplReportType::ApplicationMessageRestart),
             _ => None,
         }
     }
@@ -1257,5 +1353,39 @@ mod mass_order_tests {
         assert_eq!(NetworkSystemStatus::from_fix('1'), Some(NetworkSystemStatus::TemporarilyUnavailable));
         assert_eq!(NetworkSystemStatus::from_fix('2'), Some(NetworkSystemStatus::Offline));
         assert_eq!(NetworkSystemStatus::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_appl_req_type_conversions() {
+        assert_eq!(ApplReqType::Retransmission.to_fix(), '0');
+        assert_eq!(ApplReqType::Subscription.to_fix(), '1');
+        assert_eq!(ApplReqType::CancelRetransmissionAndUnsubscribe.to_fix(), '6');
+
+        assert_eq!(ApplReqType::from_fix('0'), Some(ApplReqType::Retransmission));
+        assert_eq!(ApplReqType::from_fix('3'), Some(ApplReqType::RequestApplications));
+        assert_eq!(ApplReqType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_appl_response_type_conversions() {
+        assert_eq!(ApplResponseType::RequestSuccessfullyProcessed.to_fix(), '0');
+        assert_eq!(ApplResponseType::ApplicationDoesNotExist.to_fix(), '1');
+        assert_eq!(ApplResponseType::MessagesNotAvailable.to_fix(), '2');
+
+        assert_eq!(ApplResponseType::from_fix('0'), Some(ApplResponseType::RequestSuccessfullyProcessed));
+        assert_eq!(ApplResponseType::from_fix('2'), Some(ApplResponseType::MessagesNotAvailable));
+        assert_eq!(ApplResponseType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_appl_report_type_conversions() {
+        assert_eq!(ApplReportType::ApplSeqNumReset.to_fix(), '0');
+        assert_eq!(ApplReportType::LastMessageSent.to_fix(), '1');
+        assert_eq!(ApplReportType::ApplicationAlive.to_fix(), '2');
+        assert_eq!(ApplReportType::ApplicationMessageRestart.to_fix(), '3');
+
+        assert_eq!(ApplReportType::from_fix('0'), Some(ApplReportType::ApplSeqNumReset));
+        assert_eq!(ApplReportType::from_fix('3'), Some(ApplReportType::ApplicationMessageRestart));
+        assert_eq!(ApplReportType::from_fix('9'), None);
     }
 }

@@ -1038,6 +1038,26 @@ pub enum ApplReportType {
     ApplicationMessageRestart,   // 3 - Application message restart
 }
 
+/// UserRequestType (Tag 924) - Type of user request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum UserRequestType {
+    LogOnUser,                   // 1 - Log on user
+    LogOffUser,                  // 2 - Log off user
+    ChangePasswordForUser,       // 3 - Change password
+    RequestIndividualUserStatus, // 4 - Request user status
+}
+
+/// UserStatus (Tag 926) - Status of user
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum UserStatus {
+    LoggedIn,                    // 1 - User is logged in
+    NotLoggedIn,                 // 2 - User is not logged in
+    UserNotRecognized,           // 3 - User not recognized
+    PasswordIncorrect,           // 4 - Password incorrect
+    PasswordChanged,             // 5 - Password changed
+    Other,                       // 6 - Other status
+}
+
 impl BusinessRejectReason {
     pub fn to_fix(&self) -> char {
         match self {
@@ -1186,6 +1206,52 @@ impl ApplReportType {
             '1' => Some(ApplReportType::LastMessageSent),
             '2' => Some(ApplReportType::ApplicationAlive),
             '3' => Some(ApplReportType::ApplicationMessageRestart),
+            _ => None,
+        }
+    }
+}
+
+impl UserRequestType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            UserRequestType::LogOnUser => '1',
+            UserRequestType::LogOffUser => '2',
+            UserRequestType::ChangePasswordForUser => '3',
+            UserRequestType::RequestIndividualUserStatus => '4',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(UserRequestType::LogOnUser),
+            '2' => Some(UserRequestType::LogOffUser),
+            '3' => Some(UserRequestType::ChangePasswordForUser),
+            '4' => Some(UserRequestType::RequestIndividualUserStatus),
+            _ => None,
+        }
+    }
+}
+
+impl UserStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            UserStatus::LoggedIn => '1',
+            UserStatus::NotLoggedIn => '2',
+            UserStatus::UserNotRecognized => '3',
+            UserStatus::PasswordIncorrect => '4',
+            UserStatus::PasswordChanged => '5',
+            UserStatus::Other => '6',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(UserStatus::LoggedIn),
+            '2' => Some(UserStatus::NotLoggedIn),
+            '3' => Some(UserStatus::UserNotRecognized),
+            '4' => Some(UserStatus::PasswordIncorrect),
+            '5' => Some(UserStatus::PasswordChanged),
+            '6' => Some(UserStatus::Other),
             _ => None,
         }
     }
@@ -1387,5 +1453,25 @@ mod mass_order_tests {
         assert_eq!(ApplReportType::from_fix('0'), Some(ApplReportType::ApplSeqNumReset));
         assert_eq!(ApplReportType::from_fix('3'), Some(ApplReportType::ApplicationMessageRestart));
         assert_eq!(ApplReportType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_user_request_type_conversions() {
+        assert_eq!(UserRequestType::LogOnUser.to_fix(), '1');
+        assert_eq!(UserRequestType::ChangePasswordForUser.to_fix(), '3');
+
+        assert_eq!(UserRequestType::from_fix('1'), Some(UserRequestType::LogOnUser));
+        assert_eq!(UserRequestType::from_fix('4'), Some(UserRequestType::RequestIndividualUserStatus));
+        assert_eq!(UserRequestType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_user_status_conversions() {
+        assert_eq!(UserStatus::LoggedIn.to_fix(), '1');
+        assert_eq!(UserStatus::PasswordChanged.to_fix(), '5');
+
+        assert_eq!(UserStatus::from_fix('1'), Some(UserStatus::LoggedIn));
+        assert_eq!(UserStatus::from_fix('6'), Some(UserStatus::Other));
+        assert_eq!(UserStatus::from_fix('9'), None);
     }
 }

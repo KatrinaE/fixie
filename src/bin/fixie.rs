@@ -190,6 +190,13 @@ fn tag_name(tag: u32) -> &'static str {
         1426 => "ApplReportType",
         1430 => "RefApplReqID",
         1351 => "NoApplIDs",
+        553 => "Username",
+        554 => "Password",
+        923 => "UserRequestID",
+        924 => "UserRequestType",
+        925 => "NewPassword",
+        926 => "UserStatus",
+        927 => "UserStatusText",
         _ => "Unknown",
     }
 }
@@ -239,6 +246,9 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::ApplicationMessageRequest => "ApplicationMessageRequest",
             MsgType::ApplicationMessageRequestAck => "ApplicationMessageRequestAck",
             MsgType::ApplicationMessageReport => "ApplicationMessageReport",
+            MsgType::UserRequest => "UserRequest",
+            MsgType::UserResponse => "UserResponse",
+            MsgType::UserNotification => "UserNotification",
         })
         .unwrap_or("Unknown")
 }

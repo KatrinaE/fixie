@@ -52,6 +52,9 @@ pub enum MsgType {
     ApplicationMessageRequest,    // BW
     ApplicationMessageRequestAck, // BX
     ApplicationMessageReport,     // BY
+    UserRequest,                  // BE
+    UserResponse,                 // BF
+    UserNotification,             // CB
 }
 
 impl MsgType {
@@ -99,6 +102,9 @@ impl MsgType {
             MsgType::ApplicationMessageRequest => "BW",
             MsgType::ApplicationMessageRequestAck => "BX",
             MsgType::ApplicationMessageReport => "BY",
+            MsgType::UserRequest => "BE",
+            MsgType::UserResponse => "BF",
+            MsgType::UserNotification => "CB",
         }
     }
 
@@ -146,6 +152,9 @@ impl MsgType {
             "BW" => Some(MsgType::ApplicationMessageRequest),
             "BX" => Some(MsgType::ApplicationMessageRequestAck),
             "BY" => Some(MsgType::ApplicationMessageReport),
+            "BE" => Some(MsgType::UserRequest),
+            "BF" => Some(MsgType::UserResponse),
+            "CB" => Some(MsgType::UserNotification),
             _ => None,
         }
     }
@@ -1695,6 +1704,9 @@ pub enum FixMessage {
     ApplicationMessageRequest(crate::application_sequencing::ApplicationMessageRequest),
     ApplicationMessageRequestAck(crate::application_sequencing::ApplicationMessageRequestAck),
     ApplicationMessageReport(crate::application_sequencing::ApplicationMessageReport),
+    UserRequest(crate::user_management::UserRequest),
+    UserResponse(crate::user_management::UserResponse),
+    UserNotification(crate::user_management::UserNotification),
 }
 
 impl FixMessage {
@@ -1733,6 +1745,9 @@ impl FixMessage {
             FixMessage::ApplicationMessageRequest(_) => MsgType::ApplicationMessageRequest,
             FixMessage::ApplicationMessageRequestAck(_) => MsgType::ApplicationMessageRequestAck,
             FixMessage::ApplicationMessageReport(_) => MsgType::ApplicationMessageReport,
+            FixMessage::UserRequest(_) => MsgType::UserRequest,
+            FixMessage::UserResponse(_) => MsgType::UserResponse,
+            FixMessage::UserNotification(_) => MsgType::UserNotification,
         }
     }
 }

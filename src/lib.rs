@@ -8,6 +8,7 @@ pub mod mass_orders;
 pub mod multileg_orders;
 pub mod network_status;
 pub mod application_sequencing;
+pub mod user_management;
 
 pub use types::*;
 pub use parser::*;
@@ -19,3 +20,4 @@ pub use mass_orders::*;
 pub use multileg_orders::*;
 pub use network_status::*;
 pub use application_sequencing::*;
+pub use user_management::*;

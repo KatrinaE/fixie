@@ -45,6 +45,8 @@ pub enum MsgType {
     // Multileg Order Messages
     NewOrderMultileg,         // AB
     MultilegOrderCancelReplace, // AC
+    // Infrastructure Messages
+    BusinessMessageReject,    // j
 }
 
 impl MsgType {
@@ -86,6 +88,7 @@ impl MsgType {
             MsgType::OrderMassStatusRequest => "AF",
             MsgType::NewOrderMultileg => "AB",
             MsgType::MultilegOrderCancelReplace => "AC",
+            MsgType::BusinessMessageReject => "j",
         }
     }
 
@@ -127,6 +130,7 @@ impl MsgType {
             "AF" => Some(MsgType::OrderMassStatusRequest),
             "AB" => Some(MsgType::NewOrderMultileg),
             "AC" => Some(MsgType::MultilegOrderCancelReplace),
+            "j" => Some(MsgType::BusinessMessageReject),
             _ => None,
         }
     }
@@ -1669,6 +1673,8 @@ pub enum FixMessage {
     // Multileg Order Messages
     NewOrderMultileg(crate::multileg_orders::NewOrderMultileg),
     MultilegOrderCancelReplace(crate::multileg_orders::MultilegOrderCancelReplace),
+    // Infrastructure Messages
+    BusinessMessageReject(BusinessMessageReject),
 }
 
 impl FixMessage {
@@ -1701,6 +1707,7 @@ impl FixMessage {
             FixMessage::OrderMassStatusRequest(_) => MsgType::OrderMassStatusRequest,
             FixMessage::NewOrderMultileg(_) => MsgType::NewOrderMultileg,
             FixMessage::MultilegOrderCancelReplace(_) => MsgType::MultilegOrderCancelReplace,
+            FixMessage::BusinessMessageReject(_) => MsgType::BusinessMessageReject,
         }
     }
 }

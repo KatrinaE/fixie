@@ -158,6 +158,13 @@ fn tag_name(tag: u32) -> &'static str {
         805 => "NestdPtysSubGrpID",
         1377 => "MultilegModel",
         1378 => "MultilegPriceMethod",
+        // Infrastructure Message tags
+        45 => "RefSeqNum",
+        354 => "EncodedTextLen",
+        355 => "EncodedText",
+        372 => "RefMsgType",
+        379 => "BusinessRejectRefID",
+        380 => "BusinessRejectReason",
         _ => "Unknown",
     }
 }
@@ -201,6 +208,7 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::OrderMassStatusRequest => "OrderMassStatusRequest",
             MsgType::NewOrderMultileg => "NewOrderMultileg",
             MsgType::MultilegOrderCancelReplace => "MultilegOrderCancelReplace",
+            MsgType::BusinessMessageReject => "BusinessMessageReject",
         })
         .unwrap_or("Unknown")
 }

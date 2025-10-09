@@ -972,6 +972,48 @@ impl MultilegPriceMethod {
     }
 }
 
+/// BusinessRejectReason (Tag 380) - Reason for business-level rejection
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BusinessRejectReason {
+    Other,                                  // 0 - Other/unknown reason
+    UnknownID,                             // 1 - Unknown ID
+    UnknownSecurity,                       // 2 - Unknown security
+    UnsupportedMessageType,                // 3 - Unsupported message type
+    ApplicationNotAvailable,               // 4 - Application not available
+    ConditionallyRequiredFieldMissing,     // 5 - Conditionally required field missing
+    NotAuthorized,                         // 6 - Not authorized
+    DeliverToFirmNotAvailableAtThisTime,   // 7 - DeliverToFirm not available at this time
+}
+
+impl BusinessRejectReason {
+    pub fn to_fix(&self) -> char {
+        match self {
+            BusinessRejectReason::Other => '0',
+            BusinessRejectReason::UnknownID => '1',
+            BusinessRejectReason::UnknownSecurity => '2',
+            BusinessRejectReason::UnsupportedMessageType => '3',
+            BusinessRejectReason::ApplicationNotAvailable => '4',
+            BusinessRejectReason::ConditionallyRequiredFieldMissing => '5',
+            BusinessRejectReason::NotAuthorized => '6',
+            BusinessRejectReason::DeliverToFirmNotAvailableAtThisTime => '7',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(BusinessRejectReason::Other),
+            '1' => Some(BusinessRejectReason::UnknownID),
+            '2' => Some(BusinessRejectReason::UnknownSecurity),
+            '3' => Some(BusinessRejectReason::UnsupportedMessageType),
+            '4' => Some(BusinessRejectReason::ApplicationNotAvailable),
+            '5' => Some(BusinessRejectReason::ConditionallyRequiredFieldMissing),
+            '6' => Some(BusinessRejectReason::NotAuthorized),
+            '7' => Some(BusinessRejectReason::DeliverToFirmNotAvailableAtThisTime),
+            _ => None,
+        }
+    }
+}
+
 // ============================================================================
 // Mass Order Enum Tests
 // ============================================================================
@@ -1081,5 +1123,22 @@ mod mass_order_tests {
         assert_eq!(MultilegPriceMethod::from_fix('3'), Some(MultilegPriceMethod::Individual));
         assert_eq!(MultilegPriceMethod::from_fix('5'), Some(MultilegPriceMethod::MultipliedPrice));
         assert_eq!(MultilegPriceMethod::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_business_reject_reason_conversions() {
+        assert_eq!(BusinessRejectReason::Other.to_fix(), '0');
+        assert_eq!(BusinessRejectReason::UnknownID.to_fix(), '1');
+        assert_eq!(BusinessRejectReason::UnknownSecurity.to_fix(), '2');
+        assert_eq!(BusinessRejectReason::UnsupportedMessageType.to_fix(), '3');
+        assert_eq!(BusinessRejectReason::ApplicationNotAvailable.to_fix(), '4');
+        assert_eq!(BusinessRejectReason::ConditionallyRequiredFieldMissing.to_fix(), '5');
+        assert_eq!(BusinessRejectReason::NotAuthorized.to_fix(), '6');
+        assert_eq!(BusinessRejectReason::DeliverToFirmNotAvailableAtThisTime.to_fix(), '7');
+
+        assert_eq!(BusinessRejectReason::from_fix('0'), Some(BusinessRejectReason::Other));
+        assert_eq!(BusinessRejectReason::from_fix('3'), Some(BusinessRejectReason::UnsupportedMessageType));
+        assert_eq!(BusinessRejectReason::from_fix('7'), Some(BusinessRejectReason::DeliverToFirmNotAvailableAtThisTime));
+        assert_eq!(BusinessRejectReason::from_fix('9'), None);
     }
 }

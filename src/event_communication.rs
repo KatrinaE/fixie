@@ -14,7 +14,7 @@
 //! - Corporate announcements
 
 use crate::parser::{RawFixMessage, FixParseError};
-use crate::types::{EmailType, NewsRefType, NewsCategory};
+use crate::types::{EmailType, NewsCategory};
 use serde::{Deserialize, Serialize};
 
 // ============================================================================

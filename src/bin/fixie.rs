@@ -1,6 +1,7 @@
 use clap::Parser;
-use fixie::{RawFixMessage, MsgType, SOH};
+use fixie::{RawFixMessage, MsgType, SOH, GroupEntry};
 use std::io::{self, Read};
+use serde_json::json;
 
 /// A FIX protocol message parser and pretty-printer
 #[derive(Parser, Debug)]
@@ -12,6 +13,10 @@ struct Args {
     /// Display raw tag-value pairs
     #[arg(short, long)]
     raw: bool,
+
+    /// Display as JSON
+    #[arg(short, long)]
+    json: bool,
 }
 
 // FIX tag names for common tags
@@ -501,6 +506,61 @@ fn pretty_print(msg: &RawFixMessage) {
     println!();
 }
 
+fn json_output(msg: &RawFixMessage) {
+    // Build JSON object with simple key-value pairs
+    let mut output = serde_json::Map::new();
+
+    // Add all regular fields
+    for (tag, value) in &msg.fields {
+        let field_name = tag_name(*tag);
+        output.insert(field_name.to_string(), json!(value));
+    }
+
+    // Add repeating groups with their actual data
+    for (group_tag, entry_ids) in &msg.groups {
+        let group_name = tag_name(*group_tag);
+        let mut group_entries = Vec::new();
+
+        for entry_id in entry_ids {
+            if let Some(entry) = msg.get_group_entry(*entry_id) {
+                let entry_obj = build_group_entry_json(entry, msg);
+                group_entries.push(entry_obj);
+            }
+        }
+
+        output.insert(group_name.to_string(), json!(group_entries));
+    }
+
+    println!("{}", serde_json::to_string_pretty(&json!(output)).unwrap());
+}
+
+fn build_group_entry_json(entry: &GroupEntry, msg: &RawFixMessage) -> serde_json::Value {
+    let mut entry_obj = serde_json::Map::new();
+
+    // Add all fields from this group entry
+    for (tag, value) in &entry.fields {
+        let field_name = tag_name(*tag);
+        entry_obj.insert(field_name.to_string(), json!(value));
+    }
+
+    // Add nested groups recursively
+    for (nested_group_tag, nested_entry_ids) in &entry.nested_groups {
+        let nested_group_name = tag_name(*nested_group_tag);
+        let mut nested_entries = Vec::new();
+
+        for nested_entry_id in nested_entry_ids {
+            if let Some(nested_entry) = msg.get_group_entry(*nested_entry_id) {
+                let nested_obj = build_group_entry_json(nested_entry, msg);
+                nested_entries.push(nested_obj);
+            }
+        }
+
+        entry_obj.insert(nested_group_name.to_string(), json!(nested_entries));
+    }
+
+    json!(entry_obj)
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
@@ -516,7 +576,10 @@ fn main() -> anyhow::Result<()> {
     // Parse the message
     let parsed = RawFixMessage::parse(&message)?;
 
-    if args.raw {
+    if args.json {
+        // Output as JSON
+        json_output(&parsed);
+    } else if args.raw {
         // Print raw tag-value pairs
         println!("Raw FIX Message:");
         let mut tags: Vec<&u32> = parsed.fields.keys().collect();

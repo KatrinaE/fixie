@@ -157,15 +157,20 @@ let wire_format = raw.encode();
 
 ## Supported Message Types
 
-### Session Layer
+### Infrastructure & Session Layer
 - Logon (A)
 - Logout (5)
 - Heartbeat (0)
 
+### Business Message Rejects
+- BusinessMessageReject (j)
+
+### Confirmations
+- DontKnowTrade (Q)
+
 ### Single General Order Handling
 - NewOrderSingle (D)
 - ExecutionReport (8)
-- DontKnowTrade (Q)
 - OrderCancelRequest (F)
 - OrderCancelReject (9)
 - OrderCancelReplaceRequest (G)
@@ -184,23 +189,36 @@ let wire_format = raw.encode();
 ### Market Data
 - MarketDataRequest (V)
 - MarketDataSnapshotFullRefresh (W)
+- MarketDataRequestReject (Y)
 
-### Program Trading / List Trading
+### Program Trading
 - NewOrderList (E)
 - ListStatus (N)
-- ListExecute (L)
-- ListCancelRequest (K)
-- ListStatusRequest (M)
-- BidRequest (k)
-- BidResponse (l)
-- ListStrikePrice (m)
 
 ### Mass Order Messages
-- OrderMassStatusRequest (AF)
-- OrderMassActionRequest (CA)
-- OrderMassActionReport (BZ)
 - MassOrder (DJ)
 - MassOrderAck (DK)
+- OrderMassActionRequest (CA)
+- OrderMassActionReport (BZ)
+- OrderMassStatusRequest (AF)
+
+### Multileg Order Messages
+- NewOrderMultileg (AB)
+- MultilegOrderCancelReplace (AC)
+
+### Application Sequencing
+- ApplicationMessageRequest (BW)
+- ApplicationMessageRequestAck (BX)
+- ApplicationMessageReport (BY)
+
+### Network Status
+- NetworkCounterpartySystemStatusRequest (BC)
+- NetworkCounterpartySystemStatusResponse (BD)
+
+### User Management
+- UserRequest (BE)
+- UserResponse (BF)
+- UserNotification (CB)
 
 ## Features
 

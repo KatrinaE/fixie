@@ -225,6 +225,7 @@ fn msg_type_name(msg_type: &str) -> &'static str {
             MsgType::CrossOrderCancelReplaceRequest => "CrossOrderCancelReplaceRequest",
             MsgType::MarketDataRequest => "MarketDataRequest",
             MsgType::MarketDataSnapshotFullRefresh => "MarketDataSnapshotFullRefresh",
+            MsgType::MarketDataRequestReject => "MarketDataRequestReject",
             MsgType::NewOrderList => "NewOrderList",
             MsgType::ListStatus => "ListStatus",
             MsgType::ListExecute => "ListExecute",

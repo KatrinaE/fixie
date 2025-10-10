@@ -795,40 +795,511 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
     // [SECTION 100] Indication Messages Groups
     // Implementation: feature/pretrade-indication
     // ========================================================================
-    // Groups will be added here by the Indication PR:
-    // - IOIQualGrp (Tag 199 = NoIOIQualifiers)
-    // - RoutingGrp (Tag 215 = NoRoutingIDs)
-    // - InstrmtLegIOIGrp (Tag 555 = NoLegs) [may reuse existing]
-    // - UndInstrmtGrp (Tag 711 = NoUnderlyings) [may reuse existing]
+
+    // IOIQualGrp (Tag 199 = NoIOIQualifiers) - for IOI message
+    registry.insert(
+        GroupKey { num_in_group_tag: 199, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 199, // NoIOIQualifiers
+            delimiter_tag: 104,    // IOIQualifier
+            member_tags: vec![
+                104,  // IOIQualifier
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // RoutingGrp (Tag 215 = NoRoutingIDs) - for IOI message
+    registry.insert(
+        GroupKey { num_in_group_tag: 215, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 215, // NoRoutingIDs
+            delimiter_tag: 216,    // RoutingType
+            member_tags: vec![
+                216,  // RoutingType
+                217,  // RoutingID
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     // ========================================================================
     // [SECTION 200] Event Communication Messages Groups
     // Implementation: feature/pretrade-event-communication
     // ========================================================================
-    // Groups will be added here by the Event Communication PR:
-    // - LinesOfTextGrp (Tag 33 = NoLinesOfText)
-    // - RoutingGrp (Tag 215 = NoRoutingIDs) [may reuse existing]
+
+    // LinesOfTextGrp (Tag 33 = NoLinesOfText) - for Email and News messages
+    registry.insert(
+        GroupKey { num_in_group_tag: 33, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 33,  // NoLinesOfText
+            delimiter_tag: 58,     // Text
+            member_tags: vec![
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // EmailRoutingGrp (Tag 215 = NoRoutingIDs) - for Email message
+    // Note: RoutingGrp already defined in SECTION 100 as generic (msg_type: None)
+    // Email can reuse the existing RoutingGrp definition
+
+    // NewsRefGrp (Tag 1476 = NoNewsRefIDs) - for News message
+    registry.insert(
+        GroupKey { num_in_group_tag: 1476, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 1476, // NoNewsRefIDs
+            delimiter_tag: 1477,    // NewsRefID
+            member_tags: vec![
+                1477,  // NewsRefID
+                1478,  // NewsRefType (corresponds to Tag 1477 enum)
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     // ========================================================================
     // [SECTION 300] Quotation/Negotiation Messages Groups
     // Implementation: feature/pretrade-quotation
     // ========================================================================
-    // Groups will be added here by the Quotation PR:
-    // - QuotQualGrp (Tag 735 = NoQuoteQualifiers)
-    // - QuotReqGrp (Tag 146 = NoRelatedSym)
-    // - QuotEntryGrp (Tag 295 = NoQuoteEntries)
-    // - QuotSetGrp (Tag 296 = NoQuoteSets)
-    // - QuotCxlEntriesGrp (Tag 295 = NoQuoteEntries)
-    // - QuotReqRjctGrp (Tag 146 = NoRelatedSym)
+
+    // QuotQualGrp (Tag 735 = NoQuoteQualifiers)
+    // Used in: Quote (S), MassQuote (i)
+    // Qualifiers that provide additional information about the quote
+    registry.insert(
+        GroupKey { num_in_group_tag: 735, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 735, // NoQuoteQualifiers
+            delimiter_tag: 695,    // QuoteQualifier
+            member_tags: vec![
+                695,  // QuoteQualifier - Required
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // QuotReqGrp (Tag 146 = NoRelatedSym)
+    // Used in: QuoteRequest (R)
+    // Group of securities for which quotes are requested
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("R".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                201,  // PutOrCall
+                202,  // StrikePrice
+                206,  // OptAttribute
+                231,  // ContractMultiplier
+                223,  // CouponRate
+                207,  // SecurityExchange
+                106,  // Issuer
+                107,  // SecurityDesc
+                54,   // Side
+                38,   // OrderQty
+                40,   // OrdType
+                44,   // Price
+                15,   // Currency
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // QuotSetGrp (Tag 296 = NoQuoteSets)
+    // Used in: MassQuote (i), MassQuoteAcknowledgement (b)
+    // Group of quote sets for mass quote operations
+    registry.insert(
+        GroupKey { num_in_group_tag: 296, msg_type: Some("i".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 296, // NoQuoteSets
+            delimiter_tag: 302,    // QuoteSetID
+            member_tags: vec![
+                302,  // QuoteSetID - Required
+                311,  // UnderlyingSymbol
+                312,  // UnderlyingSymbolSfx
+                309,  // UnderlyingSecurityID
+                305,  // UnderlyingSecurityIDSource
+                313,  // UnderlyingSecurityType
+                542,  // UnderlyingMaturityMonthYear
+                // QuotEntryGrp nested here (295)
+                304,  // QuoteSetValidUntilTime
+                367,  // TotNoQuoteEntries
+                304,  // LastFragment
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 295, // QuotEntryGrp (NoQuoteEntries)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same QuotSetGrp for MassQuoteAcknowledgement (b)
+    registry.insert(
+        GroupKey { num_in_group_tag: 296, msg_type: Some("b".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 296,
+            delimiter_tag: 302,
+            member_tags: vec![
+                302, 311, 312, 309, 305, 313, 542, 304, 367, 304,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 295,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // QuotEntryGrp (Tag 295 = NoQuoteEntries)
+    // Used in: nested within QuotSetGrp in MassQuote (i)
+    // Individual quote entries within a quote set
+    registry.insert(
+        GroupKey { num_in_group_tag: 295, msg_type: Some("i".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 295, // NoQuoteEntries
+            delimiter_tag: 299,    // QuoteEntryID
+            member_tags: vec![
+                299,  // QuoteEntryID - Required
+                55,   // Symbol
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                132,  // BidPx
+                133,  // OfferPx
+                134,  // BidSize
+                135,  // OfferSize
+                62,   // ValidUntilTime
+                188,  // BidSpotRate
+                190,  // OfferSpotRate
+                189,  // BidForwardPoints
+                191,  // OfferForwardPoints
+                631,  // MidPx
+                632,  // BidYield
+                633,  // MidYield
+                634,  // OfferYield
+                60,   // TransactTime
+                336,  // TradingSessionID
+                625,  // TradingSessionSubID
+                64,   // SettlDate
+                40,   // OrdType
+                193,  // SettlDate2
+                192,  // OrderQty2
+                15,   // Currency
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // Same QuotEntryGrp for MassQuoteAcknowledgement (b)
+    registry.insert(
+        GroupKey { num_in_group_tag: 295, msg_type: Some("b".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 295,
+            delimiter_tag: 299,
+            member_tags: vec![
+                299, 55, 65, 48, 22, 167, 200, 541, 132, 133, 134, 135, 62, 188, 190, 189,
+                191, 631, 632, 633, 634, 60, 336, 625, 64, 40, 193, 192, 15,
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // QuotCxlEntriesGrp (Tag 295 = NoQuoteEntries)
+    // Used in: QuoteCancel (Z)
+    // Quote entries to be cancelled
+    registry.insert(
+        GroupKey { num_in_group_tag: 295, msg_type: Some("Z".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 295, // NoQuoteEntries
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // QuotReqRjctGrp (Tag 146 = NoRelatedSym)
+    // Used in: QuoteRequestReject (AG)
+    // Group of symbols for which quote request was rejected
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("AG".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                54,   // Side
+                38,   // OrderQty
+                40,   // OrdType
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // LegQuotGrp (Tag 555 = NoLegs)
+    // Used in: Quote (S), QuoteRequest (R), QuoteStatusReport (AI), RFQRequest (AH)
+    // Leg-level pricing for multileg quotes
+    registry.insert(
+        GroupKey { num_in_group_tag: 555, msg_type: Some("S".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 555, // NoLegs
+            delimiter_tag: 600,    // LegSymbol
+            member_tags: vec![
+                600,  // LegSymbol - Required
+                601,  // LegSymbolSfx
+                602,  // LegSecurityID
+                603,  // LegSecurityIDSource
+                604,  // LegProduct
+                605,  // LegCFICode
+                606,  // LegSecurityType
+                607,  // LegMaturityMonthYear
+                608,  // LegMaturityDate
+                609,  // LegStrikePrice
+                610,  // LegOptAttribute
+                611,  // LegContractMultiplier
+                612,  // LegCouponRate
+                613,  // LegSecurityExchange
+                614,  // LegIssuer
+                615,  // LegSecurityDesc
+                687,  // LegQty
+                690,  // LegSwapType
+                587,  // LegSettlType
+                588,  // LegSettlDate
+                686,  // LegPriceType
+                681,  // LegBidPx
+                684,  // LegOfferPx
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // Same LegQuotGrp for QuoteRequest (R)
+    registry.insert(
+        GroupKey { num_in_group_tag: 555, msg_type: Some("R".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 555,
+            delimiter_tag: 600,
+            member_tags: vec![
+                600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614,
+                615, 687, 690, 587, 588, 686, 681, 684,
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // Same LegQuotGrp for QuoteStatusReport (AI)
+    registry.insert(
+        GroupKey { num_in_group_tag: 555, msg_type: Some("AI".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 555,
+            delimiter_tag: 600,
+            member_tags: vec![
+                600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614,
+                615, 687, 690, 587, 588, 686, 681, 684,
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // Same LegQuotGrp for RFQRequest (AH)
+    registry.insert(
+        GroupKey { num_in_group_tag: 555, msg_type: Some("AH".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 555,
+            delimiter_tag: 600,
+            member_tags: vec![
+                600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614,
+                615, 687, 690, 587, 588, 686, 681, 684,
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // UndInstrmtGrp (Tag 711 = NoUnderlyings)
+    // Used in: Quote (S), QuoteRequest (R), and other messages
+    // Underlying security information for derivatives
+    registry.insert(
+        GroupKey { num_in_group_tag: 711, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 711, // NoUnderlyings
+            delimiter_tag: 311,    // UnderlyingSymbol
+            member_tags: vec![
+                311,  // UnderlyingSymbol - Required
+                312,  // UnderlyingSymbolSfx
+                309,  // UnderlyingSecurityID
+                305,  // UnderlyingSecurityIDSource
+                313,  // UnderlyingSecurityType
+                542,  // UnderlyingMaturityMonthYear
+                241,  // UnderlyingMaturityDate
+                317,  // UnderlyingCouponRate
+                316,  // UnderlyingSecurityExchange
+                318,  // UnderlyingIssuer
+                879,  // UnderlyingSecurityDesc
+                810,  // UnderlyingPx
+                882,  // UnderlyingQty
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // RateSourceGrp (Tag 1445 = NoRateSources)
+    // Used in: Quote (S)
+    // Rate source information for quotes
+    registry.insert(
+        GroupKey { num_in_group_tag: 1445, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 1445, // NoRateSources
+            delimiter_tag: 1446,    // RateSource
+            member_tags: vec![
+                1446,  // RateSource - Required
+                1447,  // RateSourceType
+                1448,  // ReferencePage
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // QuotReqLegsGrp (Tag 555 = NoLegs)
+    // Used in: QuoteRequest (R)
+    // Similar to LegQuotGrp but for quote requests
+    // Note: Using message-specific key for QuoteRequest already handled above
+
+    // StreamAsgnReqGrp (Tag 1498 = NoAsgnReqs)
+    // Used in: StreamAssignmentRequest (CC)
+    // Assignment requests for quote streams
+    registry.insert(
+        GroupKey { num_in_group_tag: 1498, msg_type: Some("CC".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 1498, // NoAsgnReqs
+            delimiter_tag: 453,     // NoPartyIDs (Parties component)
+            member_tags: vec![
+                // Parties component fields
+                1499,  // MDStreamID
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 453, // Parties
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
 
     // ========================================================================
     // [SECTION 400] Market Data Messages Groups
     // Implementation: feature/pretrade-market-data
     // ========================================================================
-    // Groups will be added here by the Market Data PR:
-    // - MDReqGrp (Tag 146 = NoRelatedSym)
-    // - MDFullGrp (Tag 268 = NoMDEntries)
-    // - MDIncGrp (Tag 268 = NoMDEntries)
+
+    // MDReqGrp (Tag 146 = NoRelatedSym) - for MarketDataRequest message
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("V".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                201,  // PutOrCall
+                202,  // StrikePrice
+                206,  // OptAttribute
+                231,  // ContractMultiplier
+                223,  // CouponRate
+                207,  // SecurityExchange
+                106,  // Issuer
+                107,  // SecurityDesc
+                1300, // MarketSegmentID
+                1301, // MarketID
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // MDEntryTypesGrp (Tag 267 = NoMDEntryTypes) - for MarketDataRequest message
+    registry.insert(
+        GroupKey { num_in_group_tag: 267, msg_type: Some("V".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 267, // NoMDEntryTypes
+            delimiter_tag: 269,    // MDEntryType
+            member_tags: vec![
+                269,  // MDEntryType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // MDFullGrp (Tag 268 = NoMDEntries) - for MarketDataSnapshotFullRefresh message
+    registry.insert(
+        GroupKey { num_in_group_tag: 268, msg_type: Some("W".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 268, // NoMDEntries
+            delimiter_tag: 269,    // MDEntryType
+            member_tags: vec![
+                269,  // MDEntryType - Required
+                270,  // MDEntryPx
+                271,  // MDEntrySize
+                272,  // MDEntryDate
+                273,  // MDEntryTime
+                274,  // TickDirection
+                275,  // MDMkt
+                276,  // QuoteCondition
+                277,  // TradeCondition
+                282,  // MDEntryOriginator
+                283,  // LocationID
+                284,  // DeskID
+                286,  // OpenCloseSettleFlag
+                287,  // TimeInForce
+                288,  // ExpireDate
+                289,  // ExpireTime
+                290,  // MinQty
+                299,  // QuoteEntryID
+                346,  // NumberOfOrders
+                 387,  // TotalVolumeTraded
+                1020, // TradeVolume
+                1023, // MDPriceLevel
+                336,  // TradingSessionID
+                625,  // TradingSessionSubID
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     // ========================================================================
     // [SECTION 500] Market Structure Reference Data Messages Groups

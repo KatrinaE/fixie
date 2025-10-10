@@ -19,6 +19,12 @@ messages. It does not yet support [post-trade](https://www.fixtrading.org/online
 #### Installation
 You will need Rust and cargo installed on your machine.
 
+1. Get the code
+```bash
+git clone https://github.com/KatrinaE/fixie.git
+```
+
+2. Build the binary
 ```bash
 cargo build --release -p fixie
 ```

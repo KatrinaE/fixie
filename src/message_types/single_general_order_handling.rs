@@ -530,3 +530,146 @@ impl OrderCancelReject {
         })
     }
 }
+
+/// ExecutionAcknowledgement (MsgType BN)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExecutionAcknowledgement {
+    pub order_id: String,            // Tag 37: Order ID (required)
+    pub exec_id: String,             // Tag 17: Execution ID (required)
+    pub exec_ack_status: ExecAckStatus, // Tag 1036: Status (required)
+    pub symbol: String,              // Tag 55: Symbol (required)
+    pub side: Side,                  // Tag 54: Side (required)
+    pub order_qty: f64,              // Tag 38: Order quantity (required)
+    pub cl_ord_id: Option<String>,   // Tag 11: Client order ID (conditionally required)
+    pub dk_reason: Option<DKReason>, // Tag 127: DK reason (required when ExecAckStatus=DontKnow)
+    pub last_qty: Option<f64>,       // Tag 32: Last quantity
+    pub last_px: Option<f64>,        // Tag 31: Last price
+    pub cum_qty: Option<f64>,        // Tag 14: Cumulative quantity
+    pub avg_px: Option<f64>,         // Tag 6: Average price
+    pub text: Option<String>,        // Tag 58: Free format text
+}
+
+impl ExecutionAcknowledgement {
+    pub fn to_raw(&self) -> RawFixMessage {
+        let mut msg = RawFixMessage::new();
+        msg.set_field(8, "FIXT.1.1".to_string());
+        msg.set_field(35, "BN".to_string());
+        msg.set_field(1128, "9".to_string()); // ApplVerID = 9 (FIX 5.0 SP2)
+        msg.set_field(37, self.order_id.clone());
+        msg.set_field(17, self.exec_id.clone());
+        msg.set_field(1036, self.exec_ack_status.to_fix().to_string());
+        msg.set_field(55, self.symbol.clone());
+        msg.set_field(54, self.side.to_fix().to_string());
+        msg.set_field(38, self.order_qty.to_string());
+        if let Some(cl_ord_id) = &self.cl_ord_id {
+            msg.set_field(11, cl_ord_id.clone());
+        }
+        if let Some(dk_reason) = self.dk_reason {
+            msg.set_field(127, dk_reason.to_fix().to_string());
+        }
+        if let Some(last_qty) = self.last_qty {
+            msg.set_field(32, last_qty.to_string());
+        }
+        if let Some(last_px) = self.last_px {
+            msg.set_field(31, last_px.to_string());
+        }
+        if let Some(cum_qty) = self.cum_qty {
+            msg.set_field(14, cum_qty.to_string());
+        }
+        if let Some(avg_px) = self.avg_px {
+            msg.set_field(6, avg_px.to_string());
+        }
+        if let Some(text) = &self.text {
+            msg.set_field(58, text.clone());
+        }
+        msg
+    }
+
+    pub fn from_raw(raw: &RawFixMessage) -> Result<Self, FixParseError> {
+        let order_id = raw.get_field(37)
+            .ok_or(FixParseError::MissingRequiredField(37))?
+            .to_string();
+
+        let exec_id = raw.get_field(17)
+            .ok_or(FixParseError::MissingRequiredField(17))?
+            .to_string();
+
+        let exec_ack_status_char = raw.get_field(1036)
+            .ok_or(FixParseError::MissingRequiredField(1036))?
+            .chars().next()
+            .ok_or(FixParseError::InvalidValue {
+                tag: 1036,
+                value: "".to_string(),
+                error: "Empty exec ack status".to_string(),
+            })?;
+        let exec_ack_status = ExecAckStatus::from_fix(exec_ack_status_char)
+            .ok_or(FixParseError::InvalidValue {
+                tag: 1036,
+                value: exec_ack_status_char.to_string(),
+                error: "Invalid exec ack status".to_string(),
+            })?;
+
+        let symbol = raw.get_field(55)
+            .ok_or(FixParseError::MissingRequiredField(55))?
+            .to_string();
+
+        let side_char = raw.get_field(54)
+            .ok_or(FixParseError::MissingRequiredField(54))?
+            .chars().next()
+            .ok_or(FixParseError::InvalidValue {
+                tag: 54,
+                value: "".to_string(),
+                error: "Empty side".to_string(),
+            })?;
+        let side = Side::from_fix(side_char)
+            .ok_or(FixParseError::InvalidValue {
+                tag: 54,
+                value: side_char.to_string(),
+                error: "Invalid side".to_string(),
+            })?;
+
+        let order_qty: f64 = raw.get_field_as(38)
+            .ok_or(FixParseError::MissingRequiredField(38))?;
+
+        let cl_ord_id = raw.get_field(11).map(|s| s.to_string());
+
+        let dk_reason = if let Some(dk_char_str) = raw.get_field(127) {
+            let dk_char = dk_char_str.chars().next()
+                .ok_or(FixParseError::InvalidValue {
+                    tag: 127,
+                    value: "".to_string(),
+                    error: "Empty DK reason".to_string(),
+                })?;
+            Some(DKReason::from_fix(dk_char)
+                .ok_or(FixParseError::InvalidValue {
+                    tag: 127,
+                    value: dk_char.to_string(),
+                    error: "Invalid DK reason".to_string(),
+                })?)
+        } else {
+            None
+        };
+
+        let last_qty = raw.get_field_as(32);
+        let last_px = raw.get_field_as(31);
+        let cum_qty = raw.get_field_as(14);
+        let avg_px = raw.get_field_as(6);
+        let text = raw.get_field(58).map(|s| s.to_string());
+
+        Ok(ExecutionAcknowledgement {
+            order_id,
+            exec_id,
+            exec_ack_status,
+            symbol,
+            side,
+            order_qty,
+            cl_ord_id,
+            dk_reason,
+            last_qty,
+            last_px,
+            cum_qty,
+            avg_px,
+            text,
+        })
+    }
+}

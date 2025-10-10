@@ -795,11 +795,33 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
     // [SECTION 100] Indication Messages Groups
     // Implementation: feature/pretrade-indication
     // ========================================================================
-    // Groups will be added here by the Indication PR:
-    // - IOIQualGrp (Tag 199 = NoIOIQualifiers)
-    // - RoutingGrp (Tag 215 = NoRoutingIDs)
-    // - InstrmtLegIOIGrp (Tag 555 = NoLegs) [may reuse existing]
-    // - UndInstrmtGrp (Tag 711 = NoUnderlyings) [may reuse existing]
+
+    // IOIQualGrp (Tag 199 = NoIOIQualifiers) - for IOI message
+    registry.insert(
+        GroupKey { num_in_group_tag: 199, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 199, // NoIOIQualifiers
+            delimiter_tag: 104,    // IOIQualifier
+            member_tags: vec![
+                104,  // IOIQualifier
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // RoutingGrp (Tag 215 = NoRoutingIDs) - for IOI message
+    registry.insert(
+        GroupKey { num_in_group_tag: 215, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 215, // NoRoutingIDs
+            delimiter_tag: 216,    // RoutingType
+            member_tags: vec![
+                216,  // RoutingType
+                217,  // RoutingID
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     // ========================================================================
     // [SECTION 200] Event Communication Messages Groups

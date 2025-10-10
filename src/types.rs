@@ -1475,3 +1475,113 @@ mod mass_order_tests {
         assert_eq!(UserStatus::from_fix('9'), None);
     }
 }
+
+// ============================================================================
+// Pre-Trade Messages - Section Markers
+// ============================================================================
+// This section is pre-allocated for parallel development of Pre-Trade messages.
+// Each category will add enums in their designated section to avoid merge conflicts.
+
+// ============================================================================
+// [SECTION 100] Indication Messages (Advertisement, IOI, CrossRequest, CrossRequestAck)
+// Messages: Advertisement(7), IOI(6), CrossRequest(DS), CrossRequestAck(DT)
+// Tags: 2-5, 23, 25-28, 104, 149, 199, 215-217, 376, 854, 1300-1301, 2404, 2672
+// Implementation: feature/pretrade-indication
+// ============================================================================
+// Enums will be added here by the Indication PR:
+// - IOITransType (Tag 28)
+// - IOIQltyInd (Tag 25)
+// - AdvSide (Tag 4)
+// - AdvTransType (Tag 5)
+// - QtyType (Tag 854)
+
+// ============================================================================
+// [SECTION 200] Event Communication Messages (Email, News)
+// Messages: Email(C), News(B)
+// Tags: 42-43, 146-148, 212-214
+// Implementation: feature/pretrade-event-communication
+// ============================================================================
+// Enums will be added here by the Event Communication PR:
+// - EmailType (Tag 94)
+
+// ============================================================================
+// [SECTION 300] Quotation/Negotiation Messages
+// Messages: Quote(S), QuoteRequest(R), QuoteCancel(Z), QuoteStatusRequest(a),
+//           QuoteResponse(AJ), QuoteRequestReject(AG), RFQRequest(AH),
+//           QuoteAcknowledgment(CW), QuoteStatusReport(AI), MassQuote(i),
+//           MassQuoteAcknowledgment(b)
+// Tags: 117-121, 131-141, 297-303, 537-538, 648-649, etc.
+// Implementation: feature/pretrade-quotation
+// ============================================================================
+// Enums will be added here by the Quotation PR:
+// - QuoteType (Tag 537)
+// - QuoteRequestType (Tag 303)
+// - QuoteCancelType (Tag 298)
+// - QuoteCondition (Tag 276)
+// - QuoteResponseLevel (Tag 301)
+// - QuoteRespType (Tag 694)
+// - QuoteRequestRejectReason (Tag 658)
+// - AccountType (Tag 581)
+// - QuoteStatus (Tag 297)
+// - QuotePriceType (Tag 692)
+// - QuoteAckStatus (Tag 297)
+
+// ============================================================================
+// [SECTION 400] Market Data Messages
+// Messages: MarketDataRequest(V), MarketDataSnapshotFullRefresh(W),
+//           MarketDataRequestReject(Y)
+// Tags: 262-268, 269-271, 286-291, etc.
+// Implementation: feature/pretrade-market-data
+// ============================================================================
+// Enums will be added here by the Market Data PR:
+// - MDReqRejReason (Tag 281)
+// - MDUpdateType (Tag 265)
+// - SubscriptionRequestType (Tag 263)
+// - MarketDepth (Tag 264)
+// - MDUpdateAction (Tag 279)
+// - MDEntryType (Tag 269)
+// - TickDirection (Tag 274)
+// - QuoteEntryRejectReason (Tag 368)
+
+// ============================================================================
+// [SECTION 500] Market Structure Reference Data Messages
+// Messages: MarketDefinition(BU), MarketDefinitionRequest(BT),
+//           MarketDefinitionUpdateReport(BV), TradingSessionList(BJ),
+//           TradingSessionListRequest(BI), TradingSessionListUpdateReport(BS),
+//           TradingSessionStatus(h), TradingSessionStatusRequest(g)
+// Tags: 325, 326, 338-340, 1300-1301, 1022-1024, etc.
+// Implementation: feature/pretrade-market-structure
+// ============================================================================
+// Enums will be added here by the Market Structure PR:
+// - TradSessionStatus (Tag 340)
+// - TradSesReqID (Tag 335)
+// - TradSesMethod (Tag 338)
+// - TradSesMode (Tag 339)
+// - TradSesStatus (Tag 340)
+// - TradSesStatusRejReason (Tag 567)
+// - MarketSegmentStatus (Tag 1345)
+
+// ============================================================================
+// [SECTION 600] Securities Reference Data Messages
+// Messages: SecurityDefinition(d), SecurityDefinitionRequest(c),
+//           SecurityDefinitionUpdateReport(BP), SecurityList(y),
+//           SecurityListRequest(x), SecurityListUpdateReport(BK),
+//           SecurityStatus(f), SecurityStatusRequest(e), SecurityTypes(w),
+//           SecurityTypeRequest(v), DerivativeSecurityList(AA),
+//           DerivativeSecurityListRequest(z), DerivativeSecurityListUpdateReport(BR),
+//           SecurityMassStatus(CO), SecurityMassStatusRequest(CN)
+// Tags: 167, 460, 461, 541, 555, 762-764, 827-829, etc.
+// Implementation: feature/pretrade-securities-reference
+// ============================================================================
+// Enums will be added here by the Securities Reference PR:
+// - SecurityListRequestType (Tag 559)
+// - SecurityRequestType (Tag 321)
+// - SecurityRequestResult (Tag 560)
+// - SecurityListType (Tag 1470)
+// - SecurityListTypeSource (Tag 1471)
+// - SecurityUpdateAction (Tag 980)
+// - SecurityTradingStatus (Tag 326)
+// - SecurityTradingEvent (Tag 1174)
+// - HaltReason (Tag 327)
+// - ProductComplex (Tag 1227)
+// - SecurityStatus (Tag 965)

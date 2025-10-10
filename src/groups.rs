@@ -785,6 +785,70 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Pre-Trade Messages - Section Markers for Repeating Groups
+    // ========================================================================
+    // This section is pre-allocated for parallel development of Pre-Trade messages.
+    // Each category will add group configs in their designated section.
+
+    // ========================================================================
+    // [SECTION 100] Indication Messages Groups
+    // Implementation: feature/pretrade-indication
+    // ========================================================================
+    // Groups will be added here by the Indication PR:
+    // - IOIQualGrp (Tag 199 = NoIOIQualifiers)
+    // - RoutingGrp (Tag 215 = NoRoutingIDs)
+    // - InstrmtLegIOIGrp (Tag 555 = NoLegs) [may reuse existing]
+    // - UndInstrmtGrp (Tag 711 = NoUnderlyings) [may reuse existing]
+
+    // ========================================================================
+    // [SECTION 200] Event Communication Messages Groups
+    // Implementation: feature/pretrade-event-communication
+    // ========================================================================
+    // Groups will be added here by the Event Communication PR:
+    // - LinesOfTextGrp (Tag 33 = NoLinesOfText)
+    // - RoutingGrp (Tag 215 = NoRoutingIDs) [may reuse existing]
+
+    // ========================================================================
+    // [SECTION 300] Quotation/Negotiation Messages Groups
+    // Implementation: feature/pretrade-quotation
+    // ========================================================================
+    // Groups will be added here by the Quotation PR:
+    // - QuotQualGrp (Tag 735 = NoQuoteQualifiers)
+    // - QuotReqGrp (Tag 146 = NoRelatedSym)
+    // - QuotEntryGrp (Tag 295 = NoQuoteEntries)
+    // - QuotSetGrp (Tag 296 = NoQuoteSets)
+    // - QuotCxlEntriesGrp (Tag 295 = NoQuoteEntries)
+    // - QuotReqRjctGrp (Tag 146 = NoRelatedSym)
+
+    // ========================================================================
+    // [SECTION 400] Market Data Messages Groups
+    // Implementation: feature/pretrade-market-data
+    // ========================================================================
+    // Groups will be added here by the Market Data PR:
+    // - MDReqGrp (Tag 146 = NoRelatedSym)
+    // - MDFullGrp (Tag 268 = NoMDEntries)
+    // - MDIncGrp (Tag 268 = NoMDEntries)
+
+    // ========================================================================
+    // [SECTION 500] Market Structure Reference Data Messages Groups
+    // Implementation: feature/pretrade-market-structure
+    // ========================================================================
+    // Groups will be added here by the Market Structure PR:
+    // - TradingSessionRulesGrp (Tag 1309 = NoTradingSessionRules)
+    // - MarketSegmentGrp (Tag 1310 = NoMarketSegments)
+    // - StrikeRuleGrp (Tag 1201 = NoStrikeRules) [may already exist]
+
+    // ========================================================================
+    // [SECTION 600] Securities Reference Data Messages Groups
+    // Implementation: feature/pretrade-securities-reference
+    // ========================================================================
+    // Groups will be added here by the Securities Reference PR:
+    // - SecListGrp (Tag 146 = NoRelatedSym)
+    // - SecTypesGrp (Tag 558 = NoSecurityTypes)
+    // - InstrmtLegSecListGrp (Tag 555 = NoLegs)
+    // - SecAltIDGrp (Tag 454 = NoSecurityAltID)
+
     registry
 });
 

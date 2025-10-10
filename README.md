@@ -169,45 +169,74 @@ Raw FIX Message:
 ### Rust Library
 
 #### Setup 
-Add to your `Cargo.toml`:
+1. Get the code
+```bash
+git clone https://github.com/KatrinaE/fixie.git
+```
+
+2. Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
 fixie = { path = "../fixie" }
 ```
 
-#### Parsing
+#### Data Types
+Each FIX message type has a corresponding data type in _src/messages.rs_ (for example, NewOrderSingle, ExecutionReport, Logon, etc.).
+The field names for each message are defined on that message's struct in _src/message_types_. This directory is organized according to
+the categories in the FIX spec. For example, NewOrderSingle is in _src/message_types/single_general_order_handling.rs_ because
+NewOrderSingle is in the Single General Order Handling category in the [FIX spec](https://www.fixtrading.org/online-specification/business-area-trade/).
+
+#### Parsing Example
 
 ```rust
-use fixie::{RawFixMessage, NewOrderSingle};
+use fixie::{NewOrderSingle, RawFixMessage};
 
-// Create an example message to parse
-let fix_msg = "8=FIXT.1.1\x019=100\x0135=D\x01...";
-let raw = RawFixMessage::parse(fix_msg)?;
+pub fn main() {
+    // Create an example message to parse
+    // This message uses \x01 (SOH) as a delimiter, but you can also use |
+    let fix_msg = "8=FIXT.1.1\x019=178\x0135=D\x0149=TRADER1\x0156=MARKET1\x0134=1\x0152=20251006-15:00:00.000\x0111=ORD00123\x0121=1\x0155=MSFT\x0154=1\x0138=500\x0140=2\x0144=310.75\x0159=0\x0160=20251006-15:00:00.000\x01453=2\x01448=TRADER1\x01447=D\x01452=1\x01448=DESK22\x01447=D\x01452=24\x019001=TRUE\x019435=ALGOTYPE1\x019436=VWAP\x0110=156\x01";
 
-// Convert to typed message
-let order = NewOrderSingle::from_raw(&raw)?;
-println!("Symbol: {}, Side: {:?}", order.symbol, order.side);
+    // Parse into raw data format
+    let raw = RawFixMessage::parse(fix_msg).expect("Failed to parse raw message");
+
+    // Convert raw data to typed data
+	// Find a full list of available types in src/messages.rs.
+    let order = NewOrderSingle::from_raw(&raw).expect("Failed to construct order");
+
+    // Now you can use the data in your code
+    println!("Symbol: {}, Side: {:?}", order.symbol, order.side);
+}
 ```
 
-#### Encoding
+#### Encoding Example
 
 ```rust
-use fixie::{RawFixMessage, NewOrderSingle, Side, OrdType};
 use chrono::Utc;
+use fixie::{NewOrderSingle, OrdType, RawFixMessage, Side, SOH};
 
-let order = NewOrderSingle {
-    cl_ord_id: "ORDER123".to_string(),
-    symbol: "EURUSD".to_string(),
-    side: Side::Buy,
-    transact_time: Utc::now(),
-    ord_type: OrdType::Limit,
-    order_qty: 100.0,
-    price: Some(1.25),
-};
+pub fn main() {
+    let order = NewOrderSingle {
+        cl_ord_id: "ORDER123".to_string(),
+        symbol: "EURUSD".to_string(),
+        side: Side::Buy,
+        transact_time: Utc::now(),
+        ord_type: OrdType::Limit,
+        order_qty: 100.0,
+        price: Some(1.25),
+    };
 
-let raw = order.to_raw();
-let wire_format = raw.encode();
+    // Convert typed data to raw data
+    let raw = order.to_raw();
+
+    // Encode in \x01-delimited format for transmission
+    let wire_format = raw.encode();
+    println!("Wire format: {:?}", wire_format);
+
+    // Encode in pipe-delimited format for debugging
+    let pipe_format = wire_format.replace(SOH, "|");
+    println!("Debug format: {}", pipe_format);
+}
 ```
 
 ## Supported FIX Versions

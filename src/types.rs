@@ -1488,12 +1488,206 @@ mod mass_order_tests {
 // Tags: 2-5, 23, 25-28, 104, 149, 199, 215-217, 376, 854, 1300-1301, 2404, 2672
 // Implementation: feature/pretrade-indication
 // ============================================================================
-// Enums will be added here by the Indication PR:
-// - IOITransType (Tag 28)
-// - IOIQltyInd (Tag 25)
-// - AdvSide (Tag 4)
-// - AdvTransType (Tag 5)
-// - QtyType (Tag 854)
+
+/// IOITransType (Tag 28) - Type of IOI transaction
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IOITransType {
+    New,       // N - New IOI
+    Cancel,    // C - Cancel IOI
+    Replace,   // R - Replace IOI
+}
+
+impl IOITransType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            IOITransType::New => 'N',
+            IOITransType::Cancel => 'C',
+            IOITransType::Replace => 'R',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'N' => Some(IOITransType::New),
+            'C' => Some(IOITransType::Cancel),
+            'R' => Some(IOITransType::Replace),
+            _ => None,
+        }
+    }
+}
+
+/// IOIQltyInd (Tag 25) - Quality indicator for IOI
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IOIQltyInd {
+    Low,      // L - Low quality
+    Medium,   // M - Medium quality
+    High,     // H - High quality
+}
+
+impl IOIQltyInd {
+    pub fn to_fix(&self) -> char {
+        match self {
+            IOIQltyInd::Low => 'L',
+            IOIQltyInd::Medium => 'M',
+            IOIQltyInd::High => 'H',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'L' => Some(IOIQltyInd::Low),
+            'M' => Some(IOIQltyInd::Medium),
+            'H' => Some(IOIQltyInd::High),
+            _ => None,
+        }
+    }
+}
+
+/// AdvSide (Tag 4) - Side of advertisement
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AdvSide {
+    Buy,   // B - Buy
+    Sell,  // S - Sell
+    Cross, // X - Cross
+    Trade, // T - Trade
+}
+
+impl AdvSide {
+    pub fn to_fix(&self) -> char {
+        match self {
+            AdvSide::Buy => 'B',
+            AdvSide::Sell => 'S',
+            AdvSide::Cross => 'X',
+            AdvSide::Trade => 'T',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'B' => Some(AdvSide::Buy),
+            'S' => Some(AdvSide::Sell),
+            'X' => Some(AdvSide::Cross),
+            'T' => Some(AdvSide::Trade),
+            _ => None,
+        }
+    }
+}
+
+/// AdvTransType (Tag 5) - Type of advertisement transaction
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AdvTransType {
+    New,     // N - New
+    Cancel,  // C - Cancel
+    Replace, // R - Replace
+}
+
+impl AdvTransType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            AdvTransType::New => 'N',
+            AdvTransType::Cancel => 'C',
+            AdvTransType::Replace => 'R',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'N' => Some(AdvTransType::New),
+            'C' => Some(AdvTransType::Cancel),
+            'R' => Some(AdvTransType::Replace),
+            _ => None,
+        }
+    }
+}
+
+/// QtyType (Tag 854) - Type of quantity
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum QtyType {
+    Units,      // 0 - Units
+    Contracts,  // 1 - Contracts
+}
+
+impl QtyType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            QtyType::Units => '0',
+            QtyType::Contracts => '1',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(QtyType::Units),
+            '1' => Some(QtyType::Contracts),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod indication_enum_tests {
+    use super::*;
+
+    #[test]
+    fn test_ioi_trans_type_conversions() {
+        assert_eq!(IOITransType::New.to_fix(), 'N');
+        assert_eq!(IOITransType::Cancel.to_fix(), 'C');
+        assert_eq!(IOITransType::Replace.to_fix(), 'R');
+
+        assert_eq!(IOITransType::from_fix('N'), Some(IOITransType::New));
+        assert_eq!(IOITransType::from_fix('C'), Some(IOITransType::Cancel));
+        assert_eq!(IOITransType::from_fix('R'), Some(IOITransType::Replace));
+        assert_eq!(IOITransType::from_fix('X'), None);
+    }
+
+    #[test]
+    fn test_ioi_qlty_ind_conversions() {
+        assert_eq!(IOIQltyInd::Low.to_fix(), 'L');
+        assert_eq!(IOIQltyInd::Medium.to_fix(), 'M');
+        assert_eq!(IOIQltyInd::High.to_fix(), 'H');
+
+        assert_eq!(IOIQltyInd::from_fix('L'), Some(IOIQltyInd::Low));
+        assert_eq!(IOIQltyInd::from_fix('M'), Some(IOIQltyInd::Medium));
+        assert_eq!(IOIQltyInd::from_fix('H'), Some(IOIQltyInd::High));
+        assert_eq!(IOIQltyInd::from_fix('X'), None);
+    }
+
+    #[test]
+    fn test_adv_side_conversions() {
+        assert_eq!(AdvSide::Buy.to_fix(), 'B');
+        assert_eq!(AdvSide::Sell.to_fix(), 'S');
+        assert_eq!(AdvSide::Cross.to_fix(), 'X');
+        assert_eq!(AdvSide::Trade.to_fix(), 'T');
+
+        assert_eq!(AdvSide::from_fix('B'), Some(AdvSide::Buy));
+        assert_eq!(AdvSide::from_fix('S'), Some(AdvSide::Sell));
+        assert_eq!(AdvSide::from_fix('X'), Some(AdvSide::Cross));
+        assert_eq!(AdvSide::from_fix('T'), Some(AdvSide::Trade));
+        assert_eq!(AdvSide::from_fix('Z'), None);
+    }
+
+    #[test]
+    fn test_adv_trans_type_conversions() {
+        assert_eq!(AdvTransType::New.to_fix(), 'N');
+        assert_eq!(AdvTransType::Cancel.to_fix(), 'C');
+        assert_eq!(AdvTransType::Replace.to_fix(), 'R');
+
+        assert_eq!(AdvTransType::from_fix('N'), Some(AdvTransType::New));
+        assert_eq!(AdvTransType::from_fix('C'), Some(AdvTransType::Cancel));
+        assert_eq!(AdvTransType::from_fix('R'), Some(AdvTransType::Replace));
+        assert_eq!(AdvTransType::from_fix('X'), None);
+    }
+
+    #[test]
+    fn test_qty_type_conversions() {
+        assert_eq!(QtyType::Units.to_fix(), '0');
+        assert_eq!(QtyType::Contracts.to_fix(), '1');
+
+        assert_eq!(QtyType::from_fix('0'), Some(QtyType::Units));
+        assert_eq!(QtyType::from_fix('1'), Some(QtyType::Contracts));
+        assert_eq!(QtyType::from_fix('9'), None);
+    }
+}
 
 // ============================================================================
 // [SECTION 200] Event Communication Messages (Email, News)

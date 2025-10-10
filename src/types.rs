@@ -1761,14 +1761,182 @@ mod market_data_enum_tests {
 // Tags: 325, 326, 338-340, 1300-1301, 1022-1024, etc.
 // Implementation: feature/pretrade-market-structure
 // ============================================================================
-// Enums will be added here by the Market Structure PR:
-// - TradSessionStatus (Tag 340)
-// - TradSesReqID (Tag 335)
-// - TradSesMethod (Tag 338)
-// - TradSesMode (Tag 339)
-// - TradSesStatus (Tag 340)
-// - TradSesStatusRejReason (Tag 567)
-// - MarketSegmentStatus (Tag 1345)
+
+/// TradSesStatus (Tag 340) - State of the trading session
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesStatus {
+    Unknown,       // 0 - Unknown status
+    Halted,        // 1 - Halted
+    Open,          // 2 - Open
+    Closed,        // 3 - Closed
+    PreOpen,       // 4 - Pre-Open
+    PreClose,      // 5 - Pre-Close
+    RequestRejected, // 6 - Request Rejected
+}
+
+impl TradSesStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesStatus::Unknown => '0',
+            TradSesStatus::Halted => '1',
+            TradSesStatus::Open => '2',
+            TradSesStatus::Closed => '3',
+            TradSesStatus::PreOpen => '4',
+            TradSesStatus::PreClose => '5',
+            TradSesStatus::RequestRejected => '6',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(TradSesStatus::Unknown),
+            '1' => Some(TradSesStatus::Halted),
+            '2' => Some(TradSesStatus::Open),
+            '3' => Some(TradSesStatus::Closed),
+            '4' => Some(TradSesStatus::PreOpen),
+            '5' => Some(TradSesStatus::PreClose),
+            '6' => Some(TradSesStatus::RequestRejected),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesMethod (Tag 338) - Method of trading
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesMethod {
+    Electronic,   // 1 - Electronic trading
+    OpenOutcry,   // 2 - Open outcry
+    TwoParty,     // 3 - Two party (direct negotiation)
+}
+
+impl TradSesMethod {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesMethod::Electronic => '1',
+            TradSesMethod::OpenOutcry => '2',
+            TradSesMethod::TwoParty => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(TradSesMethod::Electronic),
+            '2' => Some(TradSesMethod::OpenOutcry),
+            '3' => Some(TradSesMethod::TwoParty),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesMode (Tag 339) - Trading session mode
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesMode {
+    Testing,     // 1 - Testing mode
+    Simulated,   // 2 - Simulated trading
+    Production,  // 3 - Production (live) trading
+}
+
+impl TradSesMode {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesMode::Testing => '1',
+            TradSesMode::Simulated => '2',
+            TradSesMode::Production => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(TradSesMode::Testing),
+            '2' => Some(TradSesMode::Simulated),
+            '3' => Some(TradSesMode::Production),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesStatusRejReason (Tag 567) - Reason for rejecting a trading session status request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesStatusRejReason {
+    UnknownOrInvalidTradingSessionID, // 1 - Unknown or invalid TradingSessionID
+    Other,                             // 99 - Other reason
+}
+
+impl TradSesStatusRejReason {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TradSesStatusRejReason::UnknownOrInvalidTradingSessionID => "1",
+            TradSesStatusRejReason::Other => "99",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "1" => Some(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID),
+            "99" => Some(TradSesStatusRejReason::Other),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod market_structure_enum_tests {
+    use super::*;
+
+    #[test]
+    fn test_trad_ses_status_conversions() {
+        assert_eq!(TradSesStatus::Unknown.to_fix(), '0');
+        assert_eq!(TradSesStatus::Halted.to_fix(), '1');
+        assert_eq!(TradSesStatus::Open.to_fix(), '2');
+        assert_eq!(TradSesStatus::Closed.to_fix(), '3');
+        assert_eq!(TradSesStatus::PreOpen.to_fix(), '4');
+        assert_eq!(TradSesStatus::PreClose.to_fix(), '5');
+        assert_eq!(TradSesStatus::RequestRejected.to_fix(), '6');
+
+        assert_eq!(TradSesStatus::from_fix('0'), Some(TradSesStatus::Unknown));
+        assert_eq!(TradSesStatus::from_fix('1'), Some(TradSesStatus::Halted));
+        assert_eq!(TradSesStatus::from_fix('2'), Some(TradSesStatus::Open));
+        assert_eq!(TradSesStatus::from_fix('3'), Some(TradSesStatus::Closed));
+        assert_eq!(TradSesStatus::from_fix('4'), Some(TradSesStatus::PreOpen));
+        assert_eq!(TradSesStatus::from_fix('5'), Some(TradSesStatus::PreClose));
+        assert_eq!(TradSesStatus::from_fix('6'), Some(TradSesStatus::RequestRejected));
+        assert_eq!(TradSesStatus::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_trad_ses_method_conversions() {
+        assert_eq!(TradSesMethod::Electronic.to_fix(), '1');
+        assert_eq!(TradSesMethod::OpenOutcry.to_fix(), '2');
+        assert_eq!(TradSesMethod::TwoParty.to_fix(), '3');
+
+        assert_eq!(TradSesMethod::from_fix('1'), Some(TradSesMethod::Electronic));
+        assert_eq!(TradSesMethod::from_fix('2'), Some(TradSesMethod::OpenOutcry));
+        assert_eq!(TradSesMethod::from_fix('3'), Some(TradSesMethod::TwoParty));
+        assert_eq!(TradSesMethod::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_trad_ses_mode_conversions() {
+        assert_eq!(TradSesMode::Testing.to_fix(), '1');
+        assert_eq!(TradSesMode::Simulated.to_fix(), '2');
+        assert_eq!(TradSesMode::Production.to_fix(), '3');
+
+        assert_eq!(TradSesMode::from_fix('1'), Some(TradSesMode::Testing));
+        assert_eq!(TradSesMode::from_fix('2'), Some(TradSesMode::Simulated));
+        assert_eq!(TradSesMode::from_fix('3'), Some(TradSesMode::Production));
+        assert_eq!(TradSesMode::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_trad_ses_status_rej_reason_conversions() {
+        assert_eq!(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID.to_fix(), "1");
+        assert_eq!(TradSesStatusRejReason::Other.to_fix(), "99");
+
+        assert_eq!(TradSesStatusRejReason::from_fix("1"), Some(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID));
+        assert_eq!(TradSesStatusRejReason::from_fix("99"), Some(TradSesStatusRejReason::Other));
+        assert_eq!(TradSesStatusRejReason::from_fix("100"), None);
+    }
+}
 
 // ============================================================================
 // [SECTION 600] Securities Reference Data Messages

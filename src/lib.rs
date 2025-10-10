@@ -9,6 +9,7 @@ pub mod multileg_orders;
 pub mod network_status;
 pub mod application_sequencing;
 pub mod user_management;
+pub mod securities_reference;    // [SECTION 600] Securities Reference Data
 
 // Pre-Trade message modules - will be uncommented by respective PRs
 // pub mod indication;              // [SECTION 100] Uncommented by feature/pretrade-indication
@@ -16,7 +17,6 @@ pub mod user_management;
 // pub mod quotation;               // [SECTION 300] Uncommented by feature/pretrade-quotation
 // pub mod market_data;             // [SECTION 400] Uncommented by feature/pretrade-market-data
 // pub mod market_structure;        // [SECTION 500] Uncommented by feature/pretrade-market-structure
-// pub mod securities_reference;    // [SECTION 600] Uncommented by feature/pretrade-securities-reference
 
 pub use types::*;
 pub use parser::*;
@@ -29,6 +29,7 @@ pub use multileg_orders::*;
 pub use network_status::*;
 pub use application_sequencing::*;
 pub use user_management::*;
+pub use securities_reference::*; // [SECTION 600] Securities Reference Data
 
 // Pre-Trade re-exports - will be uncommented by respective PRs
 // pub use indication::*;           // [SECTION 100] Uncommented by feature/pretrade-indication
@@ -36,4 +37,3 @@ pub use user_management::*;
 // pub use quotation::*;            // [SECTION 300] Uncommented by feature/pretrade-quotation
 // pub use market_data::*;          // [SECTION 400] Uncommented by feature/pretrade-market-data
 // pub use market_structure::*;     // [SECTION 500] Uncommented by feature/pretrade-market-structure
-// pub use securities_reference::*; // [SECTION 600] Uncommented by feature/pretrade-securities-reference

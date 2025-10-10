@@ -20,7 +20,7 @@
 //! - Monitoring session state transitions (pre-open, open, close, etc.)
 
 use crate::parser::{RawFixMessage, FixParseError};
-use crate::types::{TradSesStatus, TradSesMethod, TradSesMode, TradSesStatusRejReason, SubscriptionRequestType};
+use crate::types::{TradSesStatus, TradSesMethod, TradSesMode, TradSesStatusRejReason, TradSesUpdateAction, MarketUpdateAction, SubscriptionRequestType};
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -421,6 +421,369 @@ impl TradingSessionList {
     }
 }
 
+// ============================================================================
+// TradingSessionListUpdateReport (MsgType = BS)
+// ============================================================================
+
+/// TradingSessionListUpdateReport (BS) - Updates to trading session list
+///
+/// Sent as an unsolicited message to provide updates to the list of trading sessions.
+/// Used when subscribed to trading session updates to notify of additions, deletions,
+/// or modifications to trading sessions.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TradingSessionListUpdateReport {
+    /// TradSesReqID (Tag 335) - Request ID if responding to a subscription request
+    pub trad_ses_req_id: Option<String>,
+
+    /// TradSesUpdateAction (Tag 1327) - Action being taken (Add/Delete/Modify)
+    pub trad_ses_update_action: Option<TradSesUpdateAction>,
+
+    // Note: NoTradingSessions (386) and TrdSessLstGrp repeating group
+    // are accessed via RawFixMessage.groups
+}
+
+impl TradingSessionListUpdateReport {
+    pub fn from_raw(raw: &RawFixMessage) -> Result<Self, FixParseError> {
+        Ok(TradingSessionListUpdateReport {
+            trad_ses_req_id: raw.get_field(335).map(|s| s.to_string()),
+            trad_ses_update_action: raw.get_field(1327)
+                .and_then(|s| s.chars().next())
+                .and_then(TradSesUpdateAction::from_fix),
+        })
+    }
+
+    pub fn to_raw(&self) -> RawFixMessage {
+        let mut msg = RawFixMessage::new();
+
+        // Set MsgType
+        msg.set_field(35, "BS".to_string());
+
+        // Optional fields
+        if let Some(ref req_id) = self.trad_ses_req_id {
+            msg.set_field(335, req_id.clone());
+        }
+        if let Some(action) = self.trad_ses_update_action {
+            msg.set_field(1327, action.to_fix().to_string());
+        }
+
+        msg
+    }
+}
+
+// ============================================================================
+// MarketDefinitionRequest (MsgType = BT)
+// ============================================================================
+
+/// MarketDefinitionRequest (BT) - Request for market structure information
+///
+/// Used to request market structure information such as market segments, trading rules,
+/// and other market-specific details. Can be used as a snapshot request or subscription.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct MarketDefinitionRequest {
+    /// MarketReqID (Tag 1393) - Required - Unique market request identifier
+    pub market_req_id: String,
+
+    /// SubscriptionRequestType (Tag 263) - Required - Type of request (Snapshot/Subscribe/Unsubscribe)
+    pub subscription_request_type: SubscriptionRequestType,
+
+    /// MarketID (Tag 1301) - Market identifier (conditionally required if MarketSegmentID is specified)
+    pub market_id: Option<String>,
+
+    /// MarketSegmentID (Tag 1300) - Market segment identifier
+    pub market_segment_id: Option<String>,
+
+    /// ParentMktSegmID (Tag 1325) - Parent market segment identifier (indicates sub-segment)
+    pub parent_mkt_segm_id: Option<String>,
+}
+
+impl MarketDefinitionRequest {
+    pub fn from_raw(raw: &RawFixMessage) -> Result<Self, FixParseError> {
+        Ok(MarketDefinitionRequest {
+            market_req_id: raw.get_field(1393)
+                .ok_or_else(|| FixParseError::MissingRequiredField(1393))?
+                .to_string(),
+            subscription_request_type: raw.get_field(263)
+                .and_then(|s| s.chars().next())
+                .and_then(SubscriptionRequestType::from_fix)
+                .ok_or_else(|| FixParseError::MissingRequiredField(263))?,
+            market_id: raw.get_field(1301).map(|s| s.to_string()),
+            market_segment_id: raw.get_field(1300).map(|s| s.to_string()),
+            parent_mkt_segm_id: raw.get_field(1325).map(|s| s.to_string()),
+        })
+    }
+
+    pub fn to_raw(&self) -> RawFixMessage {
+        let mut msg = RawFixMessage::new();
+
+        // Set MsgType
+        msg.set_field(35, "BT".to_string());
+
+        // Required fields
+        msg.set_field(1393, self.market_req_id.clone());
+        msg.set_field(263, self.subscription_request_type.to_fix().to_string());
+
+        // Optional fields
+        if let Some(ref market_id) = self.market_id {
+            msg.set_field(1301, market_id.clone());
+        }
+        if let Some(ref segment_id) = self.market_segment_id {
+            msg.set_field(1300, segment_id.clone());
+        }
+        if let Some(ref parent_id) = self.parent_mkt_segm_id {
+            msg.set_field(1325, parent_id.clone());
+        }
+
+        msg
+    }
+}
+
+// ============================================================================
+// MarketDefinition (MsgType = BU)
+// ============================================================================
+
+/// MarketDefinition (BU) - Market structure definition
+///
+/// Sent in response to MarketDefinitionRequest providing detailed market structure information.
+/// Contains market segment details, trading rules, and other market-specific parameters.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct MarketDefinition {
+    /// MarketReportID (Tag 1394) - Required - Unique market report identifier
+    pub market_report_id: String,
+
+    /// MarketID (Tag 1301) - Required - Market identifier
+    pub market_id: String,
+
+    /// MarketReqID (Tag 1393) - Request ID from original MarketDefinitionRequest
+    pub market_req_id: Option<String>,
+
+    /// MarketSegmentID (Tag 1300) - Market segment identifier
+    pub market_segment_id: Option<String>,
+
+    /// MarketSegmentDesc (Tag 1396) - Market segment description
+    pub market_segment_desc: Option<String>,
+
+    /// ParentMktSegmID (Tag 1325) - Parent market segment identifier
+    pub parent_mkt_segm_id: Option<String>,
+
+    /// Currency (Tag 15) - Currency of the market
+    pub currency: Option<String>,
+
+    /// TransactTime (Tag 60) - Time of market definition
+    pub transact_time: Option<String>,
+
+    /// Text (Tag 58) - Free-form text
+    pub text: Option<String>,
+
+    /// EncodedMktSegmDescLen (Tag 1397) - Length of encoded market segment description
+    pub encoded_mkt_segm_desc_len: Option<u32>,
+
+    /// EncodedMktSegmDesc (Tag 1398) - Encoded market segment description
+    pub encoded_mkt_segm_desc: Option<Vec<u8>>,
+
+    /// EncodedTextLen (Tag 354) - Length of encoded text
+    pub encoded_text_len: Option<u32>,
+
+    /// EncodedText (Tag 355) - Encoded text
+    pub encoded_text: Option<Vec<u8>>,
+
+    // Note: Component blocks (BaseTradingRules, OrdTypeRules, TimeInForceRules, ExecInstRules)
+    // are complex nested structures accessed via RawFixMessage.groups
+}
+
+impl MarketDefinition {
+    pub fn from_raw(raw: &RawFixMessage) -> Result<Self, FixParseError> {
+        Ok(MarketDefinition {
+            market_report_id: raw.get_field(1394)
+                .ok_or_else(|| FixParseError::MissingRequiredField(1394))?
+                .to_string(),
+            market_id: raw.get_field(1301)
+                .ok_or_else(|| FixParseError::MissingRequiredField(1301))?
+                .to_string(),
+            market_req_id: raw.get_field(1393).map(|s| s.to_string()),
+            market_segment_id: raw.get_field(1300).map(|s| s.to_string()),
+            market_segment_desc: raw.get_field(1396).map(|s| s.to_string()),
+            parent_mkt_segm_id: raw.get_field(1325).map(|s| s.to_string()),
+            currency: raw.get_field(15).map(|s| s.to_string()),
+            transact_time: raw.get_field(60).map(|s| s.to_string()),
+            text: raw.get_field(58).map(|s| s.to_string()),
+            encoded_mkt_segm_desc_len: raw.get_field(1397).and_then(|s| s.parse().ok()),
+            encoded_mkt_segm_desc: None, // Binary data handling TBD
+            encoded_text_len: raw.get_field(354).and_then(|s| s.parse().ok()),
+            encoded_text: None, // Binary data handling TBD
+        })
+    }
+
+    pub fn to_raw(&self) -> RawFixMessage {
+        let mut msg = RawFixMessage::new();
+
+        // Set MsgType
+        msg.set_field(35, "BU".to_string());
+
+        // Required fields
+        msg.set_field(1394, self.market_report_id.clone());
+        msg.set_field(1301, self.market_id.clone());
+
+        // Optional fields
+        if let Some(ref req_id) = self.market_req_id {
+            msg.set_field(1393, req_id.clone());
+        }
+        if let Some(ref segment_id) = self.market_segment_id {
+            msg.set_field(1300, segment_id.clone());
+        }
+        if let Some(ref desc) = self.market_segment_desc {
+            msg.set_field(1396, desc.clone());
+        }
+        if let Some(ref parent_id) = self.parent_mkt_segm_id {
+            msg.set_field(1325, parent_id.clone());
+        }
+        if let Some(ref currency) = self.currency {
+            msg.set_field(15, currency.clone());
+        }
+        if let Some(ref time) = self.transact_time {
+            msg.set_field(60, time.clone());
+        }
+        if let Some(ref text) = self.text {
+            msg.set_field(58, text.clone());
+        }
+        if let Some(len) = self.encoded_mkt_segm_desc_len {
+            msg.set_field(1397, len.to_string());
+        }
+        if let Some(len) = self.encoded_text_len {
+            msg.set_field(354, len.to_string());
+        }
+
+        msg
+    }
+}
+
+// ============================================================================
+// MarketDefinitionUpdateReport (MsgType = BV)
+// ============================================================================
+
+/// MarketDefinitionUpdateReport (BV) - Updates to market structure definition
+///
+/// Sent as an unsolicited message to provide updates to market structure information
+/// when subscribed. Indicates additions, deletions, or modifications to market definitions.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct MarketDefinitionUpdateReport {
+    /// MarketReportID (Tag 1394) - Required - Unique market report identifier
+    pub market_report_id: String,
+
+    /// MarketID (Tag 1301) - Required - Market identifier
+    pub market_id: String,
+
+    /// MarketReqID (Tag 1393) - Request ID from original MarketDefinitionRequest
+    pub market_req_id: Option<String>,
+
+    /// MarketUpdateAction (Tag 1395) - Action being taken (Add/Delete/Modify)
+    pub market_update_action: Option<MarketUpdateAction>,
+
+    /// MarketSegmentID (Tag 1300) - Market segment identifier
+    pub market_segment_id: Option<String>,
+
+    /// MarketSegmentDesc (Tag 1396) - Market segment description
+    pub market_segment_desc: Option<String>,
+
+    /// ParentMktSegmID (Tag 1325) - Parent market segment identifier
+    pub parent_mkt_segm_id: Option<String>,
+
+    /// Currency (Tag 15) - Currency of the market
+    pub currency: Option<String>,
+
+    /// TransactTime (Tag 60) - Time of market definition update
+    pub transact_time: Option<String>,
+
+    /// Text (Tag 58) - Free-form text
+    pub text: Option<String>,
+
+    /// EncodedMktSegmDescLen (Tag 1397) - Length of encoded market segment description
+    pub encoded_mkt_segm_desc_len: Option<u32>,
+
+    /// EncodedMktSegmDesc (Tag 1398) - Encoded market segment description
+    pub encoded_mkt_segm_desc: Option<Vec<u8>>,
+
+    /// EncodedTextLen (Tag 354) - Length of encoded text
+    pub encoded_text_len: Option<u32>,
+
+    /// EncodedText (Tag 355) - Encoded text
+    pub encoded_text: Option<Vec<u8>>,
+
+    // Note: Component blocks (BaseTradingRules, OrdTypeRules, TimeInForceRules, ExecInstRules)
+    // are complex nested structures accessed via RawFixMessage.groups
+}
+
+impl MarketDefinitionUpdateReport {
+    pub fn from_raw(raw: &RawFixMessage) -> Result<Self, FixParseError> {
+        Ok(MarketDefinitionUpdateReport {
+            market_report_id: raw.get_field(1394)
+                .ok_or_else(|| FixParseError::MissingRequiredField(1394))?
+                .to_string(),
+            market_id: raw.get_field(1301)
+                .ok_or_else(|| FixParseError::MissingRequiredField(1301))?
+                .to_string(),
+            market_req_id: raw.get_field(1393).map(|s| s.to_string()),
+            market_update_action: raw.get_field(1395)
+                .and_then(|s| s.chars().next())
+                .and_then(MarketUpdateAction::from_fix),
+            market_segment_id: raw.get_field(1300).map(|s| s.to_string()),
+            market_segment_desc: raw.get_field(1396).map(|s| s.to_string()),
+            parent_mkt_segm_id: raw.get_field(1325).map(|s| s.to_string()),
+            currency: raw.get_field(15).map(|s| s.to_string()),
+            transact_time: raw.get_field(60).map(|s| s.to_string()),
+            text: raw.get_field(58).map(|s| s.to_string()),
+            encoded_mkt_segm_desc_len: raw.get_field(1397).and_then(|s| s.parse().ok()),
+            encoded_mkt_segm_desc: None, // Binary data handling TBD
+            encoded_text_len: raw.get_field(354).and_then(|s| s.parse().ok()),
+            encoded_text: None, // Binary data handling TBD
+        })
+    }
+
+    pub fn to_raw(&self) -> RawFixMessage {
+        let mut msg = RawFixMessage::new();
+
+        // Set MsgType
+        msg.set_field(35, "BV".to_string());
+
+        // Required fields
+        msg.set_field(1394, self.market_report_id.clone());
+        msg.set_field(1301, self.market_id.clone());
+
+        // Optional fields
+        if let Some(ref req_id) = self.market_req_id {
+            msg.set_field(1393, req_id.clone());
+        }
+        if let Some(action) = self.market_update_action {
+            msg.set_field(1395, action.to_fix().to_string());
+        }
+        if let Some(ref segment_id) = self.market_segment_id {
+            msg.set_field(1300, segment_id.clone());
+        }
+        if let Some(ref desc) = self.market_segment_desc {
+            msg.set_field(1396, desc.clone());
+        }
+        if let Some(ref parent_id) = self.parent_mkt_segm_id {
+            msg.set_field(1325, parent_id.clone());
+        }
+        if let Some(ref currency) = self.currency {
+            msg.set_field(15, currency.clone());
+        }
+        if let Some(ref time) = self.transact_time {
+            msg.set_field(60, time.clone());
+        }
+        if let Some(ref text) = self.text {
+            msg.set_field(58, text.clone());
+        }
+        if let Some(len) = self.encoded_mkt_segm_desc_len {
+            msg.set_field(1397, len.to_string());
+        }
+        if let Some(len) = self.encoded_text_len {
+            msg.set_field(354, len.to_string());
+        }
+
+        msg
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -557,5 +920,184 @@ mod tests {
         let parsed = TradingSessionList::from_raw(&raw).expect("Should parse");
 
         assert_eq!(parsed.trad_ses_req_id, Some("TSLISTREQ001".to_string()));
+    }
+
+    #[test]
+    fn test_trading_session_list_update_report_round_trip() {
+        let report = TradingSessionListUpdateReport {
+            trad_ses_req_id: Some("TSLISTREQ001".to_string()),
+            trad_ses_update_action: Some(TradSesUpdateAction::Add),
+        };
+
+        let raw = report.to_raw();
+        let parsed = TradingSessionListUpdateReport::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.trad_ses_req_id, Some("TSLISTREQ001".to_string()));
+        assert_eq!(parsed.trad_ses_update_action, Some(TradSesUpdateAction::Add));
+    }
+
+    #[test]
+    fn test_trading_session_list_update_report_modify() {
+        let report = TradingSessionListUpdateReport {
+            trad_ses_req_id: Some("TSLISTREQ002".to_string()),
+            trad_ses_update_action: Some(TradSesUpdateAction::Modify),
+        };
+
+        let raw = report.to_raw();
+        let parsed = TradingSessionListUpdateReport::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.trad_ses_update_action, Some(TradSesUpdateAction::Modify));
+    }
+
+    #[test]
+    fn test_trading_session_list_update_report_delete() {
+        let report = TradingSessionListUpdateReport {
+            trad_ses_req_id: None,
+            trad_ses_update_action: Some(TradSesUpdateAction::Delete),
+        };
+
+        let raw = report.to_raw();
+        let parsed = TradingSessionListUpdateReport::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.trad_ses_req_id, None);
+        assert_eq!(parsed.trad_ses_update_action, Some(TradSesUpdateAction::Delete));
+    }
+
+    #[test]
+    fn test_market_definition_request_round_trip() {
+        let req = MarketDefinitionRequest {
+            market_req_id: "MKTREQ001".to_string(),
+            subscription_request_type: SubscriptionRequestType::Snapshot,
+            market_id: Some("XNAS".to_string()),
+            market_segment_id: Some("MAIN".to_string()),
+            parent_mkt_segm_id: None,
+        };
+
+        let raw = req.to_raw();
+        let parsed = MarketDefinitionRequest::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.market_req_id, "MKTREQ001");
+        assert_eq!(parsed.subscription_request_type, SubscriptionRequestType::Snapshot);
+        assert_eq!(parsed.market_id, Some("XNAS".to_string()));
+        assert_eq!(parsed.market_segment_id, Some("MAIN".to_string()));
+        assert_eq!(parsed.parent_mkt_segm_id, None);
+    }
+
+    #[test]
+    fn test_market_definition_round_trip() {
+        let def = MarketDefinition {
+            market_report_id: "MKTRPT001".to_string(),
+            market_id: "XNAS".to_string(),
+            market_req_id: Some("MKTREQ001".to_string()),
+            market_segment_id: Some("MAIN".to_string()),
+            market_segment_desc: Some("Main Trading Segment".to_string()),
+            parent_mkt_segm_id: None,
+            currency: Some("USD".to_string()),
+            transact_time: Some("20251010-10:30:00".to_string()),
+            text: Some("Market definition for NASDAQ main segment".to_string()),
+            encoded_mkt_segm_desc_len: None,
+            encoded_mkt_segm_desc: None,
+            encoded_text_len: None,
+            encoded_text: None,
+        };
+
+        let raw = def.to_raw();
+        let parsed = MarketDefinition::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.market_report_id, "MKTRPT001");
+        assert_eq!(parsed.market_id, "XNAS");
+        assert_eq!(parsed.market_req_id, Some("MKTREQ001".to_string()));
+        assert_eq!(parsed.market_segment_id, Some("MAIN".to_string()));
+        assert_eq!(parsed.market_segment_desc, Some("Main Trading Segment".to_string()));
+        assert_eq!(parsed.currency, Some("USD".to_string()));
+        assert_eq!(parsed.transact_time, Some("20251010-10:30:00".to_string()));
+        assert_eq!(parsed.text, Some("Market definition for NASDAQ main segment".to_string()));
+    }
+
+    #[test]
+    fn test_market_definition_update_report_round_trip() {
+        let report = MarketDefinitionUpdateReport {
+            market_report_id: "MKTRPT002".to_string(),
+            market_id: "XNAS".to_string(),
+            market_req_id: Some("MKTREQ001".to_string()),
+            market_update_action: Some(MarketUpdateAction::Modify),
+            market_segment_id: Some("MAIN".to_string()),
+            market_segment_desc: Some("Main Trading Segment (Updated)".to_string()),
+            parent_mkt_segm_id: None,
+            currency: Some("USD".to_string()),
+            transact_time: Some("20251010-11:00:00".to_string()),
+            text: Some("Market definition updated".to_string()),
+            encoded_mkt_segm_desc_len: None,
+            encoded_mkt_segm_desc: None,
+            encoded_text_len: None,
+            encoded_text: None,
+        };
+
+        let raw = report.to_raw();
+        let parsed = MarketDefinitionUpdateReport::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.market_report_id, "MKTRPT002");
+        assert_eq!(parsed.market_id, "XNAS");
+        assert_eq!(parsed.market_req_id, Some("MKTREQ001".to_string()));
+        assert_eq!(parsed.market_update_action, Some(MarketUpdateAction::Modify));
+        assert_eq!(parsed.market_segment_id, Some("MAIN".to_string()));
+        assert_eq!(parsed.market_segment_desc, Some("Main Trading Segment (Updated)".to_string()));
+        assert_eq!(parsed.currency, Some("USD".to_string()));
+        assert_eq!(parsed.transact_time, Some("20251010-11:00:00".to_string()));
+        assert_eq!(parsed.text, Some("Market definition updated".to_string()));
+    }
+
+    #[test]
+    fn test_market_definition_update_report_add() {
+        let report = MarketDefinitionUpdateReport {
+            market_report_id: "MKTRPT003".to_string(),
+            market_id: "NYSE".to_string(),
+            market_req_id: None,
+            market_update_action: Some(MarketUpdateAction::Add),
+            market_segment_id: Some("ARCA".to_string()),
+            market_segment_desc: Some("NYSE Arca Segment".to_string()),
+            parent_mkt_segm_id: None,
+            currency: Some("USD".to_string()),
+            transact_time: None,
+            text: None,
+            encoded_mkt_segm_desc_len: None,
+            encoded_mkt_segm_desc: None,
+            encoded_text_len: None,
+            encoded_text: None,
+        };
+
+        let raw = report.to_raw();
+        let parsed = MarketDefinitionUpdateReport::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.market_update_action, Some(MarketUpdateAction::Add));
+        assert_eq!(parsed.market_id, "NYSE");
+        assert_eq!(parsed.market_segment_id, Some("ARCA".to_string()));
+    }
+
+    #[test]
+    fn test_market_definition_update_report_delete() {
+        let report = MarketDefinitionUpdateReport {
+            market_report_id: "MKTRPT004".to_string(),
+            market_id: "BATS".to_string(),
+            market_req_id: None,
+            market_update_action: Some(MarketUpdateAction::Delete),
+            market_segment_id: Some("BZX".to_string()),
+            market_segment_desc: None,
+            parent_mkt_segm_id: None,
+            currency: None,
+            transact_time: None,
+            text: Some("Market segment removed".to_string()),
+            encoded_mkt_segm_desc_len: None,
+            encoded_mkt_segm_desc: None,
+            encoded_text_len: None,
+            encoded_text: None,
+        };
+
+        let raw = report.to_raw();
+        let parsed = MarketDefinitionUpdateReport::from_raw(&raw).expect("Should parse");
+
+        assert_eq!(parsed.market_update_action, Some(MarketUpdateAction::Delete));
+        assert_eq!(parsed.market_id, "BATS");
+        assert_eq!(parsed.text, Some("Market segment removed".to_string()));
     }
 }

@@ -1879,6 +1879,64 @@ impl TradSesStatusRejReason {
     }
 }
 
+/// TradSesUpdateAction (Tag 1327) - Action taken for trading sessions
+///
+/// Uses same values as SecurityUpdateAction (Tag 980)
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesUpdateAction {
+    Add,     // A - Add trading session
+    Delete,  // D - Delete trading session
+    Modify,  // M - Modify trading session
+}
+
+impl TradSesUpdateAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesUpdateAction::Add => 'A',
+            TradSesUpdateAction::Delete => 'D',
+            TradSesUpdateAction::Modify => 'M',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'A' => Some(TradSesUpdateAction::Add),
+            'D' => Some(TradSesUpdateAction::Delete),
+            'M' => Some(TradSesUpdateAction::Modify),
+            _ => None,
+        }
+    }
+}
+
+/// MarketUpdateAction (Tag 1395) - Action taken for market definitions
+///
+/// Uses same values as SecurityUpdateAction (Tag 980) and TradSesUpdateAction (Tag 1327)
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MarketUpdateAction {
+    Add,     // A - Add market definition
+    Delete,  // D - Delete market definition
+    Modify,  // M - Modify market definition
+}
+
+impl MarketUpdateAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            MarketUpdateAction::Add => 'A',
+            MarketUpdateAction::Delete => 'D',
+            MarketUpdateAction::Modify => 'M',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'A' => Some(MarketUpdateAction::Add),
+            'D' => Some(MarketUpdateAction::Delete),
+            'M' => Some(MarketUpdateAction::Modify),
+            _ => None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod market_structure_enum_tests {
     use super::*;
@@ -1935,6 +1993,30 @@ mod market_structure_enum_tests {
         assert_eq!(TradSesStatusRejReason::from_fix("1"), Some(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID));
         assert_eq!(TradSesStatusRejReason::from_fix("99"), Some(TradSesStatusRejReason::Other));
         assert_eq!(TradSesStatusRejReason::from_fix("100"), None);
+    }
+
+    #[test]
+    fn test_trad_ses_update_action_conversions() {
+        assert_eq!(TradSesUpdateAction::Add.to_fix(), 'A');
+        assert_eq!(TradSesUpdateAction::Delete.to_fix(), 'D');
+        assert_eq!(TradSesUpdateAction::Modify.to_fix(), 'M');
+
+        assert_eq!(TradSesUpdateAction::from_fix('A'), Some(TradSesUpdateAction::Add));
+        assert_eq!(TradSesUpdateAction::from_fix('D'), Some(TradSesUpdateAction::Delete));
+        assert_eq!(TradSesUpdateAction::from_fix('M'), Some(TradSesUpdateAction::Modify));
+        assert_eq!(TradSesUpdateAction::from_fix('Z'), None);
+    }
+
+    #[test]
+    fn test_market_update_action_conversions() {
+        assert_eq!(MarketUpdateAction::Add.to_fix(), 'A');
+        assert_eq!(MarketUpdateAction::Delete.to_fix(), 'D');
+        assert_eq!(MarketUpdateAction::Modify.to_fix(), 'M');
+
+        assert_eq!(MarketUpdateAction::from_fix('A'), Some(MarketUpdateAction::Add));
+        assert_eq!(MarketUpdateAction::from_fix('D'), Some(MarketUpdateAction::Delete));
+        assert_eq!(MarketUpdateAction::from_fix('M'), Some(MarketUpdateAction::Modify));
+        assert_eq!(MarketUpdateAction::from_fix('Z'), None);
     }
 }
 

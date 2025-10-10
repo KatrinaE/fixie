@@ -2899,15 +2899,386 @@ mod market_structure_enum_tests {
 // Tags: 167, 460, 461, 541, 555, 762-764, 827-829, etc.
 // Implementation: feature/pretrade-securities-reference
 // ============================================================================
-// Enums will be added here by the Securities Reference PR:
-// - SecurityListRequestType (Tag 559)
-// - SecurityRequestType (Tag 321)
-// - SecurityRequestResult (Tag 560)
-// - SecurityListType (Tag 1470)
-// - SecurityListTypeSource (Tag 1471)
-// - SecurityUpdateAction (Tag 980)
-// - SecurityTradingStatus (Tag 326)
-// - SecurityTradingEvent (Tag 1174)
-// - HaltReason (Tag 327)
-// - ProductComplex (Tag 1227)
-// - SecurityStatus (Tag 965)
+
+/// SecurityRequestType (Tag 321) - Type of security data request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SecurityRequestType {
+    RequestSecurityIdentityAndSpecifications,      // 0
+    RequestSecurityIdentityForSpecifications,      // 1
+    RequestListSecurityTypes,                      // 2
+    RequestListSecurities,                          // 3
+    Symbol,                                         // 4
+    SecurityTypeOrCFICode,                         // 5
+    Product,                                        // 6
+    TradingSessionID,                              // 7
+    AllSecurities,                                 // 8
+    MarketIDOrMarketIDPlusMarketSegmentID,         // 9
+}
+
+impl SecurityRequestType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SecurityRequestType::RequestSecurityIdentityAndSpecifications => '0',
+            SecurityRequestType::RequestSecurityIdentityForSpecifications => '1',
+            SecurityRequestType::RequestListSecurityTypes => '2',
+            SecurityRequestType::RequestListSecurities => '3',
+            SecurityRequestType::Symbol => '4',
+            SecurityRequestType::SecurityTypeOrCFICode => '5',
+            SecurityRequestType::Product => '6',
+            SecurityRequestType::TradingSessionID => '7',
+            SecurityRequestType::AllSecurities => '8',
+            SecurityRequestType::MarketIDOrMarketIDPlusMarketSegmentID => '9',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(SecurityRequestType::RequestSecurityIdentityAndSpecifications),
+            '1' => Some(SecurityRequestType::RequestSecurityIdentityForSpecifications),
+            '2' => Some(SecurityRequestType::RequestListSecurityTypes),
+            '3' => Some(SecurityRequestType::RequestListSecurities),
+            '4' => Some(SecurityRequestType::Symbol),
+            '5' => Some(SecurityRequestType::SecurityTypeOrCFICode),
+            '6' => Some(SecurityRequestType::Product),
+            '7' => Some(SecurityRequestType::TradingSessionID),
+            '8' => Some(SecurityRequestType::AllSecurities),
+            '9' => Some(SecurityRequestType::MarketIDOrMarketIDPlusMarketSegmentID),
+            _ => None,
+        }
+    }
+}
+
+/// SecurityRequestResult (Tag 560) - Result of security definition request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SecurityRequestResult {
+    ValidRequest,                        // 0
+    InvalidOrUnsupportedRequest,         // 1
+    NoInstrumentsFound,                  // 2
+    NotAuthorizedToRetrieveInstrumentData, // 3
+    InstrumentDataTemporarilyUnavailable, // 4
+    RequestForInstrumentDataNotSupported, // 5
+}
+
+impl SecurityRequestResult {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SecurityRequestResult::ValidRequest => '0',
+            SecurityRequestResult::InvalidOrUnsupportedRequest => '1',
+            SecurityRequestResult::NoInstrumentsFound => '2',
+            SecurityRequestResult::NotAuthorizedToRetrieveInstrumentData => '3',
+            SecurityRequestResult::InstrumentDataTemporarilyUnavailable => '4',
+            SecurityRequestResult::RequestForInstrumentDataNotSupported => '5',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(SecurityRequestResult::ValidRequest),
+            '1' => Some(SecurityRequestResult::InvalidOrUnsupportedRequest),
+            '2' => Some(SecurityRequestResult::NoInstrumentsFound),
+            '3' => Some(SecurityRequestResult::NotAuthorizedToRetrieveInstrumentData),
+            '4' => Some(SecurityRequestResult::InstrumentDataTemporarilyUnavailable),
+            '5' => Some(SecurityRequestResult::RequestForInstrumentDataNotSupported),
+            _ => None,
+        }
+    }
+}
+
+/// SecurityListRequestType (Tag 559) - Type of security list request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SecurityListRequestType {
+    Symbol,                              // 0
+    SecurityTypeAndOrCFICode,           // 1
+    Product,                             // 2
+    TradingSessionID,                    // 3
+    AllSecurities,                       // 4
+    MarketIDOrMarketIDPlusMarketSegmentID, // 5
+}
+
+impl SecurityListRequestType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SecurityListRequestType::Symbol => '0',
+            SecurityListRequestType::SecurityTypeAndOrCFICode => '1',
+            SecurityListRequestType::Product => '2',
+            SecurityListRequestType::TradingSessionID => '3',
+            SecurityListRequestType::AllSecurities => '4',
+            SecurityListRequestType::MarketIDOrMarketIDPlusMarketSegmentID => '5',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(SecurityListRequestType::Symbol),
+            '1' => Some(SecurityListRequestType::SecurityTypeAndOrCFICode),
+            '2' => Some(SecurityListRequestType::Product),
+            '3' => Some(SecurityListRequestType::TradingSessionID),
+            '4' => Some(SecurityListRequestType::AllSecurities),
+            '5' => Some(SecurityListRequestType::MarketIDOrMarketIDPlusMarketSegmentID),
+            _ => None,
+        }
+    }
+}
+
+/// SecurityUpdateAction (Tag 980) - Action taken for security data
+///
+/// Uses same values as TradSesUpdateAction (Tag 1327) and MarketUpdateAction (Tag 1395)
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SecurityUpdateAction {
+    Add,     // A - Add security
+    Delete,  // D - Delete security
+    Modify,  // M - Modify security
+}
+
+impl SecurityUpdateAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SecurityUpdateAction::Add => 'A',
+            SecurityUpdateAction::Delete => 'D',
+            SecurityUpdateAction::Modify => 'M',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'A' => Some(SecurityUpdateAction::Add),
+            'D' => Some(SecurityUpdateAction::Delete),
+            'M' => Some(SecurityUpdateAction::Modify),
+            _ => None,
+        }
+    }
+}
+
+/// SecurityTradingStatus (Tag 326) - Trading status of a security
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SecurityTradingStatus {
+    OpeningDelay,                          // 1
+    TradingHalt,                           // 2
+    Resume,                                // 3
+    NoOpenNoResume,                        // 4
+    PriceIndication,                       // 5
+    TradingRangeIndication,                // 6
+    MarketImbalanceBuy,                    // 7
+    MarketImbalanceSell,                   // 8
+    MarketOnCloseImbalanceBuy,             // 9
+    MarketOnCloseImbalanceSell,            // 10
+    NoMarketImbalance,                     // 12
+    NoMarketOnCloseImbalance,              // 13
+    ITSPreOpening,                         // 14
+    NewPriceIndication,                    // 15
+    TradeDisseminationTime,                // 16
+    ReadyToTrade,                          // 17
+    NotAvailableForTrading,                // 18
+    NotTradedOnThisMarket,                 // 19
+    UnknownOrInvalid,                      // 20
+    PreOpen,                               // 21
+    OpeningRotation,                       // 22
+    FastMarket,                            // 23
+    PreCross,                              // 24
+    Cross,                                 // 25
+    PostClose,                             // 26
+}
+
+impl SecurityTradingStatus {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            SecurityTradingStatus::OpeningDelay => "1",
+            SecurityTradingStatus::TradingHalt => "2",
+            SecurityTradingStatus::Resume => "3",
+            SecurityTradingStatus::NoOpenNoResume => "4",
+            SecurityTradingStatus::PriceIndication => "5",
+            SecurityTradingStatus::TradingRangeIndication => "6",
+            SecurityTradingStatus::MarketImbalanceBuy => "7",
+            SecurityTradingStatus::MarketImbalanceSell => "8",
+            SecurityTradingStatus::MarketOnCloseImbalanceBuy => "9",
+            SecurityTradingStatus::MarketOnCloseImbalanceSell => "10",
+            SecurityTradingStatus::NoMarketImbalance => "12",
+            SecurityTradingStatus::NoMarketOnCloseImbalance => "13",
+            SecurityTradingStatus::ITSPreOpening => "14",
+            SecurityTradingStatus::NewPriceIndication => "15",
+            SecurityTradingStatus::TradeDisseminationTime => "16",
+            SecurityTradingStatus::ReadyToTrade => "17",
+            SecurityTradingStatus::NotAvailableForTrading => "18",
+            SecurityTradingStatus::NotTradedOnThisMarket => "19",
+            SecurityTradingStatus::UnknownOrInvalid => "20",
+            SecurityTradingStatus::PreOpen => "21",
+            SecurityTradingStatus::OpeningRotation => "22",
+            SecurityTradingStatus::FastMarket => "23",
+            SecurityTradingStatus::PreCross => "24",
+            SecurityTradingStatus::Cross => "25",
+            SecurityTradingStatus::PostClose => "26",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "1" => Some(SecurityTradingStatus::OpeningDelay),
+            "2" => Some(SecurityTradingStatus::TradingHalt),
+            "3" => Some(SecurityTradingStatus::Resume),
+            "4" => Some(SecurityTradingStatus::NoOpenNoResume),
+            "5" => Some(SecurityTradingStatus::PriceIndication),
+            "6" => Some(SecurityTradingStatus::TradingRangeIndication),
+            "7" => Some(SecurityTradingStatus::MarketImbalanceBuy),
+            "8" => Some(SecurityTradingStatus::MarketImbalanceSell),
+            "9" => Some(SecurityTradingStatus::MarketOnCloseImbalanceBuy),
+            "10" => Some(SecurityTradingStatus::MarketOnCloseImbalanceSell),
+            "12" => Some(SecurityTradingStatus::NoMarketImbalance),
+            "13" => Some(SecurityTradingStatus::NoMarketOnCloseImbalance),
+            "14" => Some(SecurityTradingStatus::ITSPreOpening),
+            "15" => Some(SecurityTradingStatus::NewPriceIndication),
+            "16" => Some(SecurityTradingStatus::TradeDisseminationTime),
+            "17" => Some(SecurityTradingStatus::ReadyToTrade),
+            "18" => Some(SecurityTradingStatus::NotAvailableForTrading),
+            "19" => Some(SecurityTradingStatus::NotTradedOnThisMarket),
+            "20" => Some(SecurityTradingStatus::UnknownOrInvalid),
+            "21" => Some(SecurityTradingStatus::PreOpen),
+            "22" => Some(SecurityTradingStatus::OpeningRotation),
+            "23" => Some(SecurityTradingStatus::FastMarket),
+            "24" => Some(SecurityTradingStatus::PreCross),
+            "25" => Some(SecurityTradingStatus::Cross),
+            "26" => Some(SecurityTradingStatus::PostClose),
+            _ => None,
+        }
+    }
+}
+
+/// HaltReason (Tag 327) - Reason for trading halt
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum HaltReason {
+    NewsDissemination,                     // 0
+    OrderInflux,                           // 1
+    OrderImbalance,                        // 2
+    AdditionalInformation,                 // 3
+    NewsPending,                           // 4
+    EquipmentChangeover,                   // 5
+}
+
+impl HaltReason {
+    pub fn to_fix(&self) -> char {
+        match self {
+            HaltReason::NewsDissemination => '0',
+            HaltReason::OrderInflux => '1',
+            HaltReason::OrderImbalance => '2',
+            HaltReason::AdditionalInformation => '3',
+            HaltReason::NewsPending => '4',
+            HaltReason::EquipmentChangeover => '5',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(HaltReason::NewsDissemination),
+            '1' => Some(HaltReason::OrderInflux),
+            '2' => Some(HaltReason::OrderImbalance),
+            '3' => Some(HaltReason::AdditionalInformation),
+            '4' => Some(HaltReason::NewsPending),
+            '5' => Some(HaltReason::EquipmentChangeover),
+            _ => None,
+        }
+    }
+}
+
+// ============================================================================
+// Securities Reference Enum Tests
+// ============================================================================
+
+#[cfg(test)]
+mod securities_reference_tests {
+    use super::*;
+
+    #[test]
+    fn test_security_request_type_conversions() {
+        assert_eq!(SecurityRequestType::RequestSecurityIdentityAndSpecifications.to_fix(), '0');
+        assert_eq!(SecurityRequestType::RequestSecurityIdentityForSpecifications.to_fix(), '1');
+        assert_eq!(SecurityRequestType::RequestListSecurityTypes.to_fix(), '2');
+        assert_eq!(SecurityRequestType::RequestListSecurities.to_fix(), '3');
+        assert_eq!(SecurityRequestType::Symbol.to_fix(), '4');
+        assert_eq!(SecurityRequestType::SecurityTypeOrCFICode.to_fix(), '5');
+        assert_eq!(SecurityRequestType::Product.to_fix(), '6');
+        assert_eq!(SecurityRequestType::TradingSessionID.to_fix(), '7');
+        assert_eq!(SecurityRequestType::AllSecurities.to_fix(), '8');
+        assert_eq!(SecurityRequestType::MarketIDOrMarketIDPlusMarketSegmentID.to_fix(), '9');
+
+        assert_eq!(SecurityRequestType::from_fix('0'), Some(SecurityRequestType::RequestSecurityIdentityAndSpecifications));
+        assert_eq!(SecurityRequestType::from_fix('5'), Some(SecurityRequestType::SecurityTypeOrCFICode));
+        assert_eq!(SecurityRequestType::from_fix('9'), Some(SecurityRequestType::MarketIDOrMarketIDPlusMarketSegmentID));
+        assert_eq!(SecurityRequestType::from_fix('X'), None);
+    }
+
+    #[test]
+    fn test_security_request_result_conversions() {
+        assert_eq!(SecurityRequestResult::ValidRequest.to_fix(), '0');
+        assert_eq!(SecurityRequestResult::InvalidOrUnsupportedRequest.to_fix(), '1');
+        assert_eq!(SecurityRequestResult::NoInstrumentsFound.to_fix(), '2');
+        assert_eq!(SecurityRequestResult::NotAuthorizedToRetrieveInstrumentData.to_fix(), '3');
+        assert_eq!(SecurityRequestResult::InstrumentDataTemporarilyUnavailable.to_fix(), '4');
+        assert_eq!(SecurityRequestResult::RequestForInstrumentDataNotSupported.to_fix(), '5');
+
+        assert_eq!(SecurityRequestResult::from_fix('0'), Some(SecurityRequestResult::ValidRequest));
+        assert_eq!(SecurityRequestResult::from_fix('3'), Some(SecurityRequestResult::NotAuthorizedToRetrieveInstrumentData));
+        assert_eq!(SecurityRequestResult::from_fix('5'), Some(SecurityRequestResult::RequestForInstrumentDataNotSupported));
+        assert_eq!(SecurityRequestResult::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_security_list_request_type_conversions() {
+        assert_eq!(SecurityListRequestType::Symbol.to_fix(), '0');
+        assert_eq!(SecurityListRequestType::SecurityTypeAndOrCFICode.to_fix(), '1');
+        assert_eq!(SecurityListRequestType::Product.to_fix(), '2');
+        assert_eq!(SecurityListRequestType::TradingSessionID.to_fix(), '3');
+        assert_eq!(SecurityListRequestType::AllSecurities.to_fix(), '4');
+        assert_eq!(SecurityListRequestType::MarketIDOrMarketIDPlusMarketSegmentID.to_fix(), '5');
+
+        assert_eq!(SecurityListRequestType::from_fix('0'), Some(SecurityListRequestType::Symbol));
+        assert_eq!(SecurityListRequestType::from_fix('1'), Some(SecurityListRequestType::SecurityTypeAndOrCFICode));
+        assert_eq!(SecurityListRequestType::from_fix('5'), Some(SecurityListRequestType::MarketIDOrMarketIDPlusMarketSegmentID));
+        assert_eq!(SecurityListRequestType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_security_update_action_conversions() {
+        assert_eq!(SecurityUpdateAction::Add.to_fix(), 'A');
+        assert_eq!(SecurityUpdateAction::Delete.to_fix(), 'D');
+        assert_eq!(SecurityUpdateAction::Modify.to_fix(), 'M');
+
+        assert_eq!(SecurityUpdateAction::from_fix('A'), Some(SecurityUpdateAction::Add));
+        assert_eq!(SecurityUpdateAction::from_fix('D'), Some(SecurityUpdateAction::Delete));
+        assert_eq!(SecurityUpdateAction::from_fix('M'), Some(SecurityUpdateAction::Modify));
+        assert_eq!(SecurityUpdateAction::from_fix('X'), None);
+    }
+
+    #[test]
+    fn test_security_trading_status_conversions() {
+        assert_eq!(SecurityTradingStatus::OpeningDelay.to_fix(), "1");
+        assert_eq!(SecurityTradingStatus::TradingHalt.to_fix(), "2");
+        assert_eq!(SecurityTradingStatus::Resume.to_fix(), "3");
+        assert_eq!(SecurityTradingStatus::NoOpenNoResume.to_fix(), "4");
+        assert_eq!(SecurityTradingStatus::PriceIndication.to_fix(), "5");
+        assert_eq!(SecurityTradingStatus::MarketOnCloseImbalanceSell.to_fix(), "10");
+        assert_eq!(SecurityTradingStatus::NoMarketImbalance.to_fix(), "12");
+        assert_eq!(SecurityTradingStatus::PreOpen.to_fix(), "21");
+        assert_eq!(SecurityTradingStatus::PostClose.to_fix(), "26");
+
+        assert_eq!(SecurityTradingStatus::from_fix("1"), Some(SecurityTradingStatus::OpeningDelay));
+        assert_eq!(SecurityTradingStatus::from_fix("2"), Some(SecurityTradingStatus::TradingHalt));
+        assert_eq!(SecurityTradingStatus::from_fix("10"), Some(SecurityTradingStatus::MarketOnCloseImbalanceSell));
+        assert_eq!(SecurityTradingStatus::from_fix("12"), Some(SecurityTradingStatus::NoMarketImbalance));
+        assert_eq!(SecurityTradingStatus::from_fix("26"), Some(SecurityTradingStatus::PostClose));
+        assert_eq!(SecurityTradingStatus::from_fix("99"), None);
+    }
+
+    #[test]
+    fn test_halt_reason_conversions() {
+        assert_eq!(HaltReason::NewsDissemination.to_fix(), '0');
+        assert_eq!(HaltReason::OrderInflux.to_fix(), '1');
+        assert_eq!(HaltReason::OrderImbalance.to_fix(), '2');
+        assert_eq!(HaltReason::AdditionalInformation.to_fix(), '3');
+        assert_eq!(HaltReason::NewsPending.to_fix(), '4');
+        assert_eq!(HaltReason::EquipmentChangeover.to_fix(), '5');
+
+        assert_eq!(HaltReason::from_fix('0'), Some(HaltReason::NewsDissemination));
+        assert_eq!(HaltReason::from_fix('2'), Some(HaltReason::OrderImbalance));
+        assert_eq!(HaltReason::from_fix('5'), Some(HaltReason::EquipmentChangeover));
+        assert_eq!(HaltReason::from_fix('9'), None);
+    }
+}

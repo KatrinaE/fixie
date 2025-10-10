@@ -14,9 +14,9 @@ struct Args {
     #[arg(short, long)]
     raw: bool,
 
-    /// Display as JSON
+    /// Display as pretty-printed format with headers/body/trailer
     #[arg(short, long)]
-    json: bool,
+    pp: bool,
 }
 
 // FIX tag names for common tags
@@ -576,10 +576,7 @@ fn main() -> anyhow::Result<()> {
     // Parse the message
     let parsed = RawFixMessage::parse(&message)?;
 
-    if args.json {
-        // Output as JSON
-        json_output(&parsed);
-    } else if args.raw {
+    if args.raw {
         // Print raw tag-value pairs
         println!("Raw FIX Message:");
         let mut tags: Vec<&u32> = parsed.fields.keys().collect();
@@ -589,9 +586,12 @@ fn main() -> anyhow::Result<()> {
                 println!("{}={}{}", tag, value, SOH);
             }
         }
-    } else {
+    } else if args.pp {
         // Pretty print
         pretty_print(&parsed);
+    } else {
+        // Default: Output as JSON
+        json_output(&parsed);
     }
 
     Ok(())

@@ -447,6 +447,96 @@ impl SecurityListRequest {
     }
 }
 
+/// Entry in the SecListGrp repeating group (NoRelatedSym=146)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SecurityListEntry {
+    /// Symbol (55) - Ticker symbol
+    pub symbol: String,
+
+    /// SecurityID (48) - Security identifier
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id: Option<String>,
+
+    /// SecurityIDSource (22) - Identifies the type of SecurityID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id_source: Option<String>,
+
+    /// SecurityDesc (107) - Description of security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_desc: Option<String>,
+
+    /// SecurityType (167) - Type of security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_type: Option<String>,
+
+    /// MaturityMonthYear (200) - Month and year of maturity
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity_month_year: Option<String>,
+
+    /// MaturityDate (541) - Date of maturity
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity_date: Option<String>,
+
+    /// StrikePrice (202) - Strike price for options
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strike_price: Option<f64>,
+
+    /// Currency (15) - Currency of the security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
+
+    /// Product (460) - Product classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product: Option<u32>,
+
+    /// CFICode (461) - Classification of Financial Instruments code
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cfi_code: Option<String>,
+
+    /// SecuritySubType (762) - Sub-type qualification/classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_sub_type: Option<String>,
+}
+
+impl SecurityListEntry {
+    /// Create a new SecurityListEntry with required fields
+    pub fn new(symbol: String) -> Self {
+        Self {
+            symbol,
+            security_id: None,
+            security_id_source: None,
+            security_desc: None,
+            security_type: None,
+            maturity_month_year: None,
+            maturity_date: None,
+            strike_price: None,
+            currency: None,
+            product: None,
+            cfi_code: None,
+            security_sub_type: None,
+        }
+    }
+
+    /// Set the security ID and source
+    pub fn with_security_id(mut self, security_id: String, source: String) -> Self {
+        self.security_id = Some(security_id);
+        self.security_id_source = Some(source);
+        self
+    }
+
+    /// Set the security type
+    pub fn with_security_type(mut self, security_type: String) -> Self {
+        self.security_type = Some(security_type);
+        self
+    }
+
+    /// Set the currency
+    pub fn with_currency(mut self, currency: String) -> Self {
+        self.currency = Some(currency);
+        self
+    }
+}
+
 /// SecurityList (MsgType=y)
 ///
 /// Response to a SecurityListRequest containing a list of securities.
@@ -482,10 +572,9 @@ pub struct SecurityList {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
-    // Note: In a full implementation, this would include a repeating group
-    // of security details (NoRelatedSym group). For simplicity, we're
-    // representing basic fields here. A complete implementation would add:
-    // pub securities: Vec<SecurityDetails>
+    /// SecListGrp - Repeating group of securities (NoRelatedSym=146)
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub securities: Vec<SecurityListEntry>,
 }
 
 impl SecurityList {
@@ -504,6 +593,7 @@ impl SecurityList {
             security_report_id: None,
             clearing_business_date: None,
             text: None,
+            securities: Vec::new(),
         }
     }
 
@@ -528,6 +618,119 @@ impl SecurityList {
     /// Set the clearing business date
     pub fn with_clearing_business_date(mut self, date: String) -> Self {
         self.clearing_business_date = Some(date);
+        self
+    }
+
+    /// Add a security to the list
+    pub fn add_security(mut self, security: SecurityListEntry) -> Self {
+        self.securities.push(security);
+        self
+    }
+
+    /// Set all securities at once
+    pub fn with_securities(mut self, securities: Vec<SecurityListEntry>) -> Self {
+        self.securities = securities;
+        self
+    }
+}
+
+/// Entry in the SecListUpdRelSymGrp repeating group (NoRelatedSym=146)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SecurityListUpdateEntry {
+    /// Symbol (55) - Ticker symbol
+    pub symbol: String,
+
+    /// SecurityUpdateAction (980) - Action to take for this security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_update_action: Option<SecurityUpdateAction>,
+
+    /// SecurityID (48) - Security identifier
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id: Option<String>,
+
+    /// SecurityIDSource (22) - Identifies the type of SecurityID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id_source: Option<String>,
+
+    /// SecurityDesc (107) - Description of security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_desc: Option<String>,
+
+    /// SecurityType (167) - Type of security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_type: Option<String>,
+
+    /// MaturityMonthYear (200) - Month and year of maturity
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity_month_year: Option<String>,
+
+    /// MaturityDate (541) - Date of maturity
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity_date: Option<String>,
+
+    /// StrikePrice (202) - Strike price for options
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strike_price: Option<f64>,
+
+    /// Currency (15) - Currency of the security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
+
+    /// Product (460) - Product classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product: Option<u32>,
+
+    /// CFICode (461) - Classification of Financial Instruments code
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cfi_code: Option<String>,
+
+    /// SecuritySubType (762) - Sub-type qualification/classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_sub_type: Option<String>,
+}
+
+impl SecurityListUpdateEntry {
+    /// Create a new SecurityListUpdateEntry with required fields
+    pub fn new(symbol: String) -> Self {
+        Self {
+            symbol,
+            security_update_action: None,
+            security_id: None,
+            security_id_source: None,
+            security_desc: None,
+            security_type: None,
+            maturity_month_year: None,
+            maturity_date: None,
+            strike_price: None,
+            currency: None,
+            product: None,
+            cfi_code: None,
+            security_sub_type: None,
+        }
+    }
+
+    /// Set the security update action
+    pub fn with_update_action(mut self, action: SecurityUpdateAction) -> Self {
+        self.security_update_action = Some(action);
+        self
+    }
+
+    /// Set the security ID and source
+    pub fn with_security_id(mut self, security_id: String, source: String) -> Self {
+        self.security_id = Some(security_id);
+        self.security_id_source = Some(source);
+        self
+    }
+
+    /// Set the security type
+    pub fn with_security_type(mut self, security_type: String) -> Self {
+        self.security_type = Some(security_type);
+        self
+    }
+
+    /// Set the currency
+    pub fn with_currency(mut self, currency: String) -> Self {
+        self.currency = Some(currency);
         self
     }
 }
@@ -575,9 +778,9 @@ pub struct SecurityListUpdateReport {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
-    // Note: In a full implementation, this would include a repeating group
-    // of security update details (NoRelatedSym group). For simplicity, we're
-    // representing basic fields here.
+    /// SecListUpdRelSymGrp - Repeating group of security updates (NoRelatedSym=146)
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub security_updates: Vec<SecurityListUpdateEntry>,
 }
 
 impl SecurityListUpdateReport {
@@ -598,6 +801,7 @@ impl SecurityListUpdateReport {
             trading_session_id: None,
             trading_session_sub_id: None,
             text: None,
+            security_updates: Vec::new(),
         }
     }
 
@@ -624,6 +828,18 @@ impl SecurityListUpdateReport {
     pub fn with_trading_session(mut self, session_id: String, sub_id: Option<String>) -> Self {
         self.trading_session_id = Some(session_id);
         self.trading_session_sub_id = sub_id;
+        self
+    }
+
+    /// Add a security update to the list
+    pub fn add_security_update(mut self, update: SecurityListUpdateEntry) -> Self {
+        self.security_updates.push(update);
+        self
+    }
+
+    /// Set all security updates at once
+    pub fn with_security_updates(mut self, updates: Vec<SecurityListUpdateEntry>) -> Self {
+        self.security_updates = updates;
         self
     }
 }
@@ -857,6 +1073,66 @@ impl SecurityTypeRequest {
     }
 }
 
+/// Entry in the SecTypesGrp repeating group (NoSecurityTypes=558)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SecurityTypeEntry {
+    /// SecurityType (167) - Type of security
+    pub security_type: String,
+
+    /// SecuritySubType (762) - Sub-type qualification/classification of security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_sub_type: Option<String>,
+
+    /// Product (460) - Product classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product: Option<u32>,
+
+    /// CFICode (461) - Classification of Financial Instruments code
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cfi_code: Option<String>,
+
+    /// Text (58) - Free format text string
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+}
+
+impl SecurityTypeEntry {
+    /// Create a new SecurityTypeEntry with required fields
+    pub fn new(security_type: String) -> Self {
+        Self {
+            security_type,
+            security_sub_type: None,
+            product: None,
+            cfi_code: None,
+            text: None,
+        }
+    }
+
+    /// Set the security sub-type
+    pub fn with_security_sub_type(mut self, security_sub_type: String) -> Self {
+        self.security_sub_type = Some(security_sub_type);
+        self
+    }
+
+    /// Set the product
+    pub fn with_product(mut self, product: u32) -> Self {
+        self.product = Some(product);
+        self
+    }
+
+    /// Set the CFI code
+    pub fn with_cfi_code(mut self, cfi_code: String) -> Self {
+        self.cfi_code = Some(cfi_code);
+        self
+    }
+
+    /// Set the text
+    pub fn with_text(mut self, text: String) -> Self {
+        self.text = Some(text);
+        self
+    }
+}
+
 /// SecurityTypes (MsgType=w)
 ///
 /// Response to a SecurityTypeRequest providing a list of security types.
@@ -888,9 +1164,9 @@ pub struct SecurityTypes {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
-    // Note: In a full implementation, this would include a repeating group
-    // of security type details (NoSecurityTypes group). For simplicity, we're
-    // representing basic fields here.
+    /// SecTypesGrp - Repeating group of security types (NoSecurityTypes=558)
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub security_types: Vec<SecurityTypeEntry>,
 }
 
 impl SecurityTypes {
@@ -908,6 +1184,7 @@ impl SecurityTypes {
             last_fragment: None,
             trading_session_id: None,
             text: None,
+            security_types: Vec::new(),
         }
     }
 
@@ -926,6 +1203,18 @@ impl SecurityTypes {
     /// Set the trading session
     pub fn with_trading_session(mut self, session_id: String) -> Self {
         self.trading_session_id = Some(session_id);
+        self
+    }
+
+    /// Add a security type to the list
+    pub fn add_security_type(mut self, security_type: SecurityTypeEntry) -> Self {
+        self.security_types.push(security_type);
+        self
+    }
+
+    /// Set all security types at once
+    pub fn with_security_types(mut self, security_types: Vec<SecurityTypeEntry>) -> Self {
+        self.security_types = security_types;
         self
     }
 }
@@ -1076,6 +1365,109 @@ impl DerivativeSecurityListRequest {
     }
 }
 
+/// Entry in the DerivSecListGrp repeating group (NoRelatedSym=146)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DerivativeSecurityListEntry {
+    /// Symbol (55) - Ticker symbol
+    pub symbol: String,
+
+    /// SecurityID (48) - Security identifier
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id: Option<String>,
+
+    /// SecurityIDSource (22) - Identifies the type of SecurityID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id_source: Option<String>,
+
+    /// SecurityType (167) - Type of derivative security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_type: Option<String>,
+
+    /// MaturityMonthYear (200) - Month and year of maturity
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity_month_year: Option<String>,
+
+    /// MaturityDate (541) - Date of maturity
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity_date: Option<String>,
+
+    /// StrikePrice (202) - Strike price for options
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strike_price: Option<f64>,
+
+    /// PutOrCall (201) - Indicates whether an option is a put or call
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub put_or_call: Option<u8>,
+
+    /// Currency (15) - Currency of the derivative
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
+
+    /// Product (460) - Product classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product: Option<u32>,
+
+    /// CFICode (461) - Classification of Financial Instruments code
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cfi_code: Option<String>,
+
+    /// SecuritySubType (762) - Sub-type qualification/classification
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_sub_type: Option<String>,
+}
+
+impl DerivativeSecurityListEntry {
+    /// Create a new DerivativeSecurityListEntry with required fields
+    pub fn new(symbol: String) -> Self {
+        Self {
+            symbol,
+            security_id: None,
+            security_id_source: None,
+            security_type: None,
+            maturity_month_year: None,
+            maturity_date: None,
+            strike_price: None,
+            put_or_call: None,
+            currency: None,
+            product: None,
+            cfi_code: None,
+            security_sub_type: None,
+        }
+    }
+
+    /// Set the security ID and source
+    pub fn with_security_id(mut self, security_id: String, source: String) -> Self {
+        self.security_id = Some(security_id);
+        self.security_id_source = Some(source);
+        self
+    }
+
+    /// Set the security type
+    pub fn with_security_type(mut self, security_type: String) -> Self {
+        self.security_type = Some(security_type);
+        self
+    }
+
+    /// Set option details
+    pub fn with_option_details(mut self, strike_price: f64, put_or_call: u8) -> Self {
+        self.strike_price = Some(strike_price);
+        self.put_or_call = Some(put_or_call);
+        self
+    }
+
+    /// Set maturity
+    pub fn with_maturity(mut self, maturity_month_year: String) -> Self {
+        self.maturity_month_year = Some(maturity_month_year);
+        self
+    }
+
+    /// Set the currency
+    pub fn with_currency(mut self, currency: String) -> Self {
+        self.currency = Some(currency);
+        self
+    }
+}
+
 /// DerivativeSecurityList (MsgType=AA)
 ///
 /// Response to a DerivativeSecurityListRequest containing a list of derivative securities.
@@ -1135,10 +1527,9 @@ pub struct DerivativeSecurityList {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
-    // Note: In a full implementation, this would include a repeating group
-    // of derivative security details (NoRelatedSym group). For simplicity, we're
-    // representing basic fields here. A complete implementation would add:
-    // pub derivatives: Vec<DerivativeSecurityDetails>
+    /// DerivSecListGrp - Repeating group of derivatives (NoRelatedSym=146)
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub derivatives: Vec<DerivativeSecurityListEntry>,
 }
 
 impl DerivativeSecurityList {
@@ -1163,6 +1554,7 @@ impl DerivativeSecurityList {
             trading_session_id: None,
             trading_session_sub_id: None,
             text: None,
+            derivatives: Vec::new(),
         }
     }
 
@@ -1213,6 +1605,18 @@ impl DerivativeSecurityList {
     pub fn with_trading_session(mut self, session_id: String, sub_id: Option<String>) -> Self {
         self.trading_session_id = Some(session_id);
         self.trading_session_sub_id = sub_id;
+        self
+    }
+
+    /// Add a derivative to the list
+    pub fn add_derivative(mut self, derivative: DerivativeSecurityListEntry) -> Self {
+        self.derivatives.push(derivative);
+        self
+    }
+
+    /// Set all derivatives at once
+    pub fn with_derivatives(mut self, derivatives: Vec<DerivativeSecurityListEntry>) -> Self {
+        self.derivatives = derivatives;
         self
     }
 }
@@ -1333,6 +1737,77 @@ impl SecurityMassStatusRequest {
     }
 }
 
+/// Entry in the SecMassStatGrp repeating group
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SecurityMassStatusEntry {
+    /// Symbol (55) - Ticker symbol
+    pub symbol: String,
+
+    /// SecurityID (48) - Security identifier
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id: Option<String>,
+
+    /// SecurityIDSource (22) - Identifies the type of SecurityID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_id_source: Option<String>,
+
+    /// SecurityTradingStatus (326) - Trading status of the security
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security_trading_status: Option<SecurityTradingStatus>,
+
+    /// HaltReason (327) - Reason for trading halt
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub halt_reason: Option<HaltReason>,
+
+    /// TradeDate (75) - Trade date for which status applies
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trade_date: Option<String>,
+
+    /// TransactTime (60) - Time of status update
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transact_time: Option<String>,
+}
+
+impl SecurityMassStatusEntry {
+    /// Create a new SecurityMassStatusEntry with required fields
+    pub fn new(symbol: String) -> Self {
+        Self {
+            symbol,
+            security_id: None,
+            security_id_source: None,
+            security_trading_status: None,
+            halt_reason: None,
+            trade_date: None,
+            transact_time: None,
+        }
+    }
+
+    /// Set the security ID and source
+    pub fn with_security_id(mut self, security_id: String, source: String) -> Self {
+        self.security_id = Some(security_id);
+        self.security_id_source = Some(source);
+        self
+    }
+
+    /// Set the trading status
+    pub fn with_trading_status(mut self, status: SecurityTradingStatus) -> Self {
+        self.security_trading_status = Some(status);
+        self
+    }
+
+    /// Set the halt reason
+    pub fn with_halt_reason(mut self, reason: HaltReason) -> Self {
+        self.halt_reason = Some(reason);
+        self
+    }
+
+    /// Set the transaction time
+    pub fn with_transact_time(mut self, time: String) -> Self {
+        self.transact_time = Some(time);
+        self
+    }
+}
+
 /// SecurityMassStatus (MsgType=CO)
 ///
 /// Response to a SecurityMassStatusRequest providing status for multiple securities.
@@ -1392,10 +1867,9 @@ pub struct SecurityMassStatus {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
-    // Note: In a full implementation, this would include a repeating group
-    // of security status details (NoSecurityStatus group). For simplicity, we're
-    // representing basic fields here. A complete implementation would add:
-    // pub security_statuses: Vec<SecurityStatusDetails>
+    /// SecMassStatGrp - Repeating group of security statuses
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub security_statuses: Vec<SecurityMassStatusEntry>,
 }
 
 impl SecurityMassStatus {
@@ -1420,6 +1894,7 @@ impl SecurityMassStatus {
             currency: None,
             transact_time: None,
             text: None,
+            security_statuses: Vec::new(),
         }
     }
 
@@ -1465,6 +1940,18 @@ impl SecurityMassStatus {
     /// Set the transaction time
     pub fn with_transact_time(mut self, time: String) -> Self {
         self.transact_time = Some(time);
+        self
+    }
+
+    /// Add a security status to the list
+    pub fn add_security_status(mut self, status: SecurityMassStatusEntry) -> Self {
+        self.security_statuses.push(status);
+        self
+    }
+
+    /// Set all security statuses at once
+    pub fn with_security_statuses(mut self, statuses: Vec<SecurityMassStatusEntry>) -> Self {
+        self.security_statuses = statuses;
         self
     }
 }

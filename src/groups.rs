@@ -1314,11 +1314,120 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
     // [SECTION 600] Securities Reference Data Messages Groups
     // Implementation: feature/pretrade-securities-reference
     // ========================================================================
-    // Groups will be added here by the Securities Reference PR:
-    // - SecListGrp (Tag 146 = NoRelatedSym)
-    // - SecTypesGrp (Tag 558 = NoSecurityTypes)
-    // - InstrmtLegSecListGrp (Tag 555 = NoLegs)
-    // - SecAltIDGrp (Tag 454 = NoSecurityAltID)
+
+    // SecListGrp (Tag 146 = NoRelatedSym) - for SecurityList (y)
+    // Repeating group of securities in a security list
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("y".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                107,  // SecurityDesc
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                202,  // StrikePrice
+                15,   // Currency
+                460,  // Product
+                461,  // CFICode
+                762,  // SecuritySubType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // SecListUpdRelSymGrp (Tag 146 = NoRelatedSym) - for SecurityListUpdateReport (BK)
+    // Repeating group of security updates in a security list update report
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("BK".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                980,  // SecurityUpdateAction
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                107,  // SecurityDesc
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                202,  // StrikePrice
+                15,   // Currency
+                460,  // Product
+                461,  // CFICode
+                762,  // SecuritySubType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // SecTypesGrp (Tag 558 = NoSecurityTypes) - for SecurityTypes (w)
+    // Repeating group of security types
+    registry.insert(
+        GroupKey { num_in_group_tag: 558, msg_type: Some("w".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 558, // NoSecurityTypes
+            delimiter_tag: 167,    // SecurityType
+            member_tags: vec![
+                167,  // SecurityType - Required
+                762,  // SecuritySubType
+                460,  // Product
+                461,  // CFICode
+                58,   // Text
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // DerivSecListGrp (Tag 146 = NoRelatedSym) - for DerivativeSecurityList (AA)
+    // Repeating group of derivative securities in a derivative security list
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("AA".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                202,  // StrikePrice
+                201,  // PutOrCall
+                15,   // Currency
+                460,  // Product
+                461,  // CFICode
+                762,  // SecuritySubType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // SecMassStatGrp (Tag 146 = NoRelatedSym) - for SecurityMassStatus (CO)
+    // Repeating group of security statuses in a security mass status report
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("CO".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol - Required
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                326,  // SecurityTradingStatus
+                327,  // HaltReason
+                75,   // TradeDate
+                60,   // TransactTime
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     registry
 });

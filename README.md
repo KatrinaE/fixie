@@ -34,10 +34,13 @@ This will put the fixie binary in _./target/release_.
 Fixie can display FIX messages in three different formats: JSON (default), pretty-printed, and raw.
 
 ```bash
-fixie <message>         # Display FIX message as JSON
-fixie --pp <message>    # Display FIX message pretty-printed
-fixie --raw <message>   # Display FIX message as raw values
+fixie '<message>'         # Display FIX message as JSON
+fixie --pp '<message>'    # Display FIX message pretty-printed
+fixie --raw '<message>'   # Display FIX message as raw values
 ```
+
+In all three formats, you will need quotes (') around the FIX message 
+(they're necessary to prevent your terminal from interpreting the pipes (|)).
 
 #### Example Input: JSON
 
@@ -85,8 +88,6 @@ fixie '8=FIXT.1.1|9=178|35=D|49=TRADER1|56=MARKET1|34=1|52=20251006-15:00:00.000
 ```bash
 fixie --pp '8=FIXT.1.1|9=178|35=D|49=TRADER1|56=MARKET1|34=1|52=20251006-15:00:00.000|11=ORD00123|21=1|55=MSFT|54=1|38=500|40=2|44=310.75|59=0|60=20251006-15:00:00.000|453=2|448=TRADER1|447=D|452=1|448=DESK22|447=D|452=24|9001=TRUE|9435=ALGOTYPE1|9436=VWAP|10=156|'
 ```
-Note the quotes (') around the FIX message; they're necessary to prevent your terminal from
-interpreting the pipes (|).
 
 ##### Example Output: --pp (Pretty Print)
 

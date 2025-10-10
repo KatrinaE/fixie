@@ -25,19 +25,64 @@ cargo build --release -p fixie
 This will put the fixie binary in _./target/release_.
 
 #### Usage
+Fixie can display FIX messages in three different formats: JSON (default), pretty-printed, and raw.
+
 ```bash
-fixie <message>
+fixie <message>         # Display FIX message as JSON
+fixie --pp <message>    # Display FIX message pretty-printed
+fixie --raw <message>   # Display FIX message as raw values
 ```
 
-##### Example Input
+#### Example Input: JSON
 
 ```bash
 fixie '8=FIXT.1.1|9=178|35=D|49=TRADER1|56=MARKET1|34=1|52=20251006-15:00:00.000|11=ORD00123|21=1|55=MSFT|54=1|38=500|40=2|44=310.75|59=0|60=20251006-15:00:00.000|453=2|448=TRADER1|447=D|452=1|448=DESK22|447=D|452=24|9001=TRUE|9435=ALGOTYPE1|9436=VWAP|10=156|'
 ```
+
+#### Example Output: JSON
+
+```bash
+{
+  "BeginString": "FIXT.1.1",
+  "BodyLength": "178",
+  "CheckSum": "156",
+  "ClOrdID": "ORD00123",
+  "MsgSeqNum": "1",
+  "MsgType": "D",
+  "NoPartyIDs": [
+    {
+      "PartyID": "TRADER1",
+      "PartyIDSource": "D",
+      "PartyRole": "1"
+    },
+    {
+      "PartyID": "DESK22",
+      "PartyIDSource": "D",
+      "PartyRole": "24"
+    }
+  ],
+  "OrdType": "2",
+  "OrderQty": "500",
+  "Price": "310.75",
+  "SenderCompID": "TRADER1",
+  "SendingTime": "20251006-15:00:00.000",
+  "Side": "1",
+  "Symbol": "MSFT",
+  "TargetCompID": "MARKET1",
+  "TransactTime": "20251006-15:00:00.000",
+  "Unknown": "0"
+}
+```
+
+##### Example Input: --pp (Pretty Print)
+
+```bash
+fixie --pp '8=FIXT.1.1|9=178|35=D|49=TRADER1|56=MARKET1|34=1|52=20251006-15:00:00.000|11=ORD00123|21=1|55=MSFT|54=1|38=500|40=2|44=310.75|59=0|60=20251006-15:00:00.000|453=2|448=TRADER1|447=D|452=1|448=DESK22|447=D|452=24|9001=TRUE|9435=ALGOTYPE1|9436=VWAP|10=156|'
+```
 Note the quotes (') around the FIX message; they're necessary to prevent your terminal from
 interpreting the pipes (|).
 
-##### Example Output
+##### Example Output: --pp (Pretty Print)
 
 ```
 ╔════════════════════════════════════════════════════════╗
@@ -78,14 +123,13 @@ Trailer:
     10 (CheckSum            ): 156
 ```
 
-#### --raw Flag Usage
-Use the `--raw` flag to display raw tag-value pairs, one per line:
+#### Example Input: --raw
 
 ```bash
 fixie --raw '8=FIXT.1.1|9=178|35=D|49=TRADER1|56=MARKET1|34=1|52=20251006-15:00:00.000|11=ORD00123|21=1|55=MSFT|54=1|38=500|40=2|44=310.75|59=0|60=20251006-15:00:00.000|453=2|448=TRADER1|447=D|452=1|448=DESK22|447=D|452=24|9001=TRUE|9435=ALGOTYPE1|9436=VWAP|10=156|'
 ```
 
-#### --raw Flag Output
+#### Example Output: --raw
 
 ```bash
 Raw FIX Message:

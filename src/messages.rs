@@ -55,6 +55,14 @@ pub enum MsgType {
     UserRequest,                  // BE
     UserResponse,                 // BF
     UserNotification,             // CB
+    // Pre-Trade Indication Messages
+    Advertisement,            // 7
+    CrossRequest,             // DS
+    CrossRequestAck,          // DT
+    IOI,                      // 6
+    // Pre-Trade Event Communication Messages
+    Email,                    // C
+    News,                     // B
 }
 
 impl MsgType {
@@ -106,6 +114,12 @@ impl MsgType {
             MsgType::UserRequest => "BE",
             MsgType::UserResponse => "BF",
             MsgType::UserNotification => "CB",
+            MsgType::Advertisement => "7",
+            MsgType::CrossRequest => "DS",
+            MsgType::CrossRequestAck => "DT",
+            MsgType::IOI => "6",
+            MsgType::Email => "C",
+            MsgType::News => "B",
         }
     }
 
@@ -157,6 +171,12 @@ impl MsgType {
             "BE" => Some(MsgType::UserRequest),
             "BF" => Some(MsgType::UserResponse),
             "CB" => Some(MsgType::UserNotification),
+            "7" => Some(MsgType::Advertisement),
+            "DS" => Some(MsgType::CrossRequest),
+            "DT" => Some(MsgType::CrossRequestAck),
+            "6" => Some(MsgType::IOI),
+            "C" => Some(MsgType::Email),
+            "B" => Some(MsgType::News),
             _ => None,
         }
     }
@@ -206,6 +226,14 @@ pub enum FixMessage {
     UserRequest(crate::message_types::user_management::UserRequest),
     UserResponse(crate::message_types::user_management::UserResponse),
     UserNotification(crate::message_types::user_management::UserNotification),
+    // Pre-Trade Indication Messages
+    Advertisement(crate::message_types::indication::Advertisement),
+    CrossRequest(crate::message_types::indication::CrossRequest),
+    CrossRequestAck(crate::message_types::indication::CrossRequestAck),
+    IOI(crate::message_types::indication::IOI),
+    // Pre-Trade Event Communication Messages
+    Email(crate::message_types::event_communication::Email),
+    News(crate::message_types::event_communication::News),
 }
 
 impl FixMessage {
@@ -248,6 +276,12 @@ impl FixMessage {
             FixMessage::UserRequest(_) => MsgType::UserRequest,
             FixMessage::UserResponse(_) => MsgType::UserResponse,
             FixMessage::UserNotification(_) => MsgType::UserNotification,
+            FixMessage::Advertisement(_) => MsgType::Advertisement,
+            FixMessage::CrossRequest(_) => MsgType::CrossRequest,
+            FixMessage::CrossRequestAck(_) => MsgType::CrossRequestAck,
+            FixMessage::IOI(_) => MsgType::IOI,
+            FixMessage::Email(_) => MsgType::Email,
+            FixMessage::News(_) => MsgType::News,
         }
     }
 }

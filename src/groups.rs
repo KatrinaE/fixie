@@ -825,10 +825,84 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
     // [SECTION 400] Market Data Messages Groups
     // Implementation: feature/pretrade-market-data
     // ========================================================================
-    // Groups will be added here by the Market Data PR:
-    // - MDReqGrp (Tag 146 = NoRelatedSym)
-    // - MDFullGrp (Tag 268 = NoMDEntries)
-    // - MDIncGrp (Tag 268 = NoMDEntries)
+
+    // MDReqGrp (Tag 146 = NoRelatedSym) - for MarketDataRequest message
+    registry.insert(
+        GroupKey { num_in_group_tag: 146, msg_type: Some("V".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 146, // NoRelatedSym
+            delimiter_tag: 55,     // Symbol
+            member_tags: vec![
+                55,   // Symbol
+                65,   // SymbolSfx
+                48,   // SecurityID
+                22,   // SecurityIDSource
+                167,  // SecurityType
+                200,  // MaturityMonthYear
+                541,  // MaturityDate
+                201,  // PutOrCall
+                202,  // StrikePrice
+                206,  // OptAttribute
+                231,  // ContractMultiplier
+                223,  // CouponRate
+                207,  // SecurityExchange
+                106,  // Issuer
+                107,  // SecurityDesc
+                1300, // MarketSegmentID
+                1301, // MarketID
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // MDEntryTypesGrp (Tag 267 = NoMDEntryTypes) - for MarketDataRequest message
+    registry.insert(
+        GroupKey { num_in_group_tag: 267, msg_type: Some("V".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 267, // NoMDEntryTypes
+            delimiter_tag: 269,    // MDEntryType
+            member_tags: vec![
+                269,  // MDEntryType
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // MDFullGrp (Tag 268 = NoMDEntries) - for MarketDataSnapshotFullRefresh message
+    registry.insert(
+        GroupKey { num_in_group_tag: 268, msg_type: Some("W".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 268, // NoMDEntries
+            delimiter_tag: 269,    // MDEntryType
+            member_tags: vec![
+                269,  // MDEntryType - Required
+                270,  // MDEntryPx
+                271,  // MDEntrySize
+                272,  // MDEntryDate
+                273,  // MDEntryTime
+                274,  // TickDirection
+                275,  // MDMkt
+                276,  // QuoteCondition
+                277,  // TradeCondition
+                282,  // MDEntryOriginator
+                283,  // LocationID
+                284,  // DeskID
+                286,  // OpenCloseSettleFlag
+                287,  // TimeInForce
+                288,  // ExpireDate
+                289,  // ExpireTime
+                290,  // MinQty
+                299,  // QuoteEntryID
+                346,  // NumberOfOrders
+                 387,  // TotalVolumeTraded
+                1020, // TradeVolume
+                1023, // MDPriceLevel
+                336,  // TradingSessionID
+                625,  // TradingSessionSubID
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     // ========================================================================
     // [SECTION 500] Market Structure Reference Data Messages Groups

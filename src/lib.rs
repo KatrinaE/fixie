@@ -11,7 +11,7 @@ pub mod application_sequencing;
 pub mod user_management;
 
 // Pre-Trade message modules - will be uncommented by respective PRs
-// pub mod indication;              // [SECTION 100] Uncommented by feature/pretrade-indication
+pub mod indication;              // [SECTION 100] Uncommented by feature/pretrade-indication
 // pub mod event_communication;     // [SECTION 200] Uncommented by feature/pretrade-event-communication
 // pub mod quotation;               // [SECTION 300] Uncommented by feature/pretrade-quotation
 // pub mod market_data;             // [SECTION 400] Uncommented by feature/pretrade-market-data
@@ -31,7 +31,7 @@ pub use application_sequencing::*;
 pub use user_management::*;
 
 // Pre-Trade re-exports - will be uncommented by respective PRs
-// pub use indication::*;           // [SECTION 100] Uncommented by feature/pretrade-indication
+pub use indication::*;           // [SECTION 100] Uncommented by feature/pretrade-indication
 // pub use event_communication::*;  // [SECTION 200] Uncommented by feature/pretrade-event-communication
 // pub use quotation::*;            // [SECTION 300] Uncommented by feature/pretrade-quotation
 // pub use market_data::*;          // [SECTION 400] Uncommented by feature/pretrade-market-data

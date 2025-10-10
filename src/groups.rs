@@ -827,9 +827,39 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
     // [SECTION 200] Event Communication Messages Groups
     // Implementation: feature/pretrade-event-communication
     // ========================================================================
-    // Groups will be added here by the Event Communication PR:
-    // - LinesOfTextGrp (Tag 33 = NoLinesOfText)
-    // - RoutingGrp (Tag 215 = NoRoutingIDs) [may reuse existing]
+
+    // LinesOfTextGrp (Tag 33 = NoLinesOfText) - for Email and News messages
+    registry.insert(
+        GroupKey { num_in_group_tag: 33, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 33,  // NoLinesOfText
+            delimiter_tag: 58,     // Text
+            member_tags: vec![
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // EmailRoutingGrp (Tag 215 = NoRoutingIDs) - for Email message
+    // Note: RoutingGrp already defined in SECTION 100 as generic (msg_type: None)
+    // Email can reuse the existing RoutingGrp definition
+
+    // NewsRefGrp (Tag 1476 = NoNewsRefIDs) - for News message
+    registry.insert(
+        GroupKey { num_in_group_tag: 1476, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 1476, // NoNewsRefIDs
+            delimiter_tag: 1477,    // NewsRefID
+            member_tags: vec![
+                1477,  // NewsRefID
+                1478,  // NewsRefType (corresponds to Tag 1477 enum)
+            ],
+            nested_groups: vec![],
+        },
+    );
 
     // ========================================================================
     // [SECTION 300] Quotation/Negotiation Messages Groups

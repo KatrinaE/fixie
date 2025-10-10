@@ -63,6 +63,18 @@ pub enum MsgType {
     // Pre-Trade Event Communication Messages
     Email,                    // C
     News,                     // B
+    // Pre-Trade Quotation Messages
+    MassQuote,                // i (lowercase)
+    MassQuoteAcknowledgement, // b (lowercase)
+    Quote,                    // S
+    QuoteAcknowledgment,      // CW
+    QuoteCancel,              // Z
+    QuoteRequest,             // R
+    QuoteRequestReject,       // AG
+    QuoteResponse,            // AJ
+    QuoteStatusReport,        // AI
+    QuoteStatusRequest,       // a (lowercase)
+    RFQRequest,               // AH
 }
 
 impl MsgType {
@@ -120,6 +132,17 @@ impl MsgType {
             MsgType::IOI => "6",
             MsgType::Email => "C",
             MsgType::News => "B",
+            MsgType::MassQuote => "i",
+            MsgType::MassQuoteAcknowledgement => "b",
+            MsgType::Quote => "S",
+            MsgType::QuoteAcknowledgment => "CW",
+            MsgType::QuoteCancel => "Z",
+            MsgType::QuoteRequest => "R",
+            MsgType::QuoteRequestReject => "AG",
+            MsgType::QuoteResponse => "AJ",
+            MsgType::QuoteStatusReport => "AI",
+            MsgType::QuoteStatusRequest => "a",
+            MsgType::RFQRequest => "AH",
         }
     }
 
@@ -177,6 +200,17 @@ impl MsgType {
             "6" => Some(MsgType::IOI),
             "C" => Some(MsgType::Email),
             "B" => Some(MsgType::News),
+            "i" => Some(MsgType::MassQuote),
+            "b" => Some(MsgType::MassQuoteAcknowledgement),
+            "S" => Some(MsgType::Quote),
+            "CW" => Some(MsgType::QuoteAcknowledgment),
+            "Z" => Some(MsgType::QuoteCancel),
+            "R" => Some(MsgType::QuoteRequest),
+            "AG" => Some(MsgType::QuoteRequestReject),
+            "AJ" => Some(MsgType::QuoteResponse),
+            "AI" => Some(MsgType::QuoteStatusReport),
+            "a" => Some(MsgType::QuoteStatusRequest),
+            "AH" => Some(MsgType::RFQRequest),
             _ => None,
         }
     }
@@ -234,6 +268,18 @@ pub enum FixMessage {
     // Pre-Trade Event Communication Messages
     Email(crate::message_types::event_communication::Email),
     News(crate::message_types::event_communication::News),
+    // Pre-Trade Quotation Messages
+    MassQuote(crate::message_types::quotation::MassQuote),
+    MassQuoteAcknowledgement(crate::message_types::quotation::MassQuoteAcknowledgement),
+    Quote(crate::message_types::quotation::Quote),
+    QuoteAcknowledgment(crate::message_types::quotation::QuoteAcknowledgment),
+    QuoteCancel(crate::message_types::quotation::QuoteCancel),
+    QuoteRequest(crate::message_types::quotation::QuoteRequest),
+    QuoteRequestReject(crate::message_types::quotation::QuoteRequestReject),
+    QuoteResponse(crate::message_types::quotation::QuoteResponse),
+    QuoteStatusReport(crate::message_types::quotation::QuoteStatusReport),
+    QuoteStatusRequest(crate::message_types::quotation::QuoteStatusRequest),
+    RFQRequest(crate::message_types::quotation::RFQRequest),
 }
 
 impl FixMessage {
@@ -282,6 +328,17 @@ impl FixMessage {
             FixMessage::IOI(_) => MsgType::IOI,
             FixMessage::Email(_) => MsgType::Email,
             FixMessage::News(_) => MsgType::News,
+            FixMessage::MassQuote(_) => MsgType::MassQuote,
+            FixMessage::MassQuoteAcknowledgement(_) => MsgType::MassQuoteAcknowledgement,
+            FixMessage::Quote(_) => MsgType::Quote,
+            FixMessage::QuoteAcknowledgment(_) => MsgType::QuoteAcknowledgment,
+            FixMessage::QuoteCancel(_) => MsgType::QuoteCancel,
+            FixMessage::QuoteRequest(_) => MsgType::QuoteRequest,
+            FixMessage::QuoteRequestReject(_) => MsgType::QuoteRequestReject,
+            FixMessage::QuoteResponse(_) => MsgType::QuoteResponse,
+            FixMessage::QuoteStatusReport(_) => MsgType::QuoteStatusReport,
+            FixMessage::QuoteStatusRequest(_) => MsgType::QuoteStatusRequest,
+            FixMessage::RFQRequest(_) => MsgType::RFQRequest,
         }
     }
 }

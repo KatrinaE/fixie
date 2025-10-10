@@ -3,7 +3,7 @@
 ![Red fixie bicycle](img/fixie_bicycle.png "Fixie Bicycle")
 
 Fixie is a Rust library and CLI tool for working with
-FIX ([Financial Information eXchange](https://www.fixtrading.org/online-specification/) protocol messages.
+FIX ([Financial Information eXchange](https://www.fixtrading.org/online-specification/)) protocol messages.
 
 It is in **pre-release** stage. It is not production ready.
 

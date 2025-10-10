@@ -55,6 +55,50 @@ pub enum MsgType {
     UserRequest,                  // BE
     UserResponse,                 // BF
     UserNotification,             // CB
+    // Pre-Trade Indication Messages
+    Advertisement,            // 7
+    CrossRequest,             // DS
+    CrossRequestAck,          // DT
+    IOI,                      // 6
+    // Pre-Trade Event Communication Messages
+    Email,                    // C
+    News,                     // B
+    // Pre-Trade Quotation Messages
+    MassQuote,                // i (lowercase)
+    MassQuoteAcknowledgement, // b (lowercase)
+    Quote,                    // S
+    QuoteAcknowledgment,      // CW
+    QuoteCancel,              // Z
+    QuoteRequest,             // R
+    QuoteRequestReject,       // AG
+    QuoteResponse,            // AJ
+    QuoteStatusReport,        // AI
+    QuoteStatusRequest,       // a (lowercase)
+    RFQRequest,               // AH
+    // Pre-Trade Market Structure Messages
+    MarketDefinition,         // BU
+    MarketDefinitionRequest,  // BT
+    MarketDefinitionUpdateReport, // BV
+    TradingSessionList,       // BJ
+    TradingSessionListRequest, // BI
+    TradingSessionListUpdateReport, // BS
+    TradingSessionStatus,     // h (lowercase)
+    TradingSessionStatusRequest, // g (lowercase)
+    // Pre-Trade Securities Reference Messages
+    DerivativeSecurityList,   // AA
+    DerivativeSecurityListRequest, // z (lowercase)
+    SecurityDefinition,       // d (lowercase)
+    SecurityDefinitionRequest, // c (lowercase)
+    SecurityDefinitionUpdateReport, // BP
+    SecurityList,             // y (lowercase)
+    SecurityListRequest,      // x (lowercase)
+    SecurityListUpdateReport, // BK
+    SecurityMassStatus,       // CO
+    SecurityMassStatusRequest, // CN
+    SecurityStatus,           // f (lowercase)
+    SecurityStatusRequest,    // e (lowercase)
+    SecurityTypeRequest,      // v (lowercase)
+    SecurityTypes,            // w (lowercase)
 }
 
 impl MsgType {
@@ -106,6 +150,45 @@ impl MsgType {
             MsgType::UserRequest => "BE",
             MsgType::UserResponse => "BF",
             MsgType::UserNotification => "CB",
+            MsgType::Advertisement => "7",
+            MsgType::CrossRequest => "DS",
+            MsgType::CrossRequestAck => "DT",
+            MsgType::IOI => "6",
+            MsgType::Email => "C",
+            MsgType::News => "B",
+            MsgType::MassQuote => "i",
+            MsgType::MassQuoteAcknowledgement => "b",
+            MsgType::Quote => "S",
+            MsgType::QuoteAcknowledgment => "CW",
+            MsgType::QuoteCancel => "Z",
+            MsgType::QuoteRequest => "R",
+            MsgType::QuoteRequestReject => "AG",
+            MsgType::QuoteResponse => "AJ",
+            MsgType::QuoteStatusReport => "AI",
+            MsgType::QuoteStatusRequest => "a",
+            MsgType::RFQRequest => "AH",
+            MsgType::MarketDefinition => "BU",
+            MsgType::MarketDefinitionRequest => "BT",
+            MsgType::MarketDefinitionUpdateReport => "BV",
+            MsgType::TradingSessionList => "BJ",
+            MsgType::TradingSessionListRequest => "BI",
+            MsgType::TradingSessionListUpdateReport => "BS",
+            MsgType::TradingSessionStatus => "h",
+            MsgType::TradingSessionStatusRequest => "g",
+            MsgType::DerivativeSecurityList => "AA",
+            MsgType::DerivativeSecurityListRequest => "z",
+            MsgType::SecurityDefinition => "d",
+            MsgType::SecurityDefinitionRequest => "c",
+            MsgType::SecurityDefinitionUpdateReport => "BP",
+            MsgType::SecurityList => "y",
+            MsgType::SecurityListRequest => "x",
+            MsgType::SecurityListUpdateReport => "BK",
+            MsgType::SecurityMassStatus => "CO",
+            MsgType::SecurityMassStatusRequest => "CN",
+            MsgType::SecurityStatus => "f",
+            MsgType::SecurityStatusRequest => "e",
+            MsgType::SecurityTypeRequest => "v",
+            MsgType::SecurityTypes => "w",
         }
     }
 
@@ -157,6 +240,45 @@ impl MsgType {
             "BE" => Some(MsgType::UserRequest),
             "BF" => Some(MsgType::UserResponse),
             "CB" => Some(MsgType::UserNotification),
+            "7" => Some(MsgType::Advertisement),
+            "DS" => Some(MsgType::CrossRequest),
+            "DT" => Some(MsgType::CrossRequestAck),
+            "6" => Some(MsgType::IOI),
+            "C" => Some(MsgType::Email),
+            "B" => Some(MsgType::News),
+            "i" => Some(MsgType::MassQuote),
+            "b" => Some(MsgType::MassQuoteAcknowledgement),
+            "S" => Some(MsgType::Quote),
+            "CW" => Some(MsgType::QuoteAcknowledgment),
+            "Z" => Some(MsgType::QuoteCancel),
+            "R" => Some(MsgType::QuoteRequest),
+            "AG" => Some(MsgType::QuoteRequestReject),
+            "AJ" => Some(MsgType::QuoteResponse),
+            "AI" => Some(MsgType::QuoteStatusReport),
+            "a" => Some(MsgType::QuoteStatusRequest),
+            "AH" => Some(MsgType::RFQRequest),
+            "BU" => Some(MsgType::MarketDefinition),
+            "BT" => Some(MsgType::MarketDefinitionRequest),
+            "BV" => Some(MsgType::MarketDefinitionUpdateReport),
+            "BJ" => Some(MsgType::TradingSessionList),
+            "BI" => Some(MsgType::TradingSessionListRequest),
+            "BS" => Some(MsgType::TradingSessionListUpdateReport),
+            "h" => Some(MsgType::TradingSessionStatus),
+            "g" => Some(MsgType::TradingSessionStatusRequest),
+            "AA" => Some(MsgType::DerivativeSecurityList),
+            "z" => Some(MsgType::DerivativeSecurityListRequest),
+            "d" => Some(MsgType::SecurityDefinition),
+            "c" => Some(MsgType::SecurityDefinitionRequest),
+            "BP" => Some(MsgType::SecurityDefinitionUpdateReport),
+            "y" => Some(MsgType::SecurityList),
+            "x" => Some(MsgType::SecurityListRequest),
+            "BK" => Some(MsgType::SecurityListUpdateReport),
+            "CO" => Some(MsgType::SecurityMassStatus),
+            "CN" => Some(MsgType::SecurityMassStatusRequest),
+            "f" => Some(MsgType::SecurityStatus),
+            "e" => Some(MsgType::SecurityStatusRequest),
+            "v" => Some(MsgType::SecurityTypeRequest),
+            "w" => Some(MsgType::SecurityTypes),
             _ => None,
         }
     }
@@ -206,6 +328,50 @@ pub enum FixMessage {
     UserRequest(crate::message_types::user_management::UserRequest),
     UserResponse(crate::message_types::user_management::UserResponse),
     UserNotification(crate::message_types::user_management::UserNotification),
+    // Pre-Trade Indication Messages
+    Advertisement(crate::message_types::indication::Advertisement),
+    CrossRequest(crate::message_types::indication::CrossRequest),
+    CrossRequestAck(crate::message_types::indication::CrossRequestAck),
+    IOI(crate::message_types::indication::IOI),
+    // Pre-Trade Event Communication Messages
+    Email(crate::message_types::event_communication::Email),
+    News(crate::message_types::event_communication::News),
+    // Pre-Trade Quotation Messages
+    MassQuote(crate::message_types::quotation::MassQuote),
+    MassQuoteAcknowledgement(crate::message_types::quotation::MassQuoteAcknowledgement),
+    Quote(crate::message_types::quotation::Quote),
+    QuoteAcknowledgment(crate::message_types::quotation::QuoteAcknowledgment),
+    QuoteCancel(crate::message_types::quotation::QuoteCancel),
+    QuoteRequest(crate::message_types::quotation::QuoteRequest),
+    QuoteRequestReject(crate::message_types::quotation::QuoteRequestReject),
+    QuoteResponse(crate::message_types::quotation::QuoteResponse),
+    QuoteStatusReport(crate::message_types::quotation::QuoteStatusReport),
+    QuoteStatusRequest(crate::message_types::quotation::QuoteStatusRequest),
+    RFQRequest(crate::message_types::quotation::RFQRequest),
+    // Pre-Trade Market Structure Messages
+    MarketDefinition(crate::message_types::market_structure::MarketDefinition),
+    MarketDefinitionRequest(crate::message_types::market_structure::MarketDefinitionRequest),
+    MarketDefinitionUpdateReport(crate::message_types::market_structure::MarketDefinitionUpdateReport),
+    TradingSessionList(crate::message_types::market_structure::TradingSessionList),
+    TradingSessionListRequest(crate::message_types::market_structure::TradingSessionListRequest),
+    TradingSessionListUpdateReport(crate::message_types::market_structure::TradingSessionListUpdateReport),
+    TradingSessionStatus(crate::message_types::market_structure::TradingSessionStatus),
+    TradingSessionStatusRequest(crate::message_types::market_structure::TradingSessionStatusRequest),
+    // Pre-Trade Securities Reference Messages
+    DerivativeSecurityList(crate::message_types::securities_reference::DerivativeSecurityList),
+    DerivativeSecurityListRequest(crate::message_types::securities_reference::DerivativeSecurityListRequest),
+    SecurityDefinition(crate::message_types::securities_reference::SecurityDefinition),
+    SecurityDefinitionRequest(crate::message_types::securities_reference::SecurityDefinitionRequest),
+    SecurityDefinitionUpdateReport(crate::message_types::securities_reference::SecurityDefinitionUpdateReport),
+    SecurityList(crate::message_types::securities_reference::SecurityList),
+    SecurityListRequest(crate::message_types::securities_reference::SecurityListRequest),
+    SecurityListUpdateReport(crate::message_types::securities_reference::SecurityListUpdateReport),
+    SecurityMassStatus(crate::message_types::securities_reference::SecurityMassStatus),
+    SecurityMassStatusRequest(crate::message_types::securities_reference::SecurityMassStatusRequest),
+    SecurityStatus(crate::message_types::securities_reference::SecurityStatus),
+    SecurityStatusRequest(crate::message_types::securities_reference::SecurityStatusRequest),
+    SecurityTypeRequest(crate::message_types::securities_reference::SecurityTypeRequest),
+    SecurityTypes(crate::message_types::securities_reference::SecurityTypes),
 }
 
 impl FixMessage {
@@ -248,6 +414,45 @@ impl FixMessage {
             FixMessage::UserRequest(_) => MsgType::UserRequest,
             FixMessage::UserResponse(_) => MsgType::UserResponse,
             FixMessage::UserNotification(_) => MsgType::UserNotification,
+            FixMessage::Advertisement(_) => MsgType::Advertisement,
+            FixMessage::CrossRequest(_) => MsgType::CrossRequest,
+            FixMessage::CrossRequestAck(_) => MsgType::CrossRequestAck,
+            FixMessage::IOI(_) => MsgType::IOI,
+            FixMessage::Email(_) => MsgType::Email,
+            FixMessage::News(_) => MsgType::News,
+            FixMessage::MassQuote(_) => MsgType::MassQuote,
+            FixMessage::MassQuoteAcknowledgement(_) => MsgType::MassQuoteAcknowledgement,
+            FixMessage::Quote(_) => MsgType::Quote,
+            FixMessage::QuoteAcknowledgment(_) => MsgType::QuoteAcknowledgment,
+            FixMessage::QuoteCancel(_) => MsgType::QuoteCancel,
+            FixMessage::QuoteRequest(_) => MsgType::QuoteRequest,
+            FixMessage::QuoteRequestReject(_) => MsgType::QuoteRequestReject,
+            FixMessage::QuoteResponse(_) => MsgType::QuoteResponse,
+            FixMessage::QuoteStatusReport(_) => MsgType::QuoteStatusReport,
+            FixMessage::QuoteStatusRequest(_) => MsgType::QuoteStatusRequest,
+            FixMessage::RFQRequest(_) => MsgType::RFQRequest,
+            FixMessage::MarketDefinition(_) => MsgType::MarketDefinition,
+            FixMessage::MarketDefinitionRequest(_) => MsgType::MarketDefinitionRequest,
+            FixMessage::MarketDefinitionUpdateReport(_) => MsgType::MarketDefinitionUpdateReport,
+            FixMessage::TradingSessionList(_) => MsgType::TradingSessionList,
+            FixMessage::TradingSessionListRequest(_) => MsgType::TradingSessionListRequest,
+            FixMessage::TradingSessionListUpdateReport(_) => MsgType::TradingSessionListUpdateReport,
+            FixMessage::TradingSessionStatus(_) => MsgType::TradingSessionStatus,
+            FixMessage::TradingSessionStatusRequest(_) => MsgType::TradingSessionStatusRequest,
+            FixMessage::DerivativeSecurityList(_) => MsgType::DerivativeSecurityList,
+            FixMessage::DerivativeSecurityListRequest(_) => MsgType::DerivativeSecurityListRequest,
+            FixMessage::SecurityDefinition(_) => MsgType::SecurityDefinition,
+            FixMessage::SecurityDefinitionRequest(_) => MsgType::SecurityDefinitionRequest,
+            FixMessage::SecurityDefinitionUpdateReport(_) => MsgType::SecurityDefinitionUpdateReport,
+            FixMessage::SecurityList(_) => MsgType::SecurityList,
+            FixMessage::SecurityListRequest(_) => MsgType::SecurityListRequest,
+            FixMessage::SecurityListUpdateReport(_) => MsgType::SecurityListUpdateReport,
+            FixMessage::SecurityMassStatus(_) => MsgType::SecurityMassStatus,
+            FixMessage::SecurityMassStatusRequest(_) => MsgType::SecurityMassStatusRequest,
+            FixMessage::SecurityStatus(_) => MsgType::SecurityStatus,
+            FixMessage::SecurityStatusRequest(_) => MsgType::SecurityStatusRequest,
+            FixMessage::SecurityTypeRequest(_) => MsgType::SecurityTypeRequest,
+            FixMessage::SecurityTypes(_) => MsgType::SecurityTypes,
         }
     }
 }

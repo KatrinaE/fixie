@@ -2,14 +2,23 @@
 
 ![Red fixie bicycle](img/fixie_bicycle.png "Fixie Bicycle")
 
-A CLI tool and Rust library for parsing and working with
+Fixie is a Rust library and CLI tool for working with
 FIX ([Financial Information eXchange](https://www.fixtrading.org/online-specification/) protocol messages.
+
+It is in **pre-release** stage. It is not production ready.
+
+Currently, Fixie supports [infrastructure](https://www.fixtrading.org/online-specification/business-area-infrastructure/),
+[pre-trade](https://www.fixtrading.org/online-specification/business-area-pretrade/),
+and [trade](https://www.fixtrading.org/online-specification/business-area-trade/)
+messages. It does not yet support post-trade messages.
 
 ## Usage
 
 ### Command Line Tool
 
 #### Installation
+You will need Rust and cargo installed on your machine.
+
 ```bash
 cargo build --release -p fixie
 ```

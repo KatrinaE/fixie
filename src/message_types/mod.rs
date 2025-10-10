@@ -7,6 +7,9 @@ pub mod network_status;
 pub mod user_management;
 
 // Trading Messages
+pub mod single_general_order_handling;
+pub mod order_mass_handling;
+pub mod order_cross_handling;
 pub mod mass_orders;
 pub mod multileg_orders;
 pub mod program_trading;
@@ -23,6 +26,9 @@ pub mod securities_reference;    // [SECTION 600]
 pub use application_sequencing::*;
 pub use network_status::*;
 pub use user_management::*;
+pub use single_general_order_handling::*;
+pub use order_mass_handling::*;
+pub use order_cross_handling::*;
 pub use mass_orders::*;
 pub use multileg_orders::*;
 pub use program_trading::*;

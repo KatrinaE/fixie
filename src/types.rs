@@ -2400,15 +2400,224 @@ mod quotation_tests {
 // Tags: 262-268, 269-271, 286-291, etc.
 // Implementation: feature/pretrade-market-data
 // ============================================================================
-// Enums will be added here by the Market Data PR:
-// - MDReqRejReason (Tag 281)
-// - MDUpdateType (Tag 265)
-// - SubscriptionRequestType (Tag 263)
-// - MarketDepth (Tag 264)
-// - MDUpdateAction (Tag 279)
-// - MDEntryType (Tag 269)
-// - TickDirection (Tag 274)
-// - QuoteEntryRejectReason (Tag 368)
+
+/// MDReqRejReason (Tag 281) - Reason for rejecting a Market Data Request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MDReqRejReason {
+    UnknownSymbol,                  // 0 - Unknown symbol
+    DuplicateMDReqID,               // 1 - Duplicate MDReqID
+    InsufficientBandwidth,          // 2 - Insufficient bandwidth
+    InsufficientPermissions,        // 3 - Insufficient permissions
+    UnsupportedSubscriptionRequestType, // 4 - Unsupported SubscriptionRequestType
+    UnsupportedMarketDepth,         // 5 - Unsupported MarketDepth
+    UnsupportedMDUpdateType,        // 6 - Unsupported MDUpdateType
+    UnsupportedAggregatedBook,      // 7 - Unsupported AggregatedBook
+    UnsupportedMDEntryType,         // 8 - Unsupported MDEntryType
+    UnsupportedTradingSessionID,    // 9 - Unsupported TradingSessionID
+    UnsupportedScope,               // A - Unsupported Scope
+    UnsupportedOpenCloseSettleFlag, // B - Unsupported OpenCloseSettleFlag
+    UnsupportedMDImplicitDelete,    // C - Unsupported MDImplicitDelete
+}
+
+impl MDReqRejReason {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            MDReqRejReason::UnknownSymbol => "0",
+            MDReqRejReason::DuplicateMDReqID => "1",
+            MDReqRejReason::InsufficientBandwidth => "2",
+            MDReqRejReason::InsufficientPermissions => "3",
+            MDReqRejReason::UnsupportedSubscriptionRequestType => "4",
+            MDReqRejReason::UnsupportedMarketDepth => "5",
+            MDReqRejReason::UnsupportedMDUpdateType => "6",
+            MDReqRejReason::UnsupportedAggregatedBook => "7",
+            MDReqRejReason::UnsupportedMDEntryType => "8",
+            MDReqRejReason::UnsupportedTradingSessionID => "9",
+            MDReqRejReason::UnsupportedScope => "A",
+            MDReqRejReason::UnsupportedOpenCloseSettleFlag => "B",
+            MDReqRejReason::UnsupportedMDImplicitDelete => "C",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(MDReqRejReason::UnknownSymbol),
+            "1" => Some(MDReqRejReason::DuplicateMDReqID),
+            "2" => Some(MDReqRejReason::InsufficientBandwidth),
+            "3" => Some(MDReqRejReason::InsufficientPermissions),
+            "4" => Some(MDReqRejReason::UnsupportedSubscriptionRequestType),
+            "5" => Some(MDReqRejReason::UnsupportedMarketDepth),
+            "6" => Some(MDReqRejReason::UnsupportedMDUpdateType),
+            "7" => Some(MDReqRejReason::UnsupportedAggregatedBook),
+            "8" => Some(MDReqRejReason::UnsupportedMDEntryType),
+            "9" => Some(MDReqRejReason::UnsupportedTradingSessionID),
+            "A" => Some(MDReqRejReason::UnsupportedScope),
+            "B" => Some(MDReqRejReason::UnsupportedOpenCloseSettleFlag),
+            "C" => Some(MDReqRejReason::UnsupportedMDImplicitDelete),
+            _ => None,
+        }
+    }
+}
+
+/// MDUpdateType (Tag 265) - Type of market data update
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MDUpdateType {
+    FullRefresh,       // 0 - Full refresh
+    IncrementalRefresh, // 1 - Incremental refresh
+}
+
+impl MDUpdateType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            MDUpdateType::FullRefresh => '0',
+            MDUpdateType::IncrementalRefresh => '1',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(MDUpdateType::FullRefresh),
+            '1' => Some(MDUpdateType::IncrementalRefresh),
+            _ => None,
+        }
+    }
+}
+
+/// SubscriptionRequestType (Tag 263) - Type of subscription request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SubscriptionRequestType {
+    Snapshot,                        // 0 - Snapshot
+    SnapshotPlusUpdates,             // 1 - Snapshot + Updates (Subscribe)
+    DisablePreviousSnapshot,         // 2 - Disable previous Snapshot + Updates (Unsubscribe)
+}
+
+impl SubscriptionRequestType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SubscriptionRequestType::Snapshot => '0',
+            SubscriptionRequestType::SnapshotPlusUpdates => '1',
+            SubscriptionRequestType::DisablePreviousSnapshot => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(SubscriptionRequestType::Snapshot),
+            '1' => Some(SubscriptionRequestType::SnapshotPlusUpdates),
+            '2' => Some(SubscriptionRequestType::DisablePreviousSnapshot),
+            _ => None,
+        }
+    }
+}
+
+/// MDEntryType (Tag 269) - Type of Market Data entry
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MDEntryType {
+    Bid,                  // 0
+    Offer,                // 1
+    Trade,                // 2
+    IndexValue,           // 3
+    OpeningPrice,         // 4
+    ClosingPrice,         // 5
+    SettlementPrice,      // 6
+    TradingSessionHighPrice, // 7
+    TradingSessionLowPrice,  // 8
+    TradingSessionVWAPPrice, // 9
+    Imbalance,            // A
+    TradeVolume,          // B
+    OpenInterest,         // C
+}
+
+impl MDEntryType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            MDEntryType::Bid => "0",
+            MDEntryType::Offer => "1",
+            MDEntryType::Trade => "2",
+            MDEntryType::IndexValue => "3",
+            MDEntryType::OpeningPrice => "4",
+            MDEntryType::ClosingPrice => "5",
+            MDEntryType::SettlementPrice => "6",
+            MDEntryType::TradingSessionHighPrice => "7",
+            MDEntryType::TradingSessionLowPrice => "8",
+            MDEntryType::TradingSessionVWAPPrice => "9",
+            MDEntryType::Imbalance => "A",
+            MDEntryType::TradeVolume => "B",
+            MDEntryType::OpenInterest => "C",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(MDEntryType::Bid),
+            "1" => Some(MDEntryType::Offer),
+            "2" => Some(MDEntryType::Trade),
+            "3" => Some(MDEntryType::IndexValue),
+            "4" => Some(MDEntryType::OpeningPrice),
+            "5" => Some(MDEntryType::ClosingPrice),
+            "6" => Some(MDEntryType::SettlementPrice),
+            "7" => Some(MDEntryType::TradingSessionHighPrice),
+            "8" => Some(MDEntryType::TradingSessionLowPrice),
+            "9" => Some(MDEntryType::TradingSessionVWAPPrice),
+            "A" => Some(MDEntryType::Imbalance),
+            "B" => Some(MDEntryType::TradeVolume),
+            "C" => Some(MDEntryType::OpenInterest),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod market_data_enum_tests {
+    use super::*;
+
+    #[test]
+    fn test_md_req_rej_reason_conversions() {
+        assert_eq!(MDReqRejReason::UnknownSymbol.to_fix(), "0");
+        assert_eq!(MDReqRejReason::DuplicateMDReqID.to_fix(), "1");
+        assert_eq!(MDReqRejReason::UnsupportedMDImplicitDelete.to_fix(), "C");
+
+        assert_eq!(MDReqRejReason::from_fix("0"), Some(MDReqRejReason::UnknownSymbol));
+        assert_eq!(MDReqRejReason::from_fix("A"), Some(MDReqRejReason::UnsupportedScope));
+        assert_eq!(MDReqRejReason::from_fix("C"), Some(MDReqRejReason::UnsupportedMDImplicitDelete));
+        assert_eq!(MDReqRejReason::from_fix("Z"), None);
+    }
+
+    #[test]
+    fn test_md_update_type_conversions() {
+        assert_eq!(MDUpdateType::FullRefresh.to_fix(), '0');
+        assert_eq!(MDUpdateType::IncrementalRefresh.to_fix(), '1');
+
+        assert_eq!(MDUpdateType::from_fix('0'), Some(MDUpdateType::FullRefresh));
+        assert_eq!(MDUpdateType::from_fix('1'), Some(MDUpdateType::IncrementalRefresh));
+        assert_eq!(MDUpdateType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_subscription_request_type_conversions() {
+        assert_eq!(SubscriptionRequestType::Snapshot.to_fix(), '0');
+        assert_eq!(SubscriptionRequestType::SnapshotPlusUpdates.to_fix(), '1');
+        assert_eq!(SubscriptionRequestType::DisablePreviousSnapshot.to_fix(), '2');
+
+        assert_eq!(SubscriptionRequestType::from_fix('0'), Some(SubscriptionRequestType::Snapshot));
+        assert_eq!(SubscriptionRequestType::from_fix('1'), Some(SubscriptionRequestType::SnapshotPlusUpdates));
+        assert_eq!(SubscriptionRequestType::from_fix('2'), Some(SubscriptionRequestType::DisablePreviousSnapshot));
+        assert_eq!(SubscriptionRequestType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_md_entry_type_conversions() {
+        assert_eq!(MDEntryType::Bid.to_fix(), "0");
+        assert_eq!(MDEntryType::Offer.to_fix(), "1");
+        assert_eq!(MDEntryType::Trade.to_fix(), "2");
+        assert_eq!(MDEntryType::OpenInterest.to_fix(), "C");
+
+        assert_eq!(MDEntryType::from_fix("0"), Some(MDEntryType::Bid));
+        assert_eq!(MDEntryType::from_fix("1"), Some(MDEntryType::Offer));
+        assert_eq!(MDEntryType::from_fix("A"), Some(MDEntryType::Imbalance));
+        assert_eq!(MDEntryType::from_fix("C"), Some(MDEntryType::OpenInterest));
+        assert_eq!(MDEntryType::from_fix("Z"), None);
+    }
+}
 
 // ============================================================================
 // [SECTION 500] Market Structure Reference Data Messages
@@ -2419,14 +2628,264 @@ mod quotation_tests {
 // Tags: 325, 326, 338-340, 1300-1301, 1022-1024, etc.
 // Implementation: feature/pretrade-market-structure
 // ============================================================================
-// Enums will be added here by the Market Structure PR:
-// - TradSessionStatus (Tag 340)
-// - TradSesReqID (Tag 335)
-// - TradSesMethod (Tag 338)
-// - TradSesMode (Tag 339)
-// - TradSesStatus (Tag 340)
-// - TradSesStatusRejReason (Tag 567)
-// - MarketSegmentStatus (Tag 1345)
+
+/// TradSesStatus (Tag 340) - State of the trading session
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesStatus {
+    Unknown,       // 0 - Unknown status
+    Halted,        // 1 - Halted
+    Open,          // 2 - Open
+    Closed,        // 3 - Closed
+    PreOpen,       // 4 - Pre-Open
+    PreClose,      // 5 - Pre-Close
+    RequestRejected, // 6 - Request Rejected
+}
+
+impl TradSesStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesStatus::Unknown => '0',
+            TradSesStatus::Halted => '1',
+            TradSesStatus::Open => '2',
+            TradSesStatus::Closed => '3',
+            TradSesStatus::PreOpen => '4',
+            TradSesStatus::PreClose => '5',
+            TradSesStatus::RequestRejected => '6',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(TradSesStatus::Unknown),
+            '1' => Some(TradSesStatus::Halted),
+            '2' => Some(TradSesStatus::Open),
+            '3' => Some(TradSesStatus::Closed),
+            '4' => Some(TradSesStatus::PreOpen),
+            '5' => Some(TradSesStatus::PreClose),
+            '6' => Some(TradSesStatus::RequestRejected),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesMethod (Tag 338) - Method of trading
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesMethod {
+    Electronic,   // 1 - Electronic trading
+    OpenOutcry,   // 2 - Open outcry
+    TwoParty,     // 3 - Two party (direct negotiation)
+}
+
+impl TradSesMethod {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesMethod::Electronic => '1',
+            TradSesMethod::OpenOutcry => '2',
+            TradSesMethod::TwoParty => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(TradSesMethod::Electronic),
+            '2' => Some(TradSesMethod::OpenOutcry),
+            '3' => Some(TradSesMethod::TwoParty),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesMode (Tag 339) - Trading session mode
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesMode {
+    Testing,     // 1 - Testing mode
+    Simulated,   // 2 - Simulated trading
+    Production,  // 3 - Production (live) trading
+}
+
+impl TradSesMode {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesMode::Testing => '1',
+            TradSesMode::Simulated => '2',
+            TradSesMode::Production => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(TradSesMode::Testing),
+            '2' => Some(TradSesMode::Simulated),
+            '3' => Some(TradSesMode::Production),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesStatusRejReason (Tag 567) - Reason for rejecting a trading session status request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesStatusRejReason {
+    UnknownOrInvalidTradingSessionID, // 1 - Unknown or invalid TradingSessionID
+    Other,                             // 99 - Other reason
+}
+
+impl TradSesStatusRejReason {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TradSesStatusRejReason::UnknownOrInvalidTradingSessionID => "1",
+            TradSesStatusRejReason::Other => "99",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "1" => Some(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID),
+            "99" => Some(TradSesStatusRejReason::Other),
+            _ => None,
+        }
+    }
+}
+
+/// TradSesUpdateAction (Tag 1327) - Action taken for trading sessions
+///
+/// Uses same values as SecurityUpdateAction (Tag 980)
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradSesUpdateAction {
+    Add,     // A - Add trading session
+    Delete,  // D - Delete trading session
+    Modify,  // M - Modify trading session
+}
+
+impl TradSesUpdateAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            TradSesUpdateAction::Add => 'A',
+            TradSesUpdateAction::Delete => 'D',
+            TradSesUpdateAction::Modify => 'M',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'A' => Some(TradSesUpdateAction::Add),
+            'D' => Some(TradSesUpdateAction::Delete),
+            'M' => Some(TradSesUpdateAction::Modify),
+            _ => None,
+        }
+    }
+}
+
+/// MarketUpdateAction (Tag 1395) - Action taken for market definitions
+///
+/// Uses same values as SecurityUpdateAction (Tag 980) and TradSesUpdateAction (Tag 1327)
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MarketUpdateAction {
+    Add,     // A - Add market definition
+    Delete,  // D - Delete market definition
+    Modify,  // M - Modify market definition
+}
+
+impl MarketUpdateAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            MarketUpdateAction::Add => 'A',
+            MarketUpdateAction::Delete => 'D',
+            MarketUpdateAction::Modify => 'M',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'A' => Some(MarketUpdateAction::Add),
+            'D' => Some(MarketUpdateAction::Delete),
+            'M' => Some(MarketUpdateAction::Modify),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod market_structure_enum_tests {
+    use super::*;
+
+    #[test]
+    fn test_trad_ses_status_conversions() {
+        assert_eq!(TradSesStatus::Unknown.to_fix(), '0');
+        assert_eq!(TradSesStatus::Halted.to_fix(), '1');
+        assert_eq!(TradSesStatus::Open.to_fix(), '2');
+        assert_eq!(TradSesStatus::Closed.to_fix(), '3');
+        assert_eq!(TradSesStatus::PreOpen.to_fix(), '4');
+        assert_eq!(TradSesStatus::PreClose.to_fix(), '5');
+        assert_eq!(TradSesStatus::RequestRejected.to_fix(), '6');
+
+        assert_eq!(TradSesStatus::from_fix('0'), Some(TradSesStatus::Unknown));
+        assert_eq!(TradSesStatus::from_fix('1'), Some(TradSesStatus::Halted));
+        assert_eq!(TradSesStatus::from_fix('2'), Some(TradSesStatus::Open));
+        assert_eq!(TradSesStatus::from_fix('3'), Some(TradSesStatus::Closed));
+        assert_eq!(TradSesStatus::from_fix('4'), Some(TradSesStatus::PreOpen));
+        assert_eq!(TradSesStatus::from_fix('5'), Some(TradSesStatus::PreClose));
+        assert_eq!(TradSesStatus::from_fix('6'), Some(TradSesStatus::RequestRejected));
+        assert_eq!(TradSesStatus::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_trad_ses_method_conversions() {
+        assert_eq!(TradSesMethod::Electronic.to_fix(), '1');
+        assert_eq!(TradSesMethod::OpenOutcry.to_fix(), '2');
+        assert_eq!(TradSesMethod::TwoParty.to_fix(), '3');
+
+        assert_eq!(TradSesMethod::from_fix('1'), Some(TradSesMethod::Electronic));
+        assert_eq!(TradSesMethod::from_fix('2'), Some(TradSesMethod::OpenOutcry));
+        assert_eq!(TradSesMethod::from_fix('3'), Some(TradSesMethod::TwoParty));
+        assert_eq!(TradSesMethod::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_trad_ses_mode_conversions() {
+        assert_eq!(TradSesMode::Testing.to_fix(), '1');
+        assert_eq!(TradSesMode::Simulated.to_fix(), '2');
+        assert_eq!(TradSesMode::Production.to_fix(), '3');
+
+        assert_eq!(TradSesMode::from_fix('1'), Some(TradSesMode::Testing));
+        assert_eq!(TradSesMode::from_fix('2'), Some(TradSesMode::Simulated));
+        assert_eq!(TradSesMode::from_fix('3'), Some(TradSesMode::Production));
+        assert_eq!(TradSesMode::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_trad_ses_status_rej_reason_conversions() {
+        assert_eq!(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID.to_fix(), "1");
+        assert_eq!(TradSesStatusRejReason::Other.to_fix(), "99");
+
+        assert_eq!(TradSesStatusRejReason::from_fix("1"), Some(TradSesStatusRejReason::UnknownOrInvalidTradingSessionID));
+        assert_eq!(TradSesStatusRejReason::from_fix("99"), Some(TradSesStatusRejReason::Other));
+        assert_eq!(TradSesStatusRejReason::from_fix("100"), None);
+    }
+
+    #[test]
+    fn test_trad_ses_update_action_conversions() {
+        assert_eq!(TradSesUpdateAction::Add.to_fix(), 'A');
+        assert_eq!(TradSesUpdateAction::Delete.to_fix(), 'D');
+        assert_eq!(TradSesUpdateAction::Modify.to_fix(), 'M');
+
+        assert_eq!(TradSesUpdateAction::from_fix('A'), Some(TradSesUpdateAction::Add));
+        assert_eq!(TradSesUpdateAction::from_fix('D'), Some(TradSesUpdateAction::Delete));
+        assert_eq!(TradSesUpdateAction::from_fix('M'), Some(TradSesUpdateAction::Modify));
+        assert_eq!(TradSesUpdateAction::from_fix('Z'), None);
+    }
+
+    #[test]
+    fn test_market_update_action_conversions() {
+        assert_eq!(MarketUpdateAction::Add.to_fix(), 'A');
+        assert_eq!(MarketUpdateAction::Delete.to_fix(), 'D');
+        assert_eq!(MarketUpdateAction::Modify.to_fix(), 'M');
+
+        assert_eq!(MarketUpdateAction::from_fix('A'), Some(MarketUpdateAction::Add));
+        assert_eq!(MarketUpdateAction::from_fix('D'), Some(MarketUpdateAction::Delete));
+        assert_eq!(MarketUpdateAction::from_fix('M'), Some(MarketUpdateAction::Modify));
+        assert_eq!(MarketUpdateAction::from_fix('Z'), None);
+    }
+}
 
 // ============================================================================
 // [SECTION 600] Securities Reference Data Messages

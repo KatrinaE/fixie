@@ -27,6 +27,7 @@ pub enum MsgType {
     CrossOrderCancelReplaceRequest, // t (lowercase)
     MarketDataRequest,        // V
     MarketDataSnapshotFullRefresh, // W
+    MarketDataRequestReject,  // Y
     // Program Trading / List Trading
     NewOrderList,             // E
     ListStatus,               // N
@@ -81,6 +82,7 @@ impl MsgType {
             MsgType::CrossOrderCancelReplaceRequest => "t",
             MsgType::MarketDataRequest => "V",
             MsgType::MarketDataSnapshotFullRefresh => "W",
+            MsgType::MarketDataRequestReject => "Y",
             MsgType::NewOrderList => "E",
             MsgType::ListStatus => "N",
             MsgType::ListExecute => "L",
@@ -131,6 +133,7 @@ impl MsgType {
             "t" => Some(MsgType::CrossOrderCancelReplaceRequest),
             "V" => Some(MsgType::MarketDataRequest),
             "W" => Some(MsgType::MarketDataSnapshotFullRefresh),
+            "Y" => Some(MsgType::MarketDataRequestReject),
             "E" => Some(MsgType::NewOrderList),
             "N" => Some(MsgType::ListStatus),
             "L" => Some(MsgType::ListExecute),
@@ -1638,32 +1641,6 @@ impl CrossOrderCancelReplaceRequest {
     }
 }
 
-/// Market Data Messages
-
-/// MarketDataRequest (MsgType V) - Subscribe to market data
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MarketDataRequest {
-    pub md_req_id: String,           // Tag 262: Unique request ID
-    pub subscription_request_type: char, // Tag 263: 0=Snapshot, 1=Subscribe, 2=Unsubscribe
-    pub market_depth: i32,           // Tag 264: Depth of book (0=full, 1=top)
-    pub symbols: Vec<String>,        // Tag 55 (repeating): Symbols to subscribe to
-}
-
-/// MarketDataSnapshotFullRefresh (MsgType W) - Market data update
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MarketDataSnapshot {
-    pub symbol: String,              // Tag 55: Symbol
-    pub md_entries: Vec<MDEntry>,    // Repeating group of market data entries
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MDEntry {
-    pub md_entry_type: char,         // Tag 269: 0=Bid, 1=Offer, 2=Trade
-    pub md_entry_px: f64,            // Tag 270: Price
-    pub md_entry_size: Option<f64>,  // Tag 271: Size
-    pub md_entry_time: Option<DateTime<Utc>>, // Tag 273: Time of entry
-}
-
 /// Top-level FIX message enum
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum FixMessage {
@@ -1683,8 +1660,9 @@ pub enum FixMessage {
     NewOrderCross(NewOrderCross),
     CrossOrderCancelRequest(CrossOrderCancelRequest),
     CrossOrderCancelReplaceRequest(CrossOrderCancelReplaceRequest),
-    MarketDataRequest(MarketDataRequest),
-    MarketDataSnapshot(MarketDataSnapshot),
+    MarketDataRequest(crate::market_data::MarketDataRequest),
+    MarketDataSnapshotFullRefresh(crate::market_data::MarketDataSnapshotFullRefresh),
+    MarketDataRequestReject(crate::market_data::MarketDataRequestReject),
     // Program Trading
     NewOrderList(crate::program_trading::NewOrderList),
     ListStatus(crate::program_trading::ListStatus),
@@ -1729,7 +1707,8 @@ impl FixMessage {
             FixMessage::CrossOrderCancelRequest(_) => MsgType::CrossOrderCancelRequest,
             FixMessage::CrossOrderCancelReplaceRequest(_) => MsgType::CrossOrderCancelReplaceRequest,
             FixMessage::MarketDataRequest(_) => MsgType::MarketDataRequest,
-            FixMessage::MarketDataSnapshot(_) => MsgType::MarketDataSnapshotFullRefresh,
+            FixMessage::MarketDataSnapshotFullRefresh(_) => MsgType::MarketDataSnapshotFullRefresh,
+            FixMessage::MarketDataRequestReject(_) => MsgType::MarketDataRequestReject,
             FixMessage::NewOrderList(_) => MsgType::NewOrderList,
             FixMessage::ListStatus(_) => MsgType::ListStatus,
             FixMessage::MassOrder(_) => MsgType::MassOrder,

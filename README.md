@@ -15,6 +15,7 @@ messages. It does not yet support [post-trade](https://www.fixtrading.org/online
 ## Usage
 
 ### Command Line Tool
+The Fixie CLI tool displays FIX messages in a human-readable format (JSON, pretty-print, or raw).
 
 #### Installation
 You will need Rust and cargo installed on your machine.
@@ -168,6 +169,9 @@ Raw FIX Message:
 
 ### Rust Library
 
+The Fixie Rust library allows you to parse FIX messages into native Rust data types and to
+encode Rust data as FIX messages.
+
 #### Setup 
 1. Get the code
 ```bash
@@ -183,8 +187,9 @@ fixie = { path = "../fixie" }
 
 #### Data Types
 Each FIX message type has a corresponding data type in _src/messages.rs_ (for example, NewOrderSingle, ExecutionReport, Logon, etc.).
-The field names for each message are defined on that message's struct in _src/message_types_. This directory is organized according to
-the categories in the FIX spec. For example, NewOrderSingle is in _src/message_types/single_general_order_handling.rs_ because
+You will need to use this data type to encode or decode each message.
+
+The Rust field names for each message are defined on that message's struct in _src/message_types_. This directory's organization mirrors the FIX spec. For example, NewOrderSingle is in _src/message_types/single_general_order_handling.rs_ because
 NewOrderSingle is in the Single General Order Handling category in the [FIX spec](https://www.fixtrading.org/online-specification/business-area-trade/).
 
 #### Parsing Example

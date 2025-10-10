@@ -10,7 +10,7 @@ It is in **pre-release** stage. It is not production ready.
 Currently, Fixie supports [infrastructure](https://www.fixtrading.org/online-specification/business-area-infrastructure/),
 [pre-trade](https://www.fixtrading.org/online-specification/business-area-pretrade/),
 and [trade](https://www.fixtrading.org/online-specification/business-area-trade/)
-messages. It does not yet support post-trade messages.
+messages. It does not yet support [post-trade](https://www.fixtrading.org/online-specification/business-area-posttrade/)  messages.
 
 ## Usage
 

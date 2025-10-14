@@ -1522,6 +1522,42 @@ pub fn is_nested_group(parent_num_in_group_tag: u32, child_num_in_group_tag: u32
     }
 }
 
+// ============================================================================
+// Post-Trade: Account Reporting Groups
+// Reserved for account reporting repeating groups
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Allocation Groups
+// Reserved for AllocGrp, ExecAllocGrp, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Confirmation Groups
+// Reserved for CpctyConfGrp, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Position Maintenance Groups
+// Reserved for PosUndInstrmtGrp, PosAmtGrp, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Settlement Instruction Groups
+// Reserved for SettlInstGrp, SettlPartyGrp, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Trade Capture Reporting Groups
+// Reserved for TrdCapRptAckSideGrp, TrdInstrmtLegGrp, etc.
+// ============================================================================
+
+
 /// Get the full GroupConfig for a given repeating group (for testing purposes)
 #[cfg(test)]
 pub fn get_group_config(num_in_group_tag: u32, msg_type: Option<&str>) -> Option<&'static GroupConfig> {

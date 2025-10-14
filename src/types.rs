@@ -3647,6 +3647,236 @@ impl IndividualAllocRejCode {
 // Reserved for ConfirmType, ConfirmStatus, ConfirmTransType, etc.
 // ============================================================================
 
+/// ConfirmType (Tag 773) - Type of Confirmation message
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ConfirmType {
+    /// Status
+    Status,
+    /// Confirmation
+    Confirmation,
+    /// Confirmation Request Rejected
+    ConfirmationRequestRejected,
+}
+
+impl ConfirmType {
+    pub fn to_fix(&self) -> u32 {
+        match self {
+            ConfirmType::Status => 1,
+            ConfirmType::Confirmation => 2,
+            ConfirmType::ConfirmationRequestRejected => 3,
+        }
+    }
+
+    pub fn from_fix(value: u32) -> Option<Self> {
+        match value {
+            1 => Some(ConfirmType::Status),
+            2 => Some(ConfirmType::Confirmation),
+            3 => Some(ConfirmType::ConfirmationRequestRejected),
+            _ => None,
+        }
+    }
+}
+
+/// ConfirmStatus (Tag 665) - Status of Confirmation
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ConfirmStatus {
+    /// Received
+    Received,
+    /// Mismatched Account
+    MismatchedAccount,
+    /// Missing Settlement Instructions
+    MissingSettlementInstructions,
+    /// Confirmed
+    Confirmed,
+    /// Request Rejected
+    RequestRejected,
+}
+
+impl ConfirmStatus {
+    pub fn to_fix(&self) -> u32 {
+        match self {
+            ConfirmStatus::Received => 1,
+            ConfirmStatus::MismatchedAccount => 2,
+            ConfirmStatus::MissingSettlementInstructions => 3,
+            ConfirmStatus::Confirmed => 4,
+            ConfirmStatus::RequestRejected => 5,
+        }
+    }
+
+    pub fn from_fix(value: u32) -> Option<Self> {
+        match value {
+            1 => Some(ConfirmStatus::Received),
+            2 => Some(ConfirmStatus::MismatchedAccount),
+            3 => Some(ConfirmStatus::MissingSettlementInstructions),
+            4 => Some(ConfirmStatus::Confirmed),
+            5 => Some(ConfirmStatus::RequestRejected),
+            _ => None,
+        }
+    }
+}
+
+/// ConfirmTransType (Tag 666) - Confirmation transaction type
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ConfirmTransType {
+    /// New
+    New,
+    /// Replace
+    Replace,
+    /// Cancel
+    Cancel,
+}
+
+impl ConfirmTransType {
+    pub fn to_fix(&self) -> u32 {
+        match self {
+            ConfirmTransType::New => 0,
+            ConfirmTransType::Replace => 1,
+            ConfirmTransType::Cancel => 2,
+        }
+    }
+
+    pub fn from_fix(value: u32) -> Option<Self> {
+        match value {
+            0 => Some(ConfirmTransType::New),
+            1 => Some(ConfirmTransType::Replace),
+            2 => Some(ConfirmTransType::Cancel),
+            _ => None,
+        }
+    }
+}
+
+/// AffirmStatus (Tag 940) - Status of affirmation
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AffirmStatus {
+    /// Received
+    Received,
+    /// Confirm Rejected (not affirmed)
+    ConfirmRejected,
+    /// Affirmed
+    Affirmed,
+}
+
+impl AffirmStatus {
+    pub fn to_fix(&self) -> u32 {
+        match self {
+            AffirmStatus::Received => 1,
+            AffirmStatus::ConfirmRejected => 2,
+            AffirmStatus::Affirmed => 3,
+        }
+    }
+
+    pub fn from_fix(value: u32) -> Option<Self> {
+        match value {
+            1 => Some(AffirmStatus::Received),
+            2 => Some(AffirmStatus::ConfirmRejected),
+            3 => Some(AffirmStatus::Affirmed),
+            _ => None,
+        }
+    }
+}
+
+/// ConfirmRejReason (Tag 774) - Reason for confirmation rejection
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ConfirmRejReason {
+    /// Mismatched account
+    MismatchedAccount,
+    /// Missing settlement instructions
+    MissingSettlementInstructions,
+    /// Other (Reserved100Plus values allowed)
+    Other,
+}
+
+impl ConfirmRejReason {
+    pub fn to_fix(&self) -> u32 {
+        match self {
+            ConfirmRejReason::MismatchedAccount => 1,
+            ConfirmRejReason::MissingSettlementInstructions => 2,
+            ConfirmRejReason::Other => 99,
+        }
+    }
+
+    pub fn from_fix(value: u32) -> Option<Self> {
+        match value {
+            1 => Some(ConfirmRejReason::MismatchedAccount),
+            2 => Some(ConfirmRejReason::MissingSettlementInstructions),
+            99 => Some(ConfirmRejReason::Other),
+            _ if value >= 100 => Some(ConfirmRejReason::Other), // Reserved100Plus
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod confirmation_enum_tests {
+    use super::*;
+
+    #[test]
+    fn test_confirm_type_conversions() {
+        assert_eq!(ConfirmType::Status.to_fix(), 1);
+        assert_eq!(ConfirmType::Confirmation.to_fix(), 2);
+        assert_eq!(ConfirmType::ConfirmationRequestRejected.to_fix(), 3);
+
+        assert_eq!(ConfirmType::from_fix(1), Some(ConfirmType::Status));
+        assert_eq!(ConfirmType::from_fix(2), Some(ConfirmType::Confirmation));
+        assert_eq!(ConfirmType::from_fix(3), Some(ConfirmType::ConfirmationRequestRejected));
+        assert_eq!(ConfirmType::from_fix(99), None);
+    }
+
+    #[test]
+    fn test_confirm_status_conversions() {
+        assert_eq!(ConfirmStatus::Received.to_fix(), 1);
+        assert_eq!(ConfirmStatus::MismatchedAccount.to_fix(), 2);
+        assert_eq!(ConfirmStatus::MissingSettlementInstructions.to_fix(), 3);
+        assert_eq!(ConfirmStatus::Confirmed.to_fix(), 4);
+        assert_eq!(ConfirmStatus::RequestRejected.to_fix(), 5);
+
+        assert_eq!(ConfirmStatus::from_fix(1), Some(ConfirmStatus::Received));
+        assert_eq!(ConfirmStatus::from_fix(2), Some(ConfirmStatus::MismatchedAccount));
+        assert_eq!(ConfirmStatus::from_fix(3), Some(ConfirmStatus::MissingSettlementInstructions));
+        assert_eq!(ConfirmStatus::from_fix(4), Some(ConfirmStatus::Confirmed));
+        assert_eq!(ConfirmStatus::from_fix(5), Some(ConfirmStatus::RequestRejected));
+        assert_eq!(ConfirmStatus::from_fix(99), None);
+    }
+
+    #[test]
+    fn test_confirm_trans_type_conversions() {
+        assert_eq!(ConfirmTransType::New.to_fix(), 0);
+        assert_eq!(ConfirmTransType::Replace.to_fix(), 1);
+        assert_eq!(ConfirmTransType::Cancel.to_fix(), 2);
+
+        assert_eq!(ConfirmTransType::from_fix(0), Some(ConfirmTransType::New));
+        assert_eq!(ConfirmTransType::from_fix(1), Some(ConfirmTransType::Replace));
+        assert_eq!(ConfirmTransType::from_fix(2), Some(ConfirmTransType::Cancel));
+        assert_eq!(ConfirmTransType::from_fix(99), None);
+    }
+
+    #[test]
+    fn test_affirm_status_conversions() {
+        assert_eq!(AffirmStatus::Received.to_fix(), 1);
+        assert_eq!(AffirmStatus::ConfirmRejected.to_fix(), 2);
+        assert_eq!(AffirmStatus::Affirmed.to_fix(), 3);
+
+        assert_eq!(AffirmStatus::from_fix(1), Some(AffirmStatus::Received));
+        assert_eq!(AffirmStatus::from_fix(2), Some(AffirmStatus::ConfirmRejected));
+        assert_eq!(AffirmStatus::from_fix(3), Some(AffirmStatus::Affirmed));
+        assert_eq!(AffirmStatus::from_fix(99), None);
+    }
+
+    #[test]
+    fn test_confirm_rej_reason_conversions() {
+        assert_eq!(ConfirmRejReason::MismatchedAccount.to_fix(), 1);
+        assert_eq!(ConfirmRejReason::MissingSettlementInstructions.to_fix(), 2);
+        assert_eq!(ConfirmRejReason::Other.to_fix(), 99);
+
+        assert_eq!(ConfirmRejReason::from_fix(1), Some(ConfirmRejReason::MismatchedAccount));
+        assert_eq!(ConfirmRejReason::from_fix(2), Some(ConfirmRejReason::MissingSettlementInstructions));
+        assert_eq!(ConfirmRejReason::from_fix(99), Some(ConfirmRejReason::Other));
+        assert_eq!(ConfirmRejReason::from_fix(100), Some(ConfirmRejReason::Other)); // Reserved100Plus
+        assert_eq!(ConfirmRejReason::from_fix(150), Some(ConfirmRejReason::Other)); // Reserved100Plus
+        assert_eq!(ConfirmRejReason::from_fix(50), None); // Invalid
+    }
+}
+
 
 // ============================================================================
 // Post-Trade: Position Maintenance Enums (Section 710)

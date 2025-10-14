@@ -1429,6 +1429,47 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Post-Trade: Position Maintenance Groups
+    // ========================================================================
+
+    // PositionQty component - NoPositions (702)
+    // Used in: PositionMaintenanceRequest (AL), PositionMaintenanceReport (AM),
+    //          PositionReport (AP), AssignmentReport (AW), AdjustedPositionReport (BL)
+    registry.insert(
+        GroupKey { num_in_group_tag: 702, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 702, // NoPositions
+            delimiter_tag: 703,    // PosType
+            member_tags: vec![
+                703,  // PosType - Required
+                704,  // LongQty
+                705,  // ShortQty
+                706,  // PosQtyStatus
+                539,  // QuantityDate
+                1055, // PositionCurrency
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // PositionAmountData component - NoPosAmt (753)
+    // Used in: PositionMaintenanceRequest (AL), PositionMaintenanceReport (AM),
+    //          PositionReport (AP), AssignmentReport (AW), PositionTransferReport (DN)
+    registry.insert(
+        GroupKey { num_in_group_tag: 753, msg_type: None },
+        GroupConfig {
+            num_in_group_tag: 753, // NoPosAmt
+            delimiter_tag: 707,    // PosAmtType
+            member_tags: vec![
+                707,  // PosAmtType - Required
+                708,  // PosAmt - Required
+                1055, // PositionCurrency
+            ],
+            nested_groups: vec![],
+        },
+    );
+
     registry
 });
 

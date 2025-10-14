@@ -3201,6 +3201,540 @@ impl HaltReason {
 // Reserved for PosReqType, PosTransType, PosMaintAction, PosMaintResult, etc.
 // ============================================================================
 
+/// PosReqType (Tag 724) - Type of position request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosReqType {
+    Positions,          // 0
+    Trades,             // 1
+    Exercises,          // 2
+    Assignments,        // 3
+    SettlementActivity, // 4
+    BackoutMessage,     // 5
+    DeltaPositions,     // 6
+}
+
+impl PosReqType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            PosReqType::Positions => '0',
+            PosReqType::Trades => '1',
+            PosReqType::Exercises => '2',
+            PosReqType::Assignments => '3',
+            PosReqType::SettlementActivity => '4',
+            PosReqType::BackoutMessage => '5',
+            PosReqType::DeltaPositions => '6',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(PosReqType::Positions),
+            '1' => Some(PosReqType::Trades),
+            '2' => Some(PosReqType::Exercises),
+            '3' => Some(PosReqType::Assignments),
+            '4' => Some(PosReqType::SettlementActivity),
+            '5' => Some(PosReqType::BackoutMessage),
+            '6' => Some(PosReqType::DeltaPositions),
+            _ => None,
+        }
+    }
+}
+
+/// PosTransType (Tag 709) - Type of position transaction
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosTransType {
+    Exercise,                  // 1
+    DoNotExercise,             // 2
+    PositionAdjustment,        // 3
+    PositionChangeSubmission,  // 4
+    Pledge,                    // 5
+    LargeTraderSubmission,     // 6
+    LargePositionsReporting,   // 7
+    LongHoldings,              // 8
+    InternalTransfer,          // 9
+    TransferOfFirm,            // 10
+    ExternalTransfer,          // 11
+    CorporateAction,           // 12
+    Notification,              // 13
+    PositionCreation,          // 14
+    CloseOut,                  // 15
+    Reopen,                    // 16
+}
+
+impl PosTransType {
+    pub fn to_fix(&self) -> &str {
+        match self {
+            PosTransType::Exercise => "1",
+            PosTransType::DoNotExercise => "2",
+            PosTransType::PositionAdjustment => "3",
+            PosTransType::PositionChangeSubmission => "4",
+            PosTransType::Pledge => "5",
+            PosTransType::LargeTraderSubmission => "6",
+            PosTransType::LargePositionsReporting => "7",
+            PosTransType::LongHoldings => "8",
+            PosTransType::InternalTransfer => "9",
+            PosTransType::TransferOfFirm => "10",
+            PosTransType::ExternalTransfer => "11",
+            PosTransType::CorporateAction => "12",
+            PosTransType::Notification => "13",
+            PosTransType::PositionCreation => "14",
+            PosTransType::CloseOut => "15",
+            PosTransType::Reopen => "16",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "1" => Some(PosTransType::Exercise),
+            "2" => Some(PosTransType::DoNotExercise),
+            "3" => Some(PosTransType::PositionAdjustment),
+            "4" => Some(PosTransType::PositionChangeSubmission),
+            "5" => Some(PosTransType::Pledge),
+            "6" => Some(PosTransType::LargeTraderSubmission),
+            "7" => Some(PosTransType::LargePositionsReporting),
+            "8" => Some(PosTransType::LongHoldings),
+            "9" => Some(PosTransType::InternalTransfer),
+            "10" => Some(PosTransType::TransferOfFirm),
+            "11" => Some(PosTransType::ExternalTransfer),
+            "12" => Some(PosTransType::CorporateAction),
+            "13" => Some(PosTransType::Notification),
+            "14" => Some(PosTransType::PositionCreation),
+            "15" => Some(PosTransType::CloseOut),
+            "16" => Some(PosTransType::Reopen),
+            _ => None,
+        }
+    }
+}
+
+/// PosMaintAction (Tag 712) - Maintenance action being performed
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosMaintAction {
+    New,     // 1
+    Replace, // 2
+    Cancel,  // 3
+    Reverse, // 4
+}
+
+impl PosMaintAction {
+    pub fn to_fix(&self) -> char {
+        match self {
+            PosMaintAction::New => '1',
+            PosMaintAction::Replace => '2',
+            PosMaintAction::Cancel => '3',
+            PosMaintAction::Reverse => '4',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(PosMaintAction::New),
+            '2' => Some(PosMaintAction::Replace),
+            '3' => Some(PosMaintAction::Cancel),
+            '4' => Some(PosMaintAction::Reverse),
+            _ => None,
+        }
+    }
+}
+
+/// PosMaintResult (Tag 723) - Result of position maintenance
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosMaintResult {
+    SuccessfulCompletion, // 0
+    Rejected,             // 1
+    Other,                // 99
+}
+
+impl PosMaintResult {
+    pub fn to_fix(&self) -> &str {
+        match self {
+            PosMaintResult::SuccessfulCompletion => "0",
+            PosMaintResult::Rejected => "1",
+            PosMaintResult::Other => "99",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(PosMaintResult::SuccessfulCompletion),
+            "1" => Some(PosMaintResult::Rejected),
+            "99" => Some(PosMaintResult::Other),
+            _ => None,
+        }
+    }
+}
+
+/// PosReqStatus (Tag 729) - Status of position request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosReqStatus {
+    Completed,            // 0
+    CompletedWithWarnings, // 1
+    Rejected,             // 2
+}
+
+impl PosReqStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            PosReqStatus::Completed => '0',
+            PosReqStatus::CompletedWithWarnings => '1',
+            PosReqStatus::Rejected => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(PosReqStatus::Completed),
+            '1' => Some(PosReqStatus::CompletedWithWarnings),
+            '2' => Some(PosReqStatus::Rejected),
+            _ => None,
+        }
+    }
+}
+
+/// PosReqResult (Tag 728) - Result of position request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosReqResult {
+    ValidRequest,                // 0
+    InvalidOrUnsupportedRequest, // 1
+    NoPositionsFound,            // 2
+    NotAuthorized,               // 3
+    RequestNotSupported,         // 4
+    Other,                       // 99
+}
+
+impl PosReqResult {
+    pub fn to_fix(&self) -> &str {
+        match self {
+            PosReqResult::ValidRequest => "0",
+            PosReqResult::InvalidOrUnsupportedRequest => "1",
+            PosReqResult::NoPositionsFound => "2",
+            PosReqResult::NotAuthorized => "3",
+            PosReqResult::RequestNotSupported => "4",
+            PosReqResult::Other => "99",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(PosReqResult::ValidRequest),
+            "1" => Some(PosReqResult::InvalidOrUnsupportedRequest),
+            "2" => Some(PosReqResult::NoPositionsFound),
+            "3" => Some(PosReqResult::NotAuthorized),
+            "4" => Some(PosReqResult::RequestNotSupported),
+            "99" => Some(PosReqResult::Other),
+            _ => None,
+        }
+    }
+}
+
+/// PosType (Tag 703) - Type of position quantity
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PosType {
+    AllocationTradeQty,           // ALC
+    OptionAssignment,             // AS
+    AsOfTradeQty,                 // ASF
+    DeliveryQty,                  // DLV
+    ElectronicTradeQty,           // ETR
+    OptionExercise,               // EX
+    EndOfDayQty,                  // FIN
+    IntraSpreadQty,               // IAS
+    InterSpreadQty,               // IES
+    AdjustmentQty,                // PA
+    PitTradeQty,                  // PIT
+    StartOfDayQty,                // SOD
+    IntegralSplit,                // SPL
+    TransactionFromAssignment,    // TA
+    TotalTransactionQty,          // TOT
+    TransactionQuantity,          // TQ
+    TransferTradeQty,             // TRF
+    TransactionFromExercise,      // TX
+    CrossMarginQty,               // XM
+    ReceiveQuantity,              // RCV
+    CorporateActionAdjustment,    // CAA
+    DeliveryNoticeQty,            // DN
+    ExchangeForPhysicalQty,       // EP
+    PrivatelyNegotiatedTradeQty,  // PNTN
+    NetDeltaQty,                  // DLT
+    CreditEventAdjustment,        // CEA
+    SuccessionEventAdjustment,    // SEA
+}
+
+impl PosType {
+    pub fn to_fix(&self) -> &str {
+        match self {
+            PosType::AllocationTradeQty => "ALC",
+            PosType::OptionAssignment => "AS",
+            PosType::AsOfTradeQty => "ASF",
+            PosType::DeliveryQty => "DLV",
+            PosType::ElectronicTradeQty => "ETR",
+            PosType::OptionExercise => "EX",
+            PosType::EndOfDayQty => "FIN",
+            PosType::IntraSpreadQty => "IAS",
+            PosType::InterSpreadQty => "IES",
+            PosType::AdjustmentQty => "PA",
+            PosType::PitTradeQty => "PIT",
+            PosType::StartOfDayQty => "SOD",
+            PosType::IntegralSplit => "SPL",
+            PosType::TransactionFromAssignment => "TA",
+            PosType::TotalTransactionQty => "TOT",
+            PosType::TransactionQuantity => "TQ",
+            PosType::TransferTradeQty => "TRF",
+            PosType::TransactionFromExercise => "TX",
+            PosType::CrossMarginQty => "XM",
+            PosType::ReceiveQuantity => "RCV",
+            PosType::CorporateActionAdjustment => "CAA",
+            PosType::DeliveryNoticeQty => "DN",
+            PosType::ExchangeForPhysicalQty => "EP",
+            PosType::PrivatelyNegotiatedTradeQty => "PNTN",
+            PosType::NetDeltaQty => "DLT",
+            PosType::CreditEventAdjustment => "CEA",
+            PosType::SuccessionEventAdjustment => "SEA",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "ALC" => Some(PosType::AllocationTradeQty),
+            "AS" => Some(PosType::OptionAssignment),
+            "ASF" => Some(PosType::AsOfTradeQty),
+            "DLV" => Some(PosType::DeliveryQty),
+            "ETR" => Some(PosType::ElectronicTradeQty),
+            "EX" => Some(PosType::OptionExercise),
+            "FIN" => Some(PosType::EndOfDayQty),
+            "IAS" => Some(PosType::IntraSpreadQty),
+            "IES" => Some(PosType::InterSpreadQty),
+            "PA" => Some(PosType::AdjustmentQty),
+            "PIT" => Some(PosType::PitTradeQty),
+            "SOD" => Some(PosType::StartOfDayQty),
+            "SPL" => Some(PosType::IntegralSplit),
+            "TA" => Some(PosType::TransactionFromAssignment),
+            "TOT" => Some(PosType::TotalTransactionQty),
+            "TQ" => Some(PosType::TransactionQuantity),
+            "TRF" => Some(PosType::TransferTradeQty),
+            "TX" => Some(PosType::TransactionFromExercise),
+            "XM" => Some(PosType::CrossMarginQty),
+            "RCV" => Some(PosType::ReceiveQuantity),
+            "CAA" => Some(PosType::CorporateActionAdjustment),
+            "DN" => Some(PosType::DeliveryNoticeQty),
+            "EP" => Some(PosType::ExchangeForPhysicalQty),
+            "PNTN" => Some(PosType::PrivatelyNegotiatedTradeQty),
+            "DLT" => Some(PosType::NetDeltaQty),
+            "CEA" => Some(PosType::CreditEventAdjustment),
+            "SEA" => Some(PosType::SuccessionEventAdjustment),
+            _ => None,
+        }
+    }
+}
+
+/// PosQtyStatus (Tag 706) - Status of position quantity
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PosQtyStatus {
+    Submitted, // 0
+    Accepted,  // 1
+    Rejected,  // 2
+}
+
+impl PosQtyStatus {
+    pub fn to_fix(&self) -> char {
+        match self {
+            PosQtyStatus::Submitted => '0',
+            PosQtyStatus::Accepted => '1',
+            PosQtyStatus::Rejected => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(PosQtyStatus::Submitted),
+            '1' => Some(PosQtyStatus::Accepted),
+            '2' => Some(PosQtyStatus::Rejected),
+            _ => None,
+        }
+    }
+}
+
+/// SettlPriceType (Tag 731) - Type of settlement price
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlPriceType {
+    Final,       // 1
+    Theoretical, // 2
+}
+
+impl SettlPriceType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SettlPriceType::Final => '1',
+            SettlPriceType::Theoretical => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(SettlPriceType::Final),
+            '2' => Some(SettlPriceType::Theoretical),
+            _ => None,
+        }
+    }
+}
+
+/// AdjustmentType (Tag 718) - Type of adjustment
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AdjustmentType {
+    ProcessRequestAsMarginDisposition, // 0
+    DeltaPlus,                         // 1
+    DeltaMinus,                        // 2
+    Final,                             // 3
+}
+
+impl AdjustmentType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            AdjustmentType::ProcessRequestAsMarginDisposition => '0',
+            AdjustmentType::DeltaPlus => '1',
+            AdjustmentType::DeltaMinus => '2',
+            AdjustmentType::Final => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(AdjustmentType::ProcessRequestAsMarginDisposition),
+            '1' => Some(AdjustmentType::DeltaPlus),
+            '2' => Some(AdjustmentType::DeltaMinus),
+            '3' => Some(AdjustmentType::Final),
+            _ => None,
+        }
+    }
+}
+
+/// PosAmtType (Tag 707) - Type of position amount
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PosAmtType {
+    CashAmount,                       // CASH
+    CashResidualAmount,               // CRES
+    FinalMarkToMarket,                // FMTM
+    IncrementalMarkToMarket,          // IMTM
+    PremiumAmount,                    // PREM
+    StartOfDayMarkToMarket,           // SMTM
+    TradeVariationAmount,             // TVAR
+    ValueAdjustedAmount,              // VADJ
+    SettlementValue,                  // SETL
+    InitialTradeCouponAmount,         // ICPN
+    AccruedCouponAmount,              // ACPN
+    CouponAmount,                     // CPN
+    IncrementalAccruedCoupon,         // IACPN
+    CollateralizedMarkToMarket,       // CMTM
+    IncrementalCollateralizedMTM,     // ICMTM
+    CompensationAmount,               // DLV
+    TotalBankedAmount,                // BANK
+    TotalCollateralizedAmount,        // COLAT
+}
+
+impl PosAmtType {
+    pub fn to_fix(&self) -> &str {
+        match self {
+            PosAmtType::CashAmount => "CASH",
+            PosAmtType::CashResidualAmount => "CRES",
+            PosAmtType::FinalMarkToMarket => "FMTM",
+            PosAmtType::IncrementalMarkToMarket => "IMTM",
+            PosAmtType::PremiumAmount => "PREM",
+            PosAmtType::StartOfDayMarkToMarket => "SMTM",
+            PosAmtType::TradeVariationAmount => "TVAR",
+            PosAmtType::ValueAdjustedAmount => "VADJ",
+            PosAmtType::SettlementValue => "SETL",
+            PosAmtType::InitialTradeCouponAmount => "ICPN",
+            PosAmtType::AccruedCouponAmount => "ACPN",
+            PosAmtType::CouponAmount => "CPN",
+            PosAmtType::IncrementalAccruedCoupon => "IACPN",
+            PosAmtType::CollateralizedMarkToMarket => "CMTM",
+            PosAmtType::IncrementalCollateralizedMTM => "ICMTM",
+            PosAmtType::CompensationAmount => "DLV",
+            PosAmtType::TotalBankedAmount => "BANK",
+            PosAmtType::TotalCollateralizedAmount => "COLAT",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "CASH" => Some(PosAmtType::CashAmount),
+            "CRES" => Some(PosAmtType::CashResidualAmount),
+            "FMTM" => Some(PosAmtType::FinalMarkToMarket),
+            "IMTM" => Some(PosAmtType::IncrementalMarkToMarket),
+            "PREM" => Some(PosAmtType::PremiumAmount),
+            "SMTM" => Some(PosAmtType::StartOfDayMarkToMarket),
+            "TVAR" => Some(PosAmtType::TradeVariationAmount),
+            "VADJ" => Some(PosAmtType::ValueAdjustedAmount),
+            "SETL" => Some(PosAmtType::SettlementValue),
+            "ICPN" => Some(PosAmtType::InitialTradeCouponAmount),
+            "ACPN" => Some(PosAmtType::AccruedCouponAmount),
+            "CPN" => Some(PosAmtType::CouponAmount),
+            "IACPN" => Some(PosAmtType::IncrementalAccruedCoupon),
+            "CMTM" => Some(PosAmtType::CollateralizedMarkToMarket),
+            "ICMTM" => Some(PosAmtType::IncrementalCollateralizedMTM),
+            "DLV" => Some(PosAmtType::CompensationAmount),
+            "BANK" => Some(PosAmtType::TotalBankedAmount),
+            "COLAT" => Some(PosAmtType::TotalCollateralizedAmount),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod position_maintenance_enum_tests {
+    use super::*;
+
+    #[test]
+    fn test_pos_req_type_conversions() {
+        assert_eq!(PosReqType::Positions.to_fix(), '0');
+        assert_eq!(PosReqType::Trades.to_fix(), '1');
+        assert_eq!(PosReqType::DeltaPositions.to_fix(), '6');
+
+        assert_eq!(PosReqType::from_fix('0'), Some(PosReqType::Positions));
+        assert_eq!(PosReqType::from_fix('6'), Some(PosReqType::DeltaPositions));
+        assert_eq!(PosReqType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_pos_trans_type_conversions() {
+        assert_eq!(PosTransType::Exercise.to_fix(), "1");
+        assert_eq!(PosTransType::PositionAdjustment.to_fix(), "3");
+        assert_eq!(PosTransType::Reopen.to_fix(), "16");
+
+        assert_eq!(PosTransType::from_fix("1"), Some(PosTransType::Exercise));
+        assert_eq!(PosTransType::from_fix("16"), Some(PosTransType::Reopen));
+        assert_eq!(PosTransType::from_fix("99"), None);
+    }
+
+    #[test]
+    fn test_pos_maint_action_conversions() {
+        assert_eq!(PosMaintAction::New.to_fix(), '1');
+        assert_eq!(PosMaintAction::Reverse.to_fix(), '4');
+
+        assert_eq!(PosMaintAction::from_fix('1'), Some(PosMaintAction::New));
+        assert_eq!(PosMaintAction::from_fix('4'), Some(PosMaintAction::Reverse));
+        assert_eq!(PosMaintAction::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_pos_type_conversions() {
+        assert_eq!(PosType::OptionAssignment.to_fix(), "AS");
+        assert_eq!(PosType::EndOfDayQty.to_fix(), "FIN");
+
+        assert_eq!(PosType::from_fix("AS"), Some(PosType::OptionAssignment));
+        assert_eq!(PosType::from_fix("FIN"), Some(PosType::EndOfDayQty));
+        assert_eq!(PosType::from_fix("INVALID"), None);
+    }
+
+    #[test]
+    fn test_pos_amt_type_conversions() {
+        assert_eq!(PosAmtType::CashAmount.to_fix(), "CASH");
+        assert_eq!(PosAmtType::FinalMarkToMarket.to_fix(), "FMTM");
+
+        assert_eq!(PosAmtType::from_fix("CASH"), Some(PosAmtType::CashAmount));
+        assert_eq!(PosAmtType::from_fix("FMTM"), Some(PosAmtType::FinalMarkToMarket));
+        assert_eq!(PosAmtType::from_fix("INVALID"), None);
+    }
+}
+
 
 // ============================================================================
 // Post-Trade: Settlement Instruction Enums (Section 740)

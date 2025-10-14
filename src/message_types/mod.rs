@@ -25,6 +25,14 @@ pub mod market_data;             // [SECTION 400]
 pub mod market_structure;        // [SECTION 500]
 pub mod securities_reference;    // [SECTION 600]
 
+// Post-Trade Messages
+pub mod account_reporting;       // [SECTION 700]
+pub mod position_maintenance;    // [SECTION 710]
+pub mod allocation;              // [SECTION 720]
+pub mod confirmation;            // [SECTION 730]
+pub mod settlement_instruction;  // [SECTION 740]
+pub mod trade_capture_reporting; // [SECTION 750]
+
 // Re-exports
 pub use infrastructure::*;
 pub use business_message_rejects::*;
@@ -44,3 +52,9 @@ pub use quotation::*;
 pub use market_data::*;
 pub use market_structure::*;
 pub use securities_reference::*;
+pub use account_reporting::*;
+pub use position_maintenance::*;
+pub use allocation::*;
+pub use confirmation::*;
+pub use settlement_instruction::*;
+pub use trade_capture_reporting::*;

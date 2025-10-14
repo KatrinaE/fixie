@@ -3179,6 +3179,42 @@ impl HaltReason {
 }
 
 // ============================================================================
+// Post-Trade: Account Reporting Enums (Section 700)
+// Reserved for AccountReportingType, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Allocation Enums (Section 720)
+// Reserved for AllocType, AllocTransType, AllocStatus, AllocRejCode, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Confirmation Enums (Section 730)
+// Reserved for ConfirmType, ConfirmStatus, ConfirmTransType, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Position Maintenance Enums (Section 710)
+// Reserved for PosReqType, PosTransType, PosMaintAction, PosMaintResult, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Settlement Instruction Enums (Section 740)
+// Reserved for SettlInstSource, SettlInstTransType, SettlInstReqRejCode, etc.
+// ============================================================================
+
+
+// ============================================================================
+// Post-Trade: Trade Capture Reporting Enums (Section 750)
+// Reserved for TradeRequestType, TradeReportType, TrdType, etc.
+// ============================================================================
+
+
+// ============================================================================
 // Securities Reference Enum Tests
 // ============================================================================
 

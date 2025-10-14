@@ -4621,6 +4621,359 @@ impl SettlObligMode {
 // Reserved for TradeRequestType, TradeReportType, TrdType, etc.
 // ============================================================================
 
+/// TradeRequestType (Tag 569)
+/// Identifies the type of Trade Capture Report Request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradeRequestType {
+    AllTrades,                    // 0
+    MatchedTradesMatchingCriteria, // 1
+    UnmatchedTradesThatMatchCriteria, // 2
+    UnreportedTradesThatMatchCriteria, // 3
+    AdvisorysThatMatchCriteria,   // 4
+}
+
+impl TradeRequestType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TradeRequestType::AllTrades => "0",
+            TradeRequestType::MatchedTradesMatchingCriteria => "1",
+            TradeRequestType::UnmatchedTradesThatMatchCriteria => "2",
+            TradeRequestType::UnreportedTradesThatMatchCriteria => "3",
+            TradeRequestType::AdvisorysThatMatchCriteria => "4",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(TradeRequestType::AllTrades),
+            "1" => Some(TradeRequestType::MatchedTradesMatchingCriteria),
+            "2" => Some(TradeRequestType::UnmatchedTradesThatMatchCriteria),
+            "3" => Some(TradeRequestType::UnreportedTradesThatMatchCriteria),
+            "4" => Some(TradeRequestType::AdvisorysThatMatchCriteria),
+            _ => None,
+        }
+    }
+}
+
+/// TradeRequestResult (Tag 749)
+/// Result of Trade Capture Report Request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradeRequestResult {
+    Successful,                  // 0
+    InvalidOrUnknownInstrument,  // 1
+    InvalidTypeOfTradeRequested, // 2
+    InvalidParties,              // 3
+    InvalidTransportTypeRequested, // 4
+    InvalidDestinationRequested, // 5
+    TradeRequestTypeNotSupported, // 8
+    Unauthorized,                // 9
+    Other,                       // 99
+}
+
+impl TradeRequestResult {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TradeRequestResult::Successful => "0",
+            TradeRequestResult::InvalidOrUnknownInstrument => "1",
+            TradeRequestResult::InvalidTypeOfTradeRequested => "2",
+            TradeRequestResult::InvalidParties => "3",
+            TradeRequestResult::InvalidTransportTypeRequested => "4",
+            TradeRequestResult::InvalidDestinationRequested => "5",
+            TradeRequestResult::TradeRequestTypeNotSupported => "8",
+            TradeRequestResult::Unauthorized => "9",
+            TradeRequestResult::Other => "99",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(TradeRequestResult::Successful),
+            "1" => Some(TradeRequestResult::InvalidOrUnknownInstrument),
+            "2" => Some(TradeRequestResult::InvalidTypeOfTradeRequested),
+            "3" => Some(TradeRequestResult::InvalidParties),
+            "4" => Some(TradeRequestResult::InvalidTransportTypeRequested),
+            "5" => Some(TradeRequestResult::InvalidDestinationRequested),
+            "8" => Some(TradeRequestResult::TradeRequestTypeNotSupported),
+            "9" => Some(TradeRequestResult::Unauthorized),
+            "99" => Some(TradeRequestResult::Other),
+            _ => None,
+        }
+    }
+}
+
+/// TradeRequestStatus (Tag 750)
+/// Status of Trade Capture Report Request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradeRequestStatus {
+    Accepted,  // 0
+    Completed, // 1
+    Rejected,  // 2
+}
+
+impl TradeRequestStatus {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TradeRequestStatus::Accepted => "0",
+            TradeRequestStatus::Completed => "1",
+            TradeRequestStatus::Rejected => "2",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(TradeRequestStatus::Accepted),
+            "1" => Some(TradeRequestStatus::Completed),
+            "2" => Some(TradeRequestStatus::Rejected),
+            _ => None,
+        }
+    }
+}
+
+/// TradeReportType (Tag 856)
+/// Type of Trade Capture Report
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TradeReportType {
+    Submit,                      // 0
+    Alleged,                     // 1
+    Accept,                      // 2
+    Decline,                     // 3
+    Addendum,                    // 4
+    No,                          // 5
+    TradeReportCancel,           // 6
+    LockedIn,                    // 7
+    Defaulted,                   // 8
+    InvalidCMTA,                 // 9
+    Pended,                      // 10
+    AllegedNew,                  // 11
+    AllegedAddendum,             // 12
+    AllegedNo,                   // 13
+    AllegedTradeReportCancel,    // 14
+    AllegedTradeBreak,           // 15
+}
+
+impl TradeReportType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TradeReportType::Submit => "0",
+            TradeReportType::Alleged => "1",
+            TradeReportType::Accept => "2",
+            TradeReportType::Decline => "3",
+            TradeReportType::Addendum => "4",
+            TradeReportType::No => "5",
+            TradeReportType::TradeReportCancel => "6",
+            TradeReportType::LockedIn => "7",
+            TradeReportType::Defaulted => "8",
+            TradeReportType::InvalidCMTA => "9",
+            TradeReportType::Pended => "10",
+            TradeReportType::AllegedNew => "11",
+            TradeReportType::AllegedAddendum => "12",
+            TradeReportType::AllegedNo => "13",
+            TradeReportType::AllegedTradeReportCancel => "14",
+            TradeReportType::AllegedTradeBreak => "15",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(TradeReportType::Submit),
+            "1" => Some(TradeReportType::Alleged),
+            "2" => Some(TradeReportType::Accept),
+            "3" => Some(TradeReportType::Decline),
+            "4" => Some(TradeReportType::Addendum),
+            "5" => Some(TradeReportType::No),
+            "6" => Some(TradeReportType::TradeReportCancel),
+            "7" => Some(TradeReportType::LockedIn),
+            "8" => Some(TradeReportType::Defaulted),
+            "9" => Some(TradeReportType::InvalidCMTA),
+            "10" => Some(TradeReportType::Pended),
+            "11" => Some(TradeReportType::AllegedNew),
+            "12" => Some(TradeReportType::AllegedAddendum),
+            "13" => Some(TradeReportType::AllegedNo),
+            "14" => Some(TradeReportType::AllegedTradeReportCancel),
+            "15" => Some(TradeReportType::AllegedTradeBreak),
+            _ => None,
+        }
+    }
+}
+
+/// TrdType (Tag 828)
+/// Type of Trade
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TrdType {
+    RegularTrade,               // 0
+    BlockTrade,                 // 1
+    EFP,                        // 2 - Exchange for Physical
+    Transfer,                   // 3
+    LateTrade,                  // 4
+    TTrade,                     // 5
+    WeightedAveragePriceTrade,  // 6
+    BunchedTrade,               // 7
+    LateBunchedTrade,           // 8
+    PriorReferencePriceTrade,   // 9
+    AfterHoursTrade,            // 10
+}
+
+impl TrdType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TrdType::RegularTrade => "0",
+            TrdType::BlockTrade => "1",
+            TrdType::EFP => "2",
+            TrdType::Transfer => "3",
+            TrdType::LateTrade => "4",
+            TrdType::TTrade => "5",
+            TrdType::WeightedAveragePriceTrade => "6",
+            TrdType::BunchedTrade => "7",
+            TrdType::LateBunchedTrade => "8",
+            TrdType::PriorReferencePriceTrade => "9",
+            TrdType::AfterHoursTrade => "10",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(TrdType::RegularTrade),
+            "1" => Some(TrdType::BlockTrade),
+            "2" => Some(TrdType::EFP),
+            "3" => Some(TrdType::Transfer),
+            "4" => Some(TrdType::LateTrade),
+            "5" => Some(TrdType::TTrade),
+            "6" => Some(TrdType::WeightedAveragePriceTrade),
+            "7" => Some(TrdType::BunchedTrade),
+            "8" => Some(TrdType::LateBunchedTrade),
+            "9" => Some(TrdType::PriorReferencePriceTrade),
+            "10" => Some(TrdType::AfterHoursTrade),
+            _ => None,
+        }
+    }
+}
+
+/// TrdSubType (Tag 829)
+/// Sub-type of Trade
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum TrdSubType {
+    CMTA,                       // 0
+    InternalTransferOrAdjustment, // 1
+    ExternalTransferOrAdjustment, // 2
+    RejectForSubmittingTrade,   // 3
+    AdvisoryForContraSide,      // 4
+    OffsetDueToAnAllocation,    // 5
+    OnsetDueToAnAllocation,     // 6
+    DifferentialSpread,         // 7
+    ImpliedSpreadLegExecuted,   // 8
+    TransactionFromExercise,    // 9
+    TransactionFromAssignment,  // 10
+}
+
+impl TrdSubType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            TrdSubType::CMTA => "0",
+            TrdSubType::InternalTransferOrAdjustment => "1",
+            TrdSubType::ExternalTransferOrAdjustment => "2",
+            TrdSubType::RejectForSubmittingTrade => "3",
+            TrdSubType::AdvisoryForContraSide => "4",
+            TrdSubType::OffsetDueToAnAllocation => "5",
+            TrdSubType::OnsetDueToAnAllocation => "6",
+            TrdSubType::DifferentialSpread => "7",
+            TrdSubType::ImpliedSpreadLegExecuted => "8",
+            TrdSubType::TransactionFromExercise => "9",
+            TrdSubType::TransactionFromAssignment => "10",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(TrdSubType::CMTA),
+            "1" => Some(TrdSubType::InternalTransferOrAdjustment),
+            "2" => Some(TrdSubType::ExternalTransferOrAdjustment),
+            "3" => Some(TrdSubType::RejectForSubmittingTrade),
+            "4" => Some(TrdSubType::AdvisoryForContraSide),
+            "5" => Some(TrdSubType::OffsetDueToAnAllocation),
+            "6" => Some(TrdSubType::OnsetDueToAnAllocation),
+            "7" => Some(TrdSubType::DifferentialSpread),
+            "8" => Some(TrdSubType::ImpliedSpreadLegExecuted),
+            "9" => Some(TrdSubType::TransactionFromExercise),
+            "10" => Some(TrdSubType::TransactionFromAssignment),
+            _ => None,
+        }
+    }
+}
+
+/// MatchStatus (Tag 573)
+/// Status of trade matching
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MatchStatus {
+    Compared,                   // 0
+    Uncompared,                 // 1
+    AdvisoryOrAlert,            // 2
+}
+
+impl MatchStatus {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            MatchStatus::Compared => "0",
+            MatchStatus::Uncompared => "1",
+            MatchStatus::AdvisoryOrAlert => "2",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "0" => Some(MatchStatus::Compared),
+            "1" => Some(MatchStatus::Uncompared),
+            "2" => Some(MatchStatus::AdvisoryOrAlert),
+            _ => None,
+        }
+    }
+}
+
+/// MatchType (Tag 574)
+/// Type of match algorithm
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MatchType {
+    ExactMatchOnTradeDate,                      // M3
+    ExactMatchOnTradeDateTime,                  // M4
+    ExactMatchOnTradeDateTime1MinuteWindow,     // M5
+    ExactMatchOnTradeDateTime2MinuteWindow,     // M6
+    ACTAcceptedTrade,                           // A1
+    ACTDefaultTrade,                            // A2
+    ACTDefaultAfterM2,                          // A3
+    ACTAcceptedAfterM1,                         // A4
+    ACTAcceptedAfterM2,                         // A5
+}
+
+impl MatchType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            MatchType::ExactMatchOnTradeDate => "M3",
+            MatchType::ExactMatchOnTradeDateTime => "M4",
+            MatchType::ExactMatchOnTradeDateTime1MinuteWindow => "M5",
+            MatchType::ExactMatchOnTradeDateTime2MinuteWindow => "M6",
+            MatchType::ACTAcceptedTrade => "A1",
+            MatchType::ACTDefaultTrade => "A2",
+            MatchType::ACTDefaultAfterM2 => "A3",
+            MatchType::ACTAcceptedAfterM1 => "A4",
+            MatchType::ACTAcceptedAfterM2 => "A5",
+        }
+    }
+
+    pub fn from_fix(s: &str) -> Option<Self> {
+        match s {
+            "M3" => Some(MatchType::ExactMatchOnTradeDate),
+            "M4" => Some(MatchType::ExactMatchOnTradeDateTime),
+            "M5" => Some(MatchType::ExactMatchOnTradeDateTime1MinuteWindow),
+            "M6" => Some(MatchType::ExactMatchOnTradeDateTime2MinuteWindow),
+            "A1" => Some(MatchType::ACTAcceptedTrade),
+            "A2" => Some(MatchType::ACTDefaultTrade),
+            "A3" => Some(MatchType::ACTDefaultAfterM2),
+            "A4" => Some(MatchType::ACTAcceptedAfterM1),
+            "A5" => Some(MatchType::ACTAcceptedAfterM2),
+            _ => None,
+        }
+    }
+}
+
 
 // ============================================================================
 // Securities Reference Enum Tests

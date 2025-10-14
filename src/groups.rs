@@ -1931,6 +1931,70 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Post-Trade: Trade Capture Reporting Groups
+    // ========================================================================
+
+    // TrdCapRptSideGrp (Tag 552 = NoSides)
+    // Used in: TradeCaptureReport (AE), TradeMatchReport (DC)
+    // Contains side-specific information for each side of a trade
+    // Note: This is a different context than the SideCrossOrdModGrp that also uses tag 552
+    registry.insert(
+        GroupKey { num_in_group_tag: 552, msg_type: Some("AE".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 552, // NoSides
+            delimiter_tag: 54,     // Side
+            member_tags: vec![
+                54,   // Side - Required
+                37,   // OrderID
+                11,   // ClOrdID
+                526,  // SecondaryClOrdID
+                583,  // ClOrdLinkID
+                1,    // Account
+                660,  // AcctIDSource
+                581,  // AccountType
+                582,  // CustOrderCapacity
+                575,  // OrdType (for this side)
+                29,   // LastCapacity
+                381,  // GrossTradeAmt
+                118,  // NetMoney
+                119,  // SettlCurrAmt
+                120,  // SettlCurrency
+                155,  // SettlCurrFxRate
+                156,  // SettlCurrFxRateCalc
+                77,   // PositionEffect
+                58,   // Text
+                354,  // EncodedTextLen
+                355,  // EncodedText
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 453, // Parties (NoPartyIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same TrdCapRptSideGrp for TradeMatchReport (DC)
+    registry.insert(
+        GroupKey { num_in_group_tag: 552, msg_type: Some("DC".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 552,
+            delimiter_tag: 54,
+            member_tags: vec![
+                54, 37, 11, 526, 583, 1, 660, 581, 582, 575, 29, 381, 118, 119,
+                120, 155, 156, 77, 58, 354, 355,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 453,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
     registry
 });
 
@@ -2057,6 +2121,10 @@ pub fn is_nested_group(
 // Post-Trade: Trade Capture Reporting Groups
 // Reserved for TrdCapRptAckSideGrp, TrdInstrmtLegGrp, etc.
 // ============================================================================
+
+// Note: Trade Capture Reporting messages primarily use generic components
+// already defined above (Parties 453, etc.). Message-specific repeating groups
+// are registered in the GROUP_REGISTRY above.
 
 /// Get the full GroupConfig for a given repeating group (for testing purposes)
 #[cfg(test)]

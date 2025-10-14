@@ -4423,6 +4423,198 @@ mod position_maintenance_enum_tests {
 // Reserved for SettlInstSource, SettlInstTransType, SettlInstReqRejCode, etc.
 // ============================================================================
 
+/// SettlInstMode (Tag 160) - Settlement instruction mode
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlInstMode {
+    /// Standing Instructions Provided
+    StandingInstructionsProvided,
+    /// Specific Order for a single account (for CIV)
+    SpecificOrderForSingleAccount,
+    /// Request reject
+    RequestReject,
+}
+
+impl SettlInstMode {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SettlInstMode::StandingInstructionsProvided => '1',
+            SettlInstMode::SpecificOrderForSingleAccount => '4',
+            SettlInstMode::RequestReject => '5',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(SettlInstMode::StandingInstructionsProvided),
+            '4' => Some(SettlInstMode::SpecificOrderForSingleAccount),
+            '5' => Some(SettlInstMode::RequestReject),
+            _ => None,
+        }
+    }
+}
+
+/// SettlInstTransType (Tag 163) - Settlement instruction transaction type
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlInstTransType {
+    /// New
+    New,
+    /// Replace
+    Replace,
+    /// Cancel
+    Cancel,
+    /// Restate
+    Restate,
+}
+
+impl SettlInstTransType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SettlInstTransType::New => 'N',
+            SettlInstTransType::Replace => 'R',
+            SettlInstTransType::Cancel => 'C',
+            SettlInstTransType::Restate => 'T',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            'N' => Some(SettlInstTransType::New),
+            'R' => Some(SettlInstTransType::Replace),
+            'C' => Some(SettlInstTransType::Cancel),
+            'T' => Some(SettlInstTransType::Restate),
+            _ => None,
+        }
+    }
+}
+
+/// SettlInstSource (Tag 165) - Settlement instruction source
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlInstSource {
+    /// Broker's Instructions
+    BrokersInstructions,
+    /// Institution's Instructions
+    InstitutionsInstructions,
+    /// Investor (e.g. CIV use)
+    Investor,
+}
+
+impl SettlInstSource {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SettlInstSource::BrokersInstructions => '1',
+            SettlInstSource::InstitutionsInstructions => '2',
+            SettlInstSource::Investor => '3',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(SettlInstSource::BrokersInstructions),
+            '2' => Some(SettlInstSource::InstitutionsInstructions),
+            '3' => Some(SettlInstSource::Investor),
+            _ => None,
+        }
+    }
+}
+
+/// StandInstDbType (Tag 169) - Standing instruction database type
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum StandInstDbType {
+    /// Other
+    Other,
+    /// DTC SID
+    DtcSid,
+    /// Thomson ALERT
+    ThomsonAlert,
+    /// A Global Custodian
+    GlobalCustodian,
+    /// AccountNet
+    AccountNet,
+}
+
+impl StandInstDbType {
+    pub fn to_fix(&self) -> char {
+        match self {
+            StandInstDbType::Other => '0',
+            StandInstDbType::DtcSid => '1',
+            StandInstDbType::ThomsonAlert => '2',
+            StandInstDbType::GlobalCustodian => '3',
+            StandInstDbType::AccountNet => '4',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '0' => Some(StandInstDbType::Other),
+            '1' => Some(StandInstDbType::DtcSid),
+            '2' => Some(StandInstDbType::ThomsonAlert),
+            '3' => Some(StandInstDbType::GlobalCustodian),
+            '4' => Some(StandInstDbType::AccountNet),
+            _ => None,
+        }
+    }
+}
+
+/// SettlInstReqRejCode (Tag 792) - Settlement instruction request rejection reason code
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlInstReqRejCode {
+    /// Unable to process request
+    UnableToProcess,
+    /// Unknown account
+    UnknownAccount,
+    /// No matching settlement instructions found
+    NoMatchingInstructions,
+    /// Other
+    Other,
+}
+
+impl SettlInstReqRejCode {
+    pub fn to_fix(&self) -> &str {
+        match self {
+            SettlInstReqRejCode::UnableToProcess => "0",
+            SettlInstReqRejCode::UnknownAccount => "1",
+            SettlInstReqRejCode::NoMatchingInstructions => "2",
+            SettlInstReqRejCode::Other => "99",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Option<Self> {
+        match value {
+            "0" => Some(SettlInstReqRejCode::UnableToProcess),
+            "1" => Some(SettlInstReqRejCode::UnknownAccount),
+            "2" => Some(SettlInstReqRejCode::NoMatchingInstructions),
+            "99" => Some(SettlInstReqRejCode::Other),
+            _ => None,
+        }
+    }
+}
+
+/// SettlObligMode (Tag 1159) - Settlement obligation mode
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlObligMode {
+    /// Preliminary
+    Preliminary,
+    /// Final
+    Final,
+}
+
+impl SettlObligMode {
+    pub fn to_fix(&self) -> char {
+        match self {
+            SettlObligMode::Preliminary => '1',
+            SettlObligMode::Final => '2',
+        }
+    }
+
+    pub fn from_fix(c: char) -> Option<Self> {
+        match c {
+            '1' => Some(SettlObligMode::Preliminary),
+            '2' => Some(SettlObligMode::Final),
+            _ => None,
+        }
+    }
+}
+
 
 // ============================================================================
 // Post-Trade: Trade Capture Reporting Enums (Section 750)
@@ -4532,5 +4724,87 @@ mod securities_reference_tests {
         assert_eq!(HaltReason::from_fix('2'), Some(HaltReason::OrderImbalance));
         assert_eq!(HaltReason::from_fix('5'), Some(HaltReason::EquipmentChangeover));
         assert_eq!(HaltReason::from_fix('9'), None);
+    }
+
+    // ========================================================================
+    // Post-Trade: Settlement Instruction Enum Tests
+    // ========================================================================
+
+    #[test]
+    fn test_settl_inst_mode_conversions() {
+        assert_eq!(SettlInstMode::StandingInstructionsProvided.to_fix(), '1');
+        assert_eq!(SettlInstMode::SpecificOrderForSingleAccount.to_fix(), '4');
+        assert_eq!(SettlInstMode::RequestReject.to_fix(), '5');
+
+        assert_eq!(SettlInstMode::from_fix('1'), Some(SettlInstMode::StandingInstructionsProvided));
+        assert_eq!(SettlInstMode::from_fix('4'), Some(SettlInstMode::SpecificOrderForSingleAccount));
+        assert_eq!(SettlInstMode::from_fix('5'), Some(SettlInstMode::RequestReject));
+        assert_eq!(SettlInstMode::from_fix('0'), None);
+    }
+
+    #[test]
+    fn test_settl_inst_trans_type_conversions() {
+        assert_eq!(SettlInstTransType::New.to_fix(), 'N');
+        assert_eq!(SettlInstTransType::Replace.to_fix(), 'R');
+        assert_eq!(SettlInstTransType::Cancel.to_fix(), 'C');
+        assert_eq!(SettlInstTransType::Restate.to_fix(), 'T');
+
+        assert_eq!(SettlInstTransType::from_fix('N'), Some(SettlInstTransType::New));
+        assert_eq!(SettlInstTransType::from_fix('R'), Some(SettlInstTransType::Replace));
+        assert_eq!(SettlInstTransType::from_fix('C'), Some(SettlInstTransType::Cancel));
+        assert_eq!(SettlInstTransType::from_fix('T'), Some(SettlInstTransType::Restate));
+        assert_eq!(SettlInstTransType::from_fix('X'), None);
+    }
+
+    #[test]
+    fn test_settl_inst_source_conversions() {
+        assert_eq!(SettlInstSource::BrokersInstructions.to_fix(), '1');
+        assert_eq!(SettlInstSource::InstitutionsInstructions.to_fix(), '2');
+        assert_eq!(SettlInstSource::Investor.to_fix(), '3');
+
+        assert_eq!(SettlInstSource::from_fix('1'), Some(SettlInstSource::BrokersInstructions));
+        assert_eq!(SettlInstSource::from_fix('2'), Some(SettlInstSource::InstitutionsInstructions));
+        assert_eq!(SettlInstSource::from_fix('3'), Some(SettlInstSource::Investor));
+        assert_eq!(SettlInstSource::from_fix('0'), None);
+    }
+
+    #[test]
+    fn test_stand_inst_db_type_conversions() {
+        assert_eq!(StandInstDbType::Other.to_fix(), '0');
+        assert_eq!(StandInstDbType::DtcSid.to_fix(), '1');
+        assert_eq!(StandInstDbType::ThomsonAlert.to_fix(), '2');
+        assert_eq!(StandInstDbType::GlobalCustodian.to_fix(), '3');
+        assert_eq!(StandInstDbType::AccountNet.to_fix(), '4');
+
+        assert_eq!(StandInstDbType::from_fix('0'), Some(StandInstDbType::Other));
+        assert_eq!(StandInstDbType::from_fix('1'), Some(StandInstDbType::DtcSid));
+        assert_eq!(StandInstDbType::from_fix('2'), Some(StandInstDbType::ThomsonAlert));
+        assert_eq!(StandInstDbType::from_fix('3'), Some(StandInstDbType::GlobalCustodian));
+        assert_eq!(StandInstDbType::from_fix('4'), Some(StandInstDbType::AccountNet));
+        assert_eq!(StandInstDbType::from_fix('9'), None);
+    }
+
+    #[test]
+    fn test_settl_inst_req_rej_code_conversions() {
+        assert_eq!(SettlInstReqRejCode::UnableToProcess.to_fix(), "0");
+        assert_eq!(SettlInstReqRejCode::UnknownAccount.to_fix(), "1");
+        assert_eq!(SettlInstReqRejCode::NoMatchingInstructions.to_fix(), "2");
+        assert_eq!(SettlInstReqRejCode::Other.to_fix(), "99");
+
+        assert_eq!(SettlInstReqRejCode::from_fix("0"), Some(SettlInstReqRejCode::UnableToProcess));
+        assert_eq!(SettlInstReqRejCode::from_fix("1"), Some(SettlInstReqRejCode::UnknownAccount));
+        assert_eq!(SettlInstReqRejCode::from_fix("2"), Some(SettlInstReqRejCode::NoMatchingInstructions));
+        assert_eq!(SettlInstReqRejCode::from_fix("99"), Some(SettlInstReqRejCode::Other));
+        assert_eq!(SettlInstReqRejCode::from_fix("100"), None);
+    }
+
+    #[test]
+    fn test_settl_oblig_mode_conversions() {
+        assert_eq!(SettlObligMode::Preliminary.to_fix(), '1');
+        assert_eq!(SettlObligMode::Final.to_fix(), '2');
+
+        assert_eq!(SettlObligMode::from_fix('1'), Some(SettlObligMode::Preliminary));
+        assert_eq!(SettlObligMode::from_fix('2'), Some(SettlObligMode::Final));
+        assert_eq!(SettlObligMode::from_fix('0'), None);
     }
 }

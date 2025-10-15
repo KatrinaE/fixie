@@ -1470,6 +1470,234 @@ pub static GROUP_REGISTRY: LazyLock<HashMap<GroupKey, GroupConfig>> = LazyLock::
         },
     );
 
+    // ========================================================================
+    // Post-Trade: Allocation Groups
+    // ========================================================================
+
+    // OrdAllocGrp (Tag 73 = NoOrders) - for Allocation messages
+    // Used in: AllocationInstruction (J), AllocationInstructionAlert (BM), AllocationReport (AS)
+    registry.insert(
+        GroupKey { num_in_group_tag: 73, msg_type: Some("J".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 73, // NoOrders
+            delimiter_tag: 11,    // ClOrdID
+            member_tags: vec![
+                11,   // ClOrdID
+                37,   // OrderID
+                198,  // SecondaryOrderID
+                526,  // SecondaryClOrdID
+                66,   // ListID
+                38,   // OrderQty
+                799,  // OrderAvgPx
+                800,  // OrderBookingQty
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539, // NestedParties2 (NoNested2PartyIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same OrdAllocGrp for AllocationInstructionAlert (BM)
+    registry.insert(
+        GroupKey { num_in_group_tag: 73, msg_type: Some("BM".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 73,
+            delimiter_tag: 11,
+            member_tags: vec![
+                11, 37, 198, 526, 66, 38, 799, 800,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same OrdAllocGrp for AllocationReport (AS)
+    registry.insert(
+        GroupKey { num_in_group_tag: 73, msg_type: Some("AS".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 73,
+            delimiter_tag: 11,
+            member_tags: vec![
+                11, 37, 198, 526, 66, 38, 799, 800,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // ExecAllocGrp (Tag 124 = NoExecs)
+    // Used in: AllocationInstruction (J), AllocationInstructionAlert (BM), AllocationReport (AS)
+    registry.insert(
+        GroupKey { num_in_group_tag: 124, msg_type: Some("J".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 124, // NoExecs
+            delimiter_tag: 32,     // LastQty
+            member_tags: vec![
+                32,   // LastQty
+                17,   // ExecID
+                527,  // SecondaryExecID
+                31,   // LastPx
+                669,  // LastParPx
+                29,   // LastCapacity
+                1003, // TradeID
+                1041, // FirmTradeID
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // Same ExecAllocGrp for AllocationInstructionAlert (BM)
+    registry.insert(
+        GroupKey { num_in_group_tag: 124, msg_type: Some("BM".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 124,
+            delimiter_tag: 32,
+            member_tags: vec![
+                32, 17, 527, 31, 669, 29, 1003, 1041,
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // Same ExecAllocGrp for AllocationReport (AS)
+    registry.insert(
+        GroupKey { num_in_group_tag: 124, msg_type: Some("AS".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 124,
+            delimiter_tag: 32,
+            member_tags: vec![
+                32, 17, 527, 31, 669, 29, 1003, 1041,
+            ],
+            nested_groups: vec![],
+        },
+    );
+
+    // AllocGrp (Tag 78 = NoAllocs) - for Allocation messages
+    // Used in: AllocationInstruction (J), AllocationInstructionAlert (BM), AllocationReport (AS)
+    // Note: This is different from PreAllocGrp (also tag 78 but generic)
+    registry.insert(
+        GroupKey { num_in_group_tag: 78, msg_type: Some("J".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 78, // NoAllocs
+            delimiter_tag: 79,    // AllocAccount
+            member_tags: vec![
+                79,   // AllocAccount
+                661,  // AllocAcctIDSource
+                573,  // MatchStatus
+                366,  // AllocPrice
+                80,   // AllocQty
+                2515, // AllocCalculatedCcyQty
+                1752, // CustodialLotID
+                1753, // VersusPurchaseDate
+                1754, // VersusPurchasePrice
+                1755, // CurrentCostBasis
+                467,  // IndividualAllocID
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539, // NestedParties (NoNestedPartyIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same AllocGrp for AllocationInstructionAlert (BM)
+    registry.insert(
+        GroupKey { num_in_group_tag: 78, msg_type: Some("BM".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 78,
+            delimiter_tag: 79,
+            member_tags: vec![
+                79, 661, 573, 366, 80, 2515, 1752, 1753, 1754, 1755, 467,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same AllocGrp for AllocationReport (AS)
+    registry.insert(
+        GroupKey { num_in_group_tag: 78, msg_type: Some("AS".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 78,
+            delimiter_tag: 79,
+            member_tags: vec![
+                79, 661, 573, 366, 80, 2515, 1752, 1753, 1754, 1755, 467,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // AllocAckGrp (Tag 78 = NoAllocs) - for Allocation acknowledgment messages
+    // Used in: AllocationInstructionAck (P), AllocationReportAck (AT)
+    registry.insert(
+        GroupKey { num_in_group_tag: 78, msg_type: Some("P".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 78, // NoAllocs
+            delimiter_tag: 79,    // AllocAccount
+            member_tags: vec![
+                79,   // AllocAccount
+                661,  // AllocAcctIDSource
+                366,  // AllocPrice
+                467,  // IndividualAllocID
+                776,  // IndividualAllocRejCode
+                161,  // AllocText
+                360,  // EncodedAllocTextLen
+                361,  // EncodedAllocText
+                989,  // SecondaryIndividualAllocID
+                993,  // AllocCustomerCapacity
+                992,  // IndividualAllocType
+                80,   // AllocQty
+                1047, // AllocPositionEffect
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539, // NestedParties (NoNestedPartyIDs)
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
+    // Same AllocAckGrp for AllocationReportAck (AT)
+    registry.insert(
+        GroupKey { num_in_group_tag: 78, msg_type: Some("AT".to_string()) },
+        GroupConfig {
+            num_in_group_tag: 78,
+            delimiter_tag: 79,
+            member_tags: vec![
+                79, 661, 366, 467, 776, 161, 360, 361, 989, 993, 992, 80, 1047,
+            ],
+            nested_groups: vec![
+                NestedGroupInfo {
+                    num_in_group_tag: 539,
+                    parent_tag: None,
+                },
+            ],
+        },
+    );
+
     registry
 });
 

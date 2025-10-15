@@ -3189,6 +3189,458 @@ impl HaltReason {
 // Reserved for AllocType, AllocTransType, AllocStatus, AllocRejCode, etc.
 // ============================================================================
 
+/// AllocTransType (Tag 71) - Identifies allocation transaction type
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocTransType {
+    New,                              // 0
+    Replace,                          // 1
+    Cancel,                           // 2
+    Preliminary,                      // 3 - Deprecated
+    Calculated,                       // 4 - Deprecated
+    CalculatedWithoutPreliminary,     // 5 - Deprecated
+    Reversal,                         // 6
+}
+
+impl AllocTransType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::New => "0",
+            Self::Replace => "1",
+            Self::Cancel => "2",
+            Self::Preliminary => "3",
+            Self::Calculated => "4",
+            Self::CalculatedWithoutPreliminary => "5",
+            Self::Reversal => "6",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::New),
+            "1" => Ok(Self::Replace),
+            "2" => Ok(Self::Cancel),
+            "3" => Ok(Self::Preliminary),
+            "4" => Ok(Self::Calculated),
+            "5" => Ok(Self::CalculatedWithoutPreliminary),
+            "6" => Ok(Self::Reversal),
+            _ => Err(format!("Invalid AllocTransType: {}", value)),
+        }
+    }
+}
+
+/// AllocType (Tag 626) - Purpose of allocation message
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocType {
+    Calculated,                                  // 1
+    Preliminary,                                 // 2
+    SellsideCalculatedUsingPreliminary,         // 3 - Deprecated
+    SellsideCalculatedWithoutPreliminary,       // 4 - Deprecated
+    ReadyToBookSingleOrder,                     // 5
+    BuysideReadyToBookCombinedSetOfOrders,      // 6 - Deprecated
+    WarehouseInstruction,                        // 7
+    RequestToIntermediary,                       // 8
+    Accept,                                      // 9
+    Reject,                                      // 10
+    AcceptPending,                               // 11
+    IncompleteGroup,                             // 12
+    CompleteGroup,                               // 13
+    ReversalPending,                             // 14
+}
+
+impl AllocType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::Calculated => "1",
+            Self::Preliminary => "2",
+            Self::SellsideCalculatedUsingPreliminary => "3",
+            Self::SellsideCalculatedWithoutPreliminary => "4",
+            Self::ReadyToBookSingleOrder => "5",
+            Self::BuysideReadyToBookCombinedSetOfOrders => "6",
+            Self::WarehouseInstruction => "7",
+            Self::RequestToIntermediary => "8",
+            Self::Accept => "9",
+            Self::Reject => "10",
+            Self::AcceptPending => "11",
+            Self::IncompleteGroup => "12",
+            Self::CompleteGroup => "13",
+            Self::ReversalPending => "14",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "1" => Ok(Self::Calculated),
+            "2" => Ok(Self::Preliminary),
+            "3" => Ok(Self::SellsideCalculatedUsingPreliminary),
+            "4" => Ok(Self::SellsideCalculatedWithoutPreliminary),
+            "5" => Ok(Self::ReadyToBookSingleOrder),
+            "6" => Ok(Self::BuysideReadyToBookCombinedSetOfOrders),
+            "7" => Ok(Self::WarehouseInstruction),
+            "8" => Ok(Self::RequestToIntermediary),
+            "9" => Ok(Self::Accept),
+            "10" => Ok(Self::Reject),
+            "11" => Ok(Self::AcceptPending),
+            "12" => Ok(Self::IncompleteGroup),
+            "13" => Ok(Self::CompleteGroup),
+            "14" => Ok(Self::ReversalPending),
+            _ => Err(format!("Invalid AllocType: {}", value)),
+        }
+    }
+}
+
+/// AllocStatus (Tag 87) - Status of allocation
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocStatus {
+    Accepted,                // 0
+    BlockLevelReject,        // 1
+    AccountLevelReject,      // 2
+    Received,                // 3
+    Incomplete,              // 4
+    RejectedByIntermediary,  // 5
+    AllocationPending,       // 6
+    Reversed,                // 7
+}
+
+impl AllocStatus {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::Accepted => "0",
+            Self::BlockLevelReject => "1",
+            Self::AccountLevelReject => "2",
+            Self::Received => "3",
+            Self::Incomplete => "4",
+            Self::RejectedByIntermediary => "5",
+            Self::AllocationPending => "6",
+            Self::Reversed => "7",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::Accepted),
+            "1" => Ok(Self::BlockLevelReject),
+            "2" => Ok(Self::AccountLevelReject),
+            "3" => Ok(Self::Received),
+            "4" => Ok(Self::Incomplete),
+            "5" => Ok(Self::RejectedByIntermediary),
+            "6" => Ok(Self::AllocationPending),
+            "7" => Ok(Self::Reversed),
+            _ => Err(format!("Invalid AllocStatus: {}", value)),
+        }
+    }
+}
+
+/// AllocRejCode (Tag 88) - Reason for rejection of allocation
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocRejCode {
+    UnknownAccount,                  // 0
+    IncorrectQuantity,               // 1
+    IncorrectAveragegPrice,          // 2
+    UnknownExecutingBrokerMnemonic,  // 3
+    CommissionDifference,            // 4
+    UnknownOrderID,                  // 5
+    UnknownListID,                   // 6
+    Other,                           // 7
+    IncorrectAllocatedQuantity,      // 8
+    CalculationDifference,           // 9
+    UnknownOrStaleExecID,            // 10
+    MismatchedData,                  // 11
+    UnknownClOrdID,                  // 12
+    WarehouseRequestRejected,        // 13
+    OtherExtended,                   // 99
+}
+
+impl AllocRejCode {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::UnknownAccount => "0",
+            Self::IncorrectQuantity => "1",
+            Self::IncorrectAveragegPrice => "2",
+            Self::UnknownExecutingBrokerMnemonic => "3",
+            Self::CommissionDifference => "4",
+            Self::UnknownOrderID => "5",
+            Self::UnknownListID => "6",
+            Self::Other => "7",
+            Self::IncorrectAllocatedQuantity => "8",
+            Self::CalculationDifference => "9",
+            Self::UnknownOrStaleExecID => "10",
+            Self::MismatchedData => "11",
+            Self::UnknownClOrdID => "12",
+            Self::WarehouseRequestRejected => "13",
+            Self::OtherExtended => "99",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::UnknownAccount),
+            "1" => Ok(Self::IncorrectQuantity),
+            "2" => Ok(Self::IncorrectAveragegPrice),
+            "3" => Ok(Self::UnknownExecutingBrokerMnemonic),
+            "4" => Ok(Self::CommissionDifference),
+            "5" => Ok(Self::UnknownOrderID),
+            "6" => Ok(Self::UnknownListID),
+            "7" => Ok(Self::Other),
+            "8" => Ok(Self::IncorrectAllocatedQuantity),
+            "9" => Ok(Self::CalculationDifference),
+            "10" => Ok(Self::UnknownOrStaleExecID),
+            "11" => Ok(Self::MismatchedData),
+            "12" => Ok(Self::UnknownClOrdID),
+            "13" => Ok(Self::WarehouseRequestRejected),
+            "99" => Ok(Self::OtherExtended),
+            _ => Err(format!("Invalid AllocRejCode: {}", value)),
+        }
+    }
+}
+
+/// AllocCancReplaceReason (Tag 796) - Reason for cancellation or replacement
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocCancReplaceReason {
+    OriginalDetailsIncorrect,    // 1
+    ChangeInUnderlyingOrderDetails, // 2
+    Other,                       // 99
+}
+
+impl AllocCancReplaceReason {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::OriginalDetailsIncorrect => "1",
+            Self::ChangeInUnderlyingOrderDetails => "2",
+            Self::Other => "99",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "1" => Ok(Self::OriginalDetailsIncorrect),
+            "2" => Ok(Self::ChangeInUnderlyingOrderDetails),
+            "99" => Ok(Self::Other),
+            _ => Err(format!("Invalid AllocCancReplaceReason: {}", value)),
+        }
+    }
+}
+
+/// AllocIntermedReqType (Tag 808) - Type of intermediary request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocIntermedReqType {
+    PendingAccept,           // 1
+    PendingRelease,          // 2
+    PendingReversal,         // 3
+    Accept,                  // 4
+    BlockLevelReject,        // 5
+    AccountLevelReject,      // 6
+}
+
+impl AllocIntermedReqType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::PendingAccept => "1",
+            Self::PendingRelease => "2",
+            Self::PendingReversal => "3",
+            Self::Accept => "4",
+            Self::BlockLevelReject => "5",
+            Self::AccountLevelReject => "6",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "1" => Ok(Self::PendingAccept),
+            "2" => Ok(Self::PendingRelease),
+            "3" => Ok(Self::PendingReversal),
+            "4" => Ok(Self::Accept),
+            "5" => Ok(Self::BlockLevelReject),
+            "6" => Ok(Self::AccountLevelReject),
+            _ => Err(format!("Invalid AllocIntermedReqType: {}", value)),
+        }
+    }
+}
+
+/// AllocReportType (Tag 794) - Type of allocation report
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocReportType {
+    PreliminaryRequestToIntermediary,          // 2
+    SellsideCalculatedUsingPreliminary,        // 3
+    SellsideCalculatedWithoutPreliminary,      // 4
+    WarehouseRecap,                            // 5
+    RequestToIntermediary,                     // 8
+    Accept,                                    // 9
+    Reject,                                    // 10
+    AcceptPending,                             // 11
+    Complete,                                  // 12
+    ReversePending,                            // 14
+}
+
+impl AllocReportType {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::PreliminaryRequestToIntermediary => "2",
+            Self::SellsideCalculatedUsingPreliminary => "3",
+            Self::SellsideCalculatedWithoutPreliminary => "4",
+            Self::WarehouseRecap => "5",
+            Self::RequestToIntermediary => "8",
+            Self::Accept => "9",
+            Self::Reject => "10",
+            Self::AcceptPending => "11",
+            Self::Complete => "12",
+            Self::ReversePending => "14",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "2" => Ok(Self::PreliminaryRequestToIntermediary),
+            "3" => Ok(Self::SellsideCalculatedUsingPreliminary),
+            "4" => Ok(Self::SellsideCalculatedWithoutPreliminary),
+            "5" => Ok(Self::WarehouseRecap),
+            "8" => Ok(Self::RequestToIntermediary),
+            "9" => Ok(Self::Accept),
+            "10" => Ok(Self::Reject),
+            "11" => Ok(Self::AcceptPending),
+            "12" => Ok(Self::Complete),
+            "14" => Ok(Self::ReversePending),
+            _ => Err(format!("Invalid AllocReportType: {}", value)),
+        }
+    }
+}
+
+/// AvgPxIndicator (Tag 819) - Average pricing indicator
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AvgPxIndicator {
+    NoAveragePricing,                  // 0
+    TradeIsPartOfAveragePriceGroup,    // 1
+    LastTradeIsAveragePriceGroup,      // 2
+}
+
+impl AvgPxIndicator {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::NoAveragePricing => "0",
+            Self::TradeIsPartOfAveragePriceGroup => "1",
+            Self::LastTradeIsAveragePriceGroup => "2",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::NoAveragePricing),
+            "1" => Ok(Self::TradeIsPartOfAveragePriceGroup),
+            "2" => Ok(Self::LastTradeIsAveragePriceGroup),
+            _ => Err(format!("Invalid AvgPxIndicator: {}", value)),
+        }
+    }
+}
+
+/// AllocRequestStatus (Tag 2768) - Status of allocation instruction alert request
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AllocRequestStatus {
+    Accepted,    // 0
+    Rejected,    // 1
+}
+
+impl AllocRequestStatus {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::Accepted => "0",
+            Self::Rejected => "1",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::Accepted),
+            "1" => Ok(Self::Rejected),
+            _ => Err(format!("Invalid AllocRequestStatus: {}", value)),
+        }
+    }
+}
+
+/// MatchStatus (Tag 573) - Status of match
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MatchStatus {
+    ComparedMatchedOrAffirmed,           // 0
+    UncomparedUnmatchedOrUnaffirmed,     // 1
+    AdvisoryOrAlert,                     // 2
+}
+
+impl MatchStatus {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::ComparedMatchedOrAffirmed => "0",
+            Self::UncomparedUnmatchedOrUnaffirmed => "1",
+            Self::AdvisoryOrAlert => "2",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::ComparedMatchedOrAffirmed),
+            "1" => Ok(Self::UncomparedUnmatchedOrUnaffirmed),
+            "2" => Ok(Self::AdvisoryOrAlert),
+            _ => Err(format!("Invalid MatchStatus: {}", value)),
+        }
+    }
+}
+
+/// IndividualAllocRejCode (Tag 776) - Reason for rejection at individual allocation level
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IndividualAllocRejCode {
+    UnknownAccount,                  // 0
+    IncorrectQuantity,               // 1
+    IncorrectAveragePrice,           // 2
+    UnknownExecutingBrokerMnemonic,  // 3
+    CommissionDifference,            // 4
+    UnknownOrderID,                  // 5
+    UnknownListID,                   // 6
+    Other,                           // 7
+    IncorrectAllocatedQuantity,      // 8
+    CalculationDifference,           // 9
+    UnknownOrStaleExecID,            // 10
+    MismatchedData,                  // 11
+    UnknownClOrdID,                  // 12
+    WarehouseRequestRejected,        // 13
+}
+
+impl IndividualAllocRejCode {
+    pub fn to_fix(&self) -> &'static str {
+        match self {
+            Self::UnknownAccount => "0",
+            Self::IncorrectQuantity => "1",
+            Self::IncorrectAveragePrice => "2",
+            Self::UnknownExecutingBrokerMnemonic => "3",
+            Self::CommissionDifference => "4",
+            Self::UnknownOrderID => "5",
+            Self::UnknownListID => "6",
+            Self::Other => "7",
+            Self::IncorrectAllocatedQuantity => "8",
+            Self::CalculationDifference => "9",
+            Self::UnknownOrStaleExecID => "10",
+            Self::MismatchedData => "11",
+            Self::UnknownClOrdID => "12",
+            Self::WarehouseRequestRejected => "13",
+        }
+    }
+
+    pub fn from_fix(value: &str) -> Result<Self, String> {
+        match value {
+            "0" => Ok(Self::UnknownAccount),
+            "1" => Ok(Self::IncorrectQuantity),
+            "2" => Ok(Self::IncorrectAveragePrice),
+            "3" => Ok(Self::UnknownExecutingBrokerMnemonic),
+            "4" => Ok(Self::CommissionDifference),
+            "5" => Ok(Self::UnknownOrderID),
+            "6" => Ok(Self::UnknownListID),
+            "7" => Ok(Self::Other),
+            "8" => Ok(Self::IncorrectAllocatedQuantity),
+            "9" => Ok(Self::CalculationDifference),
+            "10" => Ok(Self::UnknownOrStaleExecID),
+            "11" => Ok(Self::MismatchedData),
+            "12" => Ok(Self::UnknownClOrdID),
+            "13" => Ok(Self::WarehouseRequestRejected),
+            _ => Err(format!("Invalid IndividualAllocRejCode: {}", value)),
+        }
+    }
+}
 
 // ============================================================================
 // Post-Trade: Confirmation Enums (Section 730)

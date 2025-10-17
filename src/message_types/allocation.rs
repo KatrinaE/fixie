@@ -1112,15 +1112,15 @@ mod tests {
     fn test_allocation_instruction_ack_with_optional_fields() {
         let msg = AllocationInstructionAck::new(
             "ALLOC123".to_string(),
-            AllocStatus::Rejected,
+            AllocStatus::BlockLevelReject,
         )
         .with_alloc_rej_code(AllocRejCode::UnknownAccount)
-        .with_match_status(MatchStatus::Uncompared)
+        .with_match_status(MatchStatus::UncomparedUnmatchedOrUnaffirmed)
         .with_trade_date("20231015".to_string())
         .with_text("Invalid account".to_string());
 
         assert_eq!(msg.alloc_rej_code, Some(AllocRejCode::UnknownAccount));
-        assert_eq!(msg.match_status, Some(MatchStatus::Uncompared));
+        assert_eq!(msg.match_status, Some(MatchStatus::UncomparedUnmatchedOrUnaffirmed));
         assert_eq!(msg.trade_date, Some("20231015".to_string()));
         assert_eq!(msg.text, Some("Invalid account".to_string()));
     }
@@ -1304,13 +1304,13 @@ mod tests {
             .with_alloc_id("ALLOC123".to_string())
             .with_alloc_status(AllocStatus::Accepted)
             .with_alloc_report_type(AllocReportType::Complete)
-            .with_match_status(MatchStatus::Compared)
+            .with_match_status(MatchStatus::ComparedMatchedOrAffirmed)
             .with_text("Acknowledged".to_string());
 
         assert_eq!(msg.alloc_id, Some("ALLOC123".to_string()));
         assert_eq!(msg.alloc_status, Some(AllocStatus::Accepted));
         assert_eq!(msg.alloc_report_type, Some(AllocReportType::Complete));
-        assert_eq!(msg.match_status, Some(MatchStatus::Compared));
+        assert_eq!(msg.match_status, Some(MatchStatus::ComparedMatchedOrAffirmed));
         assert_eq!(msg.text, Some("Acknowledged".to_string()));
     }
 
@@ -1346,14 +1346,14 @@ mod tests {
     fn test_alloc_entry_builder() {
         let entry = AllocEntry::new("ACCT001".to_string(), 300.0)
             .with_alloc_acct_id_source(1)
-            .with_match_status(MatchStatus::Compared)
+            .with_match_status(MatchStatus::ComparedMatchedOrAffirmed)
             .with_alloc_price(150.25)
             .with_individual_alloc_id("IND123".to_string());
 
         assert_eq!(entry.alloc_account, "ACCT001");
         assert_eq!(entry.alloc_qty, 300.0);
         assert_eq!(entry.alloc_acct_id_source, Some(1));
-        assert_eq!(entry.match_status, Some(MatchStatus::Compared));
+        assert_eq!(entry.match_status, Some(MatchStatus::ComparedMatchedOrAffirmed));
         assert_eq!(entry.alloc_price, Some(150.25));
         assert_eq!(entry.individual_alloc_id, Some("IND123".to_string()));
     }

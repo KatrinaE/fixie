@@ -9,8 +9,8 @@ It is in **pre-release** stage. It is not production ready.
 
 Currently, Fixie supports FIX 5.0 [infrastructure](https://www.fixtrading.org/online-specification/business-area-infrastructure/),
 [pre-trade](https://www.fixtrading.org/online-specification/business-area-pretrade/),
-and [trade](https://www.fixtrading.org/online-specification/business-area-trade/)
-messages. It does not yet support [post-trade](https://www.fixtrading.org/online-specification/business-area-posttrade/)  messages.
+[trade](https://www.fixtrading.org/online-specification/business-area-trade/),
+and [post-trade](https://www.fixtrading.org/online-specification/business-area-posttrade/) messages.
 
 ## Usage
 
@@ -313,6 +313,98 @@ pub fn main() {
 - UserRequest (BE)
 - UserResponse (BF)
 - UserNotification (CB)
+
+### Pre-Trade Indication Messages
+- Advertisement (7)
+- CrossRequest (DS)
+- CrossRequestAck (DT)
+- IOI (6)
+
+### Pre-Trade Event Communication Messages
+- Email (C)
+- News (B)
+
+### Pre-Trade Quotation Messages
+- MassQuote (i)
+- MassQuoteAcknowledgement (b)
+- Quote (S)
+- QuoteAcknowledgment (CW)
+- QuoteCancel (Z)
+- QuoteRequest (R)
+- QuoteRequestReject (AG)
+- QuoteResponse (AJ)
+- QuoteStatusReport (AI)
+- QuoteStatusRequest (a)
+- RFQRequest (AH)
+
+### Pre-Trade Market Structure Messages
+- MarketDefinition (BU)
+- MarketDefinitionRequest (BT)
+- MarketDefinitionUpdateReport (BV)
+- TradingSessionList (BJ)
+- TradingSessionListRequest (BI)
+- TradingSessionListUpdateReport (BS)
+- TradingSessionStatus (h)
+- TradingSessionStatusRequest (g)
+
+### Pre-Trade Securities Reference Messages
+- DerivativeSecurityList (AA)
+- DerivativeSecurityListRequest (z)
+- SecurityDefinition (d)
+- SecurityDefinitionRequest (c)
+- SecurityDefinitionUpdateReport (BP)
+- SecurityList (y)
+- SecurityListRequest (x)
+- SecurityListUpdateReport (BK)
+- SecurityMassStatus (CO)
+- SecurityMassStatusRequest (CN)
+- SecurityStatus (f)
+- SecurityStatusRequest (e)
+- SecurityTypeRequest (v)
+- SecurityTypes (w)
+
+### Post-Trade Account Reporting
+- AccountSummaryReport (CQ)
+
+### Post-Trade Position Maintenance
+- AdjustedPositionReport (BL)
+- AssignmentReport (AW)
+- ContraryIntentionReport (BO)
+- PositionMaintenanceReport (AM)
+- PositionMaintenanceRequest (AL)
+- PositionReport (AP)
+- PositionTransferInstruction (DL)
+- PositionTransferInstructionAck (DM)
+- PositionTransferReport (DN)
+- RequestForPositions (AN)
+- RequestForPositionsAck (AO)
+
+### Post-Trade Allocation
+- AllocationInstruction (J)
+- AllocationInstructionAck (P)
+- AllocationInstructionAlert (BM)
+- AllocationInstructionAlertRequest (DU)
+- AllocationInstructionAlertRequestAck (DV)
+- AllocationReport (AS)
+- AllocationReportAck (AT)
+
+### Post-Trade Confirmation
+- Confirmation (AK)
+- ConfirmationAck (AU)
+- ConfirmationRequest (BH)
+
+### Post-Trade Settlement Instruction
+- SettlementInstructionRequest (AV)
+- SettlementInstructions (T)
+- SettlementObligationReport (BQ)
+
+### Post-Trade Trade Capture Reporting
+- TradeCaptureReport (AE)
+- TradeCaptureReportAck (AR)
+- TradeCaptureReportRequest (AD)
+- TradeCaptureReportRequestAck (AQ)
+- TradeMatchReport (DC)
+- TradeMatchReportAck (DD)
 
 ## Features
 

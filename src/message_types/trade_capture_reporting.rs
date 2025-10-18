@@ -330,7 +330,7 @@ impl TradeCaptureReport {
         let settl_date = raw.get_field(64).map(|s| s.to_string());
 
         let match_status = raw.get_field(573)
-            .and_then(|s| MatchStatus::from_fix(s));
+            .and_then(|s| MatchStatus::from_fix(s).ok());
 
         let match_type = raw.get_field(574)
             .and_then(|s| MatchType::from_fix(s));
@@ -1038,10 +1038,10 @@ impl TradeMatchReport {
         let match_status_str = raw.get_field(573)
             .ok_or(FixParseError::MissingRequiredField(573))?;
         let match_status = MatchStatus::from_fix(match_status_str)
-            .ok_or(FixParseError::InvalidValue {
+            .map_err(|e| FixParseError::InvalidValue {
                 tag: 573,
                 value: match_status_str.to_string(),
-                error: "Invalid MatchStatus".to_string(),
+                error: e,
             })?;
 
         let symbol = raw.get_field(55)
@@ -1244,7 +1244,7 @@ impl TradeMatchReportAck {
         let trade_report_reject_reason = raw.get_field_as(751);
 
         let match_status = raw.get_field(573)
-            .and_then(|s| MatchStatus::from_fix(s));
+            .and_then(|s| MatchStatus::from_fix(s).ok());
 
         let text = raw.get_field(58).map(|s| s.to_string());
 
@@ -1282,7 +1282,7 @@ mod tests {
         )
         .with_trade_report_type(TradeReportType::Submit)
         .with_trd_type(TrdType::RegularTrade)
-        .with_match_status(MatchStatus::Compared);
+        .with_match_status(MatchStatus::ComparedMatchedOrAffirmed);
 
         assert_eq!(report.trade_report_id, "TCR001");
         assert_eq!(report.symbol, "AAPL");
@@ -1290,7 +1290,7 @@ mod tests {
         assert_eq!(report.last_px, 150.50);
         assert_eq!(report.trade_report_type, Some(TradeReportType::Submit));
         assert_eq!(report.trd_type, Some(TrdType::RegularTrade));
-        assert_eq!(report.match_status, Some(MatchStatus::Compared));
+        assert_eq!(report.match_status, Some(MatchStatus::ComparedMatchedOrAffirmed));
     }
 
     #[test]
@@ -1436,7 +1436,7 @@ mod tests {
         let now = Utc::now();
         let report = TradeMatchReport::new(
             "TMR001".to_string(),
-            MatchStatus::Compared,
+            MatchStatus::ComparedMatchedOrAffirmed,
             "NFLX".to_string(),
             50.0,
             400.25,
@@ -1446,7 +1446,7 @@ mod tests {
         .with_trd_type(TrdType::RegularTrade);
 
         assert_eq!(report.trade_report_id, "TMR001");
-        assert_eq!(report.match_status, MatchStatus::Compared);
+        assert_eq!(report.match_status, MatchStatus::ComparedMatchedOrAffirmed);
         assert_eq!(report.symbol, "NFLX");
         assert_eq!(report.last_qty, 50.0);
         assert_eq!(report.last_px, 400.25);
@@ -1457,7 +1457,7 @@ mod tests {
         let now = Utc::now();
         let original = TradeMatchReport::new(
             "TMR002".to_string(),
-            MatchStatus::Uncompared,
+            MatchStatus::UncomparedUnmatchedOrUnaffirmed,
             "AMZN".to_string(),
             75.0,
             3500.00,
@@ -1486,12 +1486,12 @@ mod tests {
             0, // Accepted
             now,
         )
-        .with_match_status(MatchStatus::Compared)
+        .with_match_status(MatchStatus::ComparedMatchedOrAffirmed)
         .with_text("Match accepted".to_string());
 
         assert_eq!(ack.trade_report_id, "TMR001");
         assert_eq!(ack.trade_report_status, 0);
-        assert_eq!(ack.match_status, Some(MatchStatus::Compared));
+        assert_eq!(ack.match_status, Some(MatchStatus::ComparedMatchedOrAffirmed));
     }
 
     #[test]
@@ -1543,8 +1543,8 @@ mod tests {
         assert_eq!(TrdSubType::from_fix("0"), Some(TrdSubType::CMTA));
 
         // Test MatchStatus
-        assert_eq!(MatchStatus::Compared.to_fix(), "0");
-        assert_eq!(MatchStatus::from_fix("0"), Some(MatchStatus::Compared));
+        assert_eq!(MatchStatus::ComparedMatchedOrAffirmed.to_fix(), "0");
+        assert_eq!(MatchStatus::from_fix("0"), Ok(MatchStatus::ComparedMatchedOrAffirmed));
 
         // Test MatchType
         assert_eq!(MatchType::ExactMatchOnTradeDate.to_fix(), "M3");

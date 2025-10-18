@@ -99,6 +99,38 @@ pub enum MsgType {
     SecurityStatusRequest,    // e (lowercase)
     SecurityTypeRequest,      // v (lowercase)
     SecurityTypes,            // w (lowercase)
+    // Post-Trade Messages
+    AccountSummaryReport,                      // CQ
+    AdjustedPositionReport,                    // BL
+    AllocationInstruction,                     // J
+    AllocationInstructionAck,                  // P
+    AllocationInstructionAlert,                // BM
+    AllocationInstructionAlertRequest,         // DU
+    AllocationInstructionAlertRequestAck,      // DV
+    AllocationReport,                          // AS
+    AllocationReportAck,                       // AT
+    AssignmentReport,                          // AW
+    Confirmation,                              // AK
+    ConfirmationAck,                           // AU
+    ConfirmationRequest,                       // BH
+    ContraryIntentionReport,                   // BO
+    PositionMaintenanceReport,                 // AM
+    PositionMaintenanceRequest,                // AL
+    PositionReport,                            // AP
+    PositionTransferInstruction,               // DL
+    PositionTransferInstructionAck,            // DM
+    PositionTransferReport,                    // DN
+    RequestForPositions,                       // AN
+    RequestForPositionsAck,                    // AO
+    SettlementInstructionRequest,              // AV
+    SettlementInstructions,                    // T
+    SettlementObligationReport,                // BQ
+    TradeCaptureReport,                        // AE
+    TradeCaptureReportAck,                     // AR
+    TradeCaptureReportRequest,                 // AD
+    TradeCaptureReportRequestAck,              // AQ
+    TradeMatchReport,                          // DC
+    TradeMatchReportAck,                       // DD
 }
 
 impl MsgType {
@@ -189,6 +221,37 @@ impl MsgType {
             MsgType::SecurityStatusRequest => "e",
             MsgType::SecurityTypeRequest => "v",
             MsgType::SecurityTypes => "w",
+            MsgType::AccountSummaryReport => "CQ",
+            MsgType::AdjustedPositionReport => "BL",
+            MsgType::AllocationInstruction => "J",
+            MsgType::AllocationInstructionAck => "P",
+            MsgType::AllocationInstructionAlert => "BM",
+            MsgType::AllocationInstructionAlertRequest => "DU",
+            MsgType::AllocationInstructionAlertRequestAck => "DV",
+            MsgType::AllocationReport => "AS",
+            MsgType::AllocationReportAck => "AT",
+            MsgType::AssignmentReport => "AW",
+            MsgType::Confirmation => "AK",
+            MsgType::ConfirmationAck => "AU",
+            MsgType::ConfirmationRequest => "BH",
+            MsgType::ContraryIntentionReport => "BO",
+            MsgType::PositionMaintenanceReport => "AM",
+            MsgType::PositionMaintenanceRequest => "AL",
+            MsgType::PositionReport => "AP",
+            MsgType::PositionTransferInstruction => "DL",
+            MsgType::PositionTransferInstructionAck => "DM",
+            MsgType::PositionTransferReport => "DN",
+            MsgType::RequestForPositions => "AN",
+            MsgType::RequestForPositionsAck => "AO",
+            MsgType::SettlementInstructionRequest => "AV",
+            MsgType::SettlementInstructions => "T",
+            MsgType::SettlementObligationReport => "BQ",
+            MsgType::TradeCaptureReport => "AE",
+            MsgType::TradeCaptureReportAck => "AR",
+            MsgType::TradeCaptureReportRequest => "AD",
+            MsgType::TradeCaptureReportRequestAck => "AQ",
+            MsgType::TradeMatchReport => "DC",
+            MsgType::TradeMatchReportAck => "DD",
         }
     }
 
@@ -279,6 +342,37 @@ impl MsgType {
             "e" => Some(MsgType::SecurityStatusRequest),
             "v" => Some(MsgType::SecurityTypeRequest),
             "w" => Some(MsgType::SecurityTypes),
+            "CQ" => Some(MsgType::AccountSummaryReport),
+            "BL" => Some(MsgType::AdjustedPositionReport),
+            "J" => Some(MsgType::AllocationInstruction),
+            "P" => Some(MsgType::AllocationInstructionAck),
+            "BM" => Some(MsgType::AllocationInstructionAlert),
+            "DU" => Some(MsgType::AllocationInstructionAlertRequest),
+            "DV" => Some(MsgType::AllocationInstructionAlertRequestAck),
+            "AS" => Some(MsgType::AllocationReport),
+            "AT" => Some(MsgType::AllocationReportAck),
+            "AW" => Some(MsgType::AssignmentReport),
+            "AK" => Some(MsgType::Confirmation),
+            "AU" => Some(MsgType::ConfirmationAck),
+            "BH" => Some(MsgType::ConfirmationRequest),
+            "BO" => Some(MsgType::ContraryIntentionReport),
+            "AM" => Some(MsgType::PositionMaintenanceReport),
+            "AL" => Some(MsgType::PositionMaintenanceRequest),
+            "AP" => Some(MsgType::PositionReport),
+            "DL" => Some(MsgType::PositionTransferInstruction),
+            "DM" => Some(MsgType::PositionTransferInstructionAck),
+            "DN" => Some(MsgType::PositionTransferReport),
+            "AN" => Some(MsgType::RequestForPositions),
+            "AO" => Some(MsgType::RequestForPositionsAck),
+            "AV" => Some(MsgType::SettlementInstructionRequest),
+            "T" => Some(MsgType::SettlementInstructions),
+            "BQ" => Some(MsgType::SettlementObligationReport),
+            "AE" => Some(MsgType::TradeCaptureReport),
+            "AR" => Some(MsgType::TradeCaptureReportAck),
+            "AD" => Some(MsgType::TradeCaptureReportRequest),
+            "AQ" => Some(MsgType::TradeCaptureReportRequestAck),
+            "DC" => Some(MsgType::TradeMatchReport),
+            "DD" => Some(MsgType::TradeMatchReportAck),
             _ => None,
         }
     }
@@ -372,6 +466,38 @@ pub enum FixMessage {
     SecurityStatusRequest(crate::message_types::securities_reference::SecurityStatusRequest),
     SecurityTypeRequest(crate::message_types::securities_reference::SecurityTypeRequest),
     SecurityTypes(crate::message_types::securities_reference::SecurityTypes),
+    // Post-Trade Messages
+    AccountSummaryReport(crate::message_types::account_reporting::AccountSummaryReport),
+    AdjustedPositionReport(crate::message_types::position_maintenance::AdjustedPositionReport),
+    AllocationInstruction(crate::message_types::allocation::AllocationInstruction),
+    AllocationInstructionAck(crate::message_types::allocation::AllocationInstructionAck),
+    AllocationInstructionAlert(crate::message_types::allocation::AllocationInstructionAlert),
+    AllocationInstructionAlertRequest(crate::message_types::allocation::AllocationInstructionAlertRequest),
+    AllocationInstructionAlertRequestAck(crate::message_types::allocation::AllocationInstructionAlertRequestAck),
+    AllocationReport(crate::message_types::allocation::AllocationReport),
+    AllocationReportAck(crate::message_types::allocation::AllocationReportAck),
+    AssignmentReport(crate::message_types::position_maintenance::AssignmentReport),
+    Confirmation(crate::message_types::confirmation::Confirmation),
+    ConfirmationAck(crate::message_types::confirmation::ConfirmationAck),
+    ConfirmationRequest(crate::message_types::confirmation::ConfirmationRequest),
+    ContraryIntentionReport(crate::message_types::position_maintenance::ContraryIntentionReport),
+    PositionMaintenanceReport(crate::message_types::position_maintenance::PositionMaintenanceReport),
+    PositionMaintenanceRequest(crate::message_types::position_maintenance::PositionMaintenanceRequest),
+    PositionReport(crate::message_types::position_maintenance::PositionReport),
+    PositionTransferInstruction(crate::message_types::position_maintenance::PositionTransferInstruction),
+    PositionTransferInstructionAck(crate::message_types::position_maintenance::PositionTransferInstructionAck),
+    PositionTransferReport(crate::message_types::position_maintenance::PositionTransferReport),
+    RequestForPositions(crate::message_types::position_maintenance::RequestForPositions),
+    RequestForPositionsAck(crate::message_types::position_maintenance::RequestForPositionsAck),
+    SettlementInstructionRequest(crate::message_types::settlement_instruction::SettlementInstructionRequest),
+    SettlementInstructions(crate::message_types::settlement_instruction::SettlementInstructions),
+    SettlementObligationReport(crate::message_types::settlement_instruction::SettlementObligationReport),
+    TradeCaptureReport(crate::message_types::trade_capture_reporting::TradeCaptureReport),
+    TradeCaptureReportAck(crate::message_types::trade_capture_reporting::TradeCaptureReportAck),
+    TradeCaptureReportRequest(crate::message_types::trade_capture_reporting::TradeCaptureReportRequest),
+    TradeCaptureReportRequestAck(crate::message_types::trade_capture_reporting::TradeCaptureReportRequestAck),
+    TradeMatchReport(crate::message_types::trade_capture_reporting::TradeMatchReport),
+    TradeMatchReportAck(crate::message_types::trade_capture_reporting::TradeMatchReportAck),
 }
 
 impl FixMessage {
@@ -453,6 +579,37 @@ impl FixMessage {
             FixMessage::SecurityStatusRequest(_) => MsgType::SecurityStatusRequest,
             FixMessage::SecurityTypeRequest(_) => MsgType::SecurityTypeRequest,
             FixMessage::SecurityTypes(_) => MsgType::SecurityTypes,
+            FixMessage::AccountSummaryReport(_) => MsgType::AccountSummaryReport,
+            FixMessage::AdjustedPositionReport(_) => MsgType::AdjustedPositionReport,
+            FixMessage::AllocationInstruction(_) => MsgType::AllocationInstruction,
+            FixMessage::AllocationInstructionAck(_) => MsgType::AllocationInstructionAck,
+            FixMessage::AllocationInstructionAlert(_) => MsgType::AllocationInstructionAlert,
+            FixMessage::AllocationInstructionAlertRequest(_) => MsgType::AllocationInstructionAlertRequest,
+            FixMessage::AllocationInstructionAlertRequestAck(_) => MsgType::AllocationInstructionAlertRequestAck,
+            FixMessage::AllocationReport(_) => MsgType::AllocationReport,
+            FixMessage::AllocationReportAck(_) => MsgType::AllocationReportAck,
+            FixMessage::AssignmentReport(_) => MsgType::AssignmentReport,
+            FixMessage::Confirmation(_) => MsgType::Confirmation,
+            FixMessage::ConfirmationAck(_) => MsgType::ConfirmationAck,
+            FixMessage::ConfirmationRequest(_) => MsgType::ConfirmationRequest,
+            FixMessage::ContraryIntentionReport(_) => MsgType::ContraryIntentionReport,
+            FixMessage::PositionMaintenanceReport(_) => MsgType::PositionMaintenanceReport,
+            FixMessage::PositionMaintenanceRequest(_) => MsgType::PositionMaintenanceRequest,
+            FixMessage::PositionReport(_) => MsgType::PositionReport,
+            FixMessage::PositionTransferInstruction(_) => MsgType::PositionTransferInstruction,
+            FixMessage::PositionTransferInstructionAck(_) => MsgType::PositionTransferInstructionAck,
+            FixMessage::PositionTransferReport(_) => MsgType::PositionTransferReport,
+            FixMessage::RequestForPositions(_) => MsgType::RequestForPositions,
+            FixMessage::RequestForPositionsAck(_) => MsgType::RequestForPositionsAck,
+            FixMessage::SettlementInstructionRequest(_) => MsgType::SettlementInstructionRequest,
+            FixMessage::SettlementInstructions(_) => MsgType::SettlementInstructions,
+            FixMessage::SettlementObligationReport(_) => MsgType::SettlementObligationReport,
+            FixMessage::TradeCaptureReport(_) => MsgType::TradeCaptureReport,
+            FixMessage::TradeCaptureReportAck(_) => MsgType::TradeCaptureReportAck,
+            FixMessage::TradeCaptureReportRequest(_) => MsgType::TradeCaptureReportRequest,
+            FixMessage::TradeCaptureReportRequestAck(_) => MsgType::TradeCaptureReportRequestAck,
+            FixMessage::TradeMatchReport(_) => MsgType::TradeMatchReport,
+            FixMessage::TradeMatchReportAck(_) => MsgType::TradeMatchReportAck,
         }
     }
 }
